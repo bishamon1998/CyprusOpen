@@ -10,7 +10,6 @@ services:
     command: ["node", "/fixtures/parking-server.mjs"]
   parking-service:
     environment:
-      SPRING_PROFILES_ACTIVE: test
       PARKING_DIRECTORY_SYNC_ENABLED: "true"
       PARKING_DIRECTORY_RESOURCE_URL: http://parking-fixture:9090/directory
     depends_on:

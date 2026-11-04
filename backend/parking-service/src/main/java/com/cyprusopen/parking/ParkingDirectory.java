@@ -1,5 +1,27 @@
 package com.cyprusopen.parking;
 
+import static com.cyprusopen.parking.DirectoryConstants.CATALOG_URL;
+import static com.cyprusopen.parking.DirectoryConstants.DIRECTORY_ID;
+import static com.cyprusopen.parking.DirectoryConstants.ERROR;
+import static com.cyprusopen.parking.DirectoryConstants.LICENSE;
+import static com.cyprusopen.parking.DirectoryConstants.LICENSE_URL;
+import static com.cyprusopen.parking.DirectoryConstants.MAX_CLOCK_SKEW;
+import static com.cyprusopen.parking.DirectoryConstants.MAX_FAILURES;
+import static com.cyprusopen.parking.DirectoryConstants.MAX_LATITUDE;
+import static com.cyprusopen.parking.DirectoryConstants.MAX_LOCATIONS;
+import static com.cyprusopen.parking.DirectoryConstants.MAX_LONGITUDE;
+import static com.cyprusopen.parking.DirectoryConstants.MIN_LATITUDE;
+import static com.cyprusopen.parking.DirectoryConstants.MIN_LONGITUDE;
+import static com.cyprusopen.parking.DirectoryConstants.PAUSED;
+import static com.cyprusopen.parking.DirectoryConstants.REFRESH_LOCK_ID;
+import static com.cyprusopen.parking.DirectoryConstants.REQUEST_SPACING;
+import static com.cyprusopen.parking.DirectoryConstants.RESOURCE_URL;
+import static com.cyprusopen.parking.DirectoryConstants.SOURCE_NAME;
+import static com.cyprusopen.parking.DirectoryConstants.TRANSFORMATIONS;
+import static com.cyprusopen.parking.DirectoryConstants.UNCHANGED;
+import static com.cyprusopen.parking.DirectoryConstants.UPDATED;
+
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -7,49 +29,85 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 import tools.jackson.databind.json.JsonMapper;
 
-@Component
+@Repository
 @DependsOn("liquibase")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ParkingDirectory {
     private final JdbcClient jdbc;
     private final JsonMapper mapper;
 
-    @Transactional(readOnly = true)
-    public Snapshot snapshot() {
+    Snapshot snapshot() {
         return read().snapshot();
     }
 
     Read read() {
-        return jdbc.sql("SELECT document::text,last_checked_at FROM parking_directory WHERE id=1")
-                .query((rs, row) -> new Read(rs.getString(1) == null ? empty() : mapper.readValue(rs.getString(1), Snapshot.class), rs.getTimestamp(2) == null ? null : rs.getTimestamp(2).toInstant())).single();
-    }
-
-    private static Snapshot empty() {
-        return new Snapshot("Cyprus National Access Point / Public Works Department", "https://www.traffic4cyprus.org.cy/en/dataset/parking_areas",
-                "https://fixcyprus.cy/gnosis/open/api/nap/datasets/parking_areas/", "CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/",
-                null, null, "English names only; missing/non-English names and OSM Origin placeholders are unnamed. Coordinates and identifiers preserved.", List.of());
+        return statement(DirectorySql.READ).query((rs, row) -> {
+            var document = rs.getString(1);
+            var checked = rs.getTimestamp(2);
+            return new Read(document == null ? empty() : mapper.readValue(document, Snapshot.class),
+                    checked == null ? null : checked.toInstant());
+        }).single();
     }
 
     void replace(Snapshot snapshot, String etag, String modified) {
         validate(snapshot);
-        jdbc.sql("UPDATE parking_directory SET document=CAST(:document AS jsonb),last_checked_at=:checked,etag=:etag,last_modified=:modified,consecutive_failures=0,sync_status='updated' WHERE id=1")
-            .param("document", mapper.writeValueAsString(snapshot))
-            .param("checked", java.sql.Timestamp.from(snapshot.retrievedAt()))
-            .param("etag", etag).param("modified", modified).update();
+        statement(DirectorySql.REPLACE)
+                .param("document", mapper.writeValueAsString(snapshot))
+                .param("checked", Timestamp.from(snapshot.retrievedAt()))
+                .param("etag", etag).param("modified", modified).param("status", UPDATED).update();
+    }
+
+    boolean tryLock() {
+        return jdbc.sql(DirectorySql.TRY_LOCK).param("lockId", REFRESH_LOCK_ID).query(Boolean.class).single();
+    }
+
+    boolean isDue() {
+        return statement(DirectorySql.IS_DUE).param("maxFailures", MAX_FAILURES).query(Boolean.class).single();
+    }
+
+    void markAttempt() {
+        statement(DirectorySql.MARK_ATTEMPT).param("spacing", REQUEST_SPACING.toSeconds()).update();
+    }
+
+    Validators validators() {
+        return statement(DirectorySql.VALIDATORS)
+                .query((rs, row) -> new Validators(rs.getString(1), rs.getString(2))).single();
+    }
+
+    void markUnchanged() {
+        statement(DirectorySql.MARK_UNCHANGED).param("status", UNCHANGED).update();
+    }
+
+    void markFailed(Instant nextAttempt) {
+        statement(DirectorySql.MARK_FAILED).param("maxFailures", MAX_FAILURES)
+                .param("paused", PAUSED).param("error", ERROR)
+                .param("next", Timestamp.from(nextAttempt)).update();
+    }
+
+    private JdbcClient.StatementSpec statement(String sql) {
+        return jdbc.sql(sql).param("id", DIRECTORY_ID);
+    }
+
+    private static Snapshot empty() {
+        return new Snapshot(SOURCE_NAME, CATALOG_URL, RESOURCE_URL, LICENSE, LICENSE_URL,
+                null, null, TRANSFORMATIONS, List.of());
     }
 
     static void validate(Snapshot snapshot) {
         var identifiers = new HashSet<String>();
-        if (snapshot.items().isEmpty() || snapshot.items().size() > 20000 || snapshot.publishedAt() == null
-                || snapshot.publishedAt().isAfter(Instant.now().plusSeconds(300))) throw new IllegalArgumentException("Invalid directory publication");
+        if (snapshot.items().isEmpty() || snapshot.items().size() > MAX_LOCATIONS || snapshot.publishedAt() == null
+                || snapshot.publishedAt().isAfter(Instant.now().plus(MAX_CLOCK_SKEW))) {
+            throw new IllegalArgumentException("Invalid directory publication");
+        }
         for (var place : snapshot.items()) {
             if (place.id() == null || !identifiers.add(place.id()) || !Double.isFinite(place.latitude())
-                    || !Double.isFinite(place.longitude()) || place.latitude() < 34 || place.latitude() > 36
-                    || place.longitude() < 32 || place.longitude() > 35) throw new IllegalArgumentException("Invalid parking location");
+                    || !Double.isFinite(place.longitude()) || place.latitude() < MIN_LATITUDE || place.latitude() > MAX_LATITUDE
+                    || place.longitude() < MIN_LONGITUDE || place.longitude() > MAX_LONGITUDE) {
+                throw new IllegalArgumentException("Invalid parking location");
+            }
         }
     }
 
@@ -58,4 +116,5 @@ class ParkingDirectory {
                     String transformations, List<Location> items) {}
     record Location(String id, String name, double latitude, double longitude) {}
     record Read(Snapshot snapshot, Instant checkedAt) {}
+    record Validators(String etag, String modified) {}
 }

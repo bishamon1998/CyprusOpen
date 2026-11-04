@@ -1,5 +1,8 @@
 package com.cyprusopen.parking;
 
+import static com.cyprusopen.parking.DirectoryConstants.UNAVAILABLE;
+import static com.cyprusopen.parking.DirectoryConstants.UNNAMED_LOCATION;
+
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +24,9 @@ class ParkingController {
         var source = new DirectorySource(snapshot.source(), snapshot.catalogUrl(), snapshot.license(),
                 snapshot.licenseUrl(), snapshot.publishedAt(), snapshot.retrievedAt(), stored.checkedAt());
         var places = snapshot.items().stream().map(place -> new ParkingPlace(place.id(),
-                place.name() == null ? "Car park" : place.name(), place.latitude(), place.longitude(), null)).toList();
+                place.name() == null ? UNNAMED_LOCATION : place.name(), place.latitude(), place.longitude(), null)).toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(new ParkingResponse("unavailable", null, source, places));
+                .body(new ParkingResponse(UNAVAILABLE, null, source, places));
     }
 
     record ParkingResponse(String freshness, Instant lastUpdatedAt, DirectorySource directory,
