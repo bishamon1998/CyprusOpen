@@ -1,0 +1,9 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "backend/statistics-service/Dockerfile"
+watchPatterns = ["backend/statistics-service/**", "backend/common-library/**", "pom.xml"]
+
+[deploy]
+healthcheckPath = "/actuator/health/readiness"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

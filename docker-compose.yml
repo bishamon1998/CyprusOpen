@@ -1,6 +1,37 @@
 name: cyprus-open
 
 services:
+  statistics-service:
+    build:
+      context: .
+      dockerfile: backend/statistics-service/Dockerfile
+    environment:
+      PORT: 8081
+    restart: unless-stopped
+
+  parking-service:
+    build:
+      context: .
+      dockerfile: backend/parking-service/Dockerfile
+    environment:
+      PORT: 8082
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      PORT: 3000
+      STATISTICS_UPSTREAM: http://statistics-service:8081
+      PARKING_UPSTREAM: http://parking-service:8082
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - statistics-service
+      - parking-service
+    restart: unless-stopped
+
   postgres:
     image: postgres:17-bookworm
     environment:
