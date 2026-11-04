@@ -445,8 +445,8 @@ h2 {
   }
 }
 .mouflon-mark {
-  width: 43px;
-  height: 43px;
+  width: 52px;
+  height: 52px;
   margin-right: 9px;
 }
 .route-loading {
@@ -498,8 +498,8 @@ h2 {
     text-align: center;
   }
   .mouflon-mark {
-    width: 39px;
-    height: 39px;
+    width: 48px;
+    height: 48px;
   }
 }
 @media (max-width: 360px) {

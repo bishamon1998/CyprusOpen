@@ -80,7 +80,7 @@ function App() {
       <header className="site-header">
         <div className="wrap header-inner">
           <Link to="/" className="wordmark" aria-label={t("home")}>
-            <img className="mouflon-mark" src="/mouflon.svg" alt="" />
+            <img className="mouflon-mark" src="/mouflon-friendly.png" alt="" />
             cyprus<span className="wordmark-light">open</span>
           </Link>
           <nav aria-label={t("navigation")}>

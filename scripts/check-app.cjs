@@ -22,7 +22,7 @@ async function main() {
   const tileOrigin = new URL(
     (await (await fetch(`${baseUrl}/map-config.json`)).json()).tileUrl,
   ).origin;
-  await context.route("**/*", (route) => {
+  const interceptExternal = (route) => {
     const url = new URL(route.request().url());
     if (url.origin === new URL(baseUrl).origin) return route.continue();
     if (url.origin === tileOrigin)
@@ -35,7 +35,8 @@ async function main() {
       });
     errors.push(`Unexpected external request: ${url}`);
     return route.abort();
-  });
+  };
+  await context.route("**/*", interceptExternal);
   const page = await context.newPage();
   page.on("pageerror", (error) => errors.push(error.message));
   try {
@@ -163,7 +164,11 @@ async function main() {
     assert.match(firstDistance, /km · straight-line/);
     assert.ok(parseFloat(firstDistance) < 2);
     await page.getByRole("button", { name: "Clear location" }).click();
-    const permissions = await context.newCDPSession(page);
+    const deniedContext = await browser.newContext();
+    await deniedContext.route("**/*", interceptExternal);
+    const deniedPage = await deniedContext.newPage();
+    deniedPage.on("pageerror", (error) => errors.push(error.message));
+    const permissions = await deniedContext.newCDPSession(deniedPage);
     const { targetInfo } = await permissions.send("Target.getTargetInfo");
     await permissions.send("Browser.setPermission", {
       permission: { name: "geolocation" },
@@ -171,18 +176,19 @@ async function main() {
       origin: new URL(baseUrl).origin,
       browserContextId: targetInfo.browserContextId,
     });
+    await deniedPage.goto(`${baseUrl}/parking`);
     assert.equal(
-      await page.evaluate(
+      await deniedPage.evaluate(
         async () =>
           (await navigator.permissions.query({ name: "geolocation" })).state,
       ),
       "denied",
     );
-    await permissions.detach();
-    await page.getByRole("button", { name: "Near me", exact: true }).click();
-    await page
+    await deniedPage.getByRole("button", { name: "Near me", exact: true }).click();
+    await deniedPage
       .getByText("Location access declined. Choose an area instead.")
       .waitFor();
+    await deniedContext.close();
     await context.route(`${tileOrigin}/**`, (route) => route.abort());
     await page.reload();
     await page
