@@ -2,7 +2,7 @@
 
 Public statistics and civic tools for people living in Cyprus.
 
-Initial setup: local PostgreSQL configuration with separate Statistics and Parking databases. Application services and dataset imports are not implemented yet.
+Local PostgreSQL runs with isolated Statistics and Parking databases. An implementation plan, architecture and interactive interface sketch are ready; application services and imports are next.
 
 Planned stack: Spring Boot, PostgreSQL, Liquibase, React and TypeScript. Production hosting: Railway.
 
@@ -14,4 +14,4 @@ Copy-Item .env.example .env
 docker compose up -d --wait postgres
 ```
 
-See [local setup](docs/local-development.md), [architecture](docs/architecture.md) and [database](docs/database.md). See [GitHub setup](docs/github.md) before the first push. Project requirements are in [CyprusOpen_Codex_Instructions.md](CyprusOpen_Codex_Instructions.md).
+Start with the [implementation plan](docs/plan.md), [architecture](docs/architecture.md) and [interface sketch](docs/prototype/index.html). Technical notes: [local setup](docs/local-development.md), [database](docs/database.md), [API draft](docs/api-design.md), [sources](docs/data-sources.md), [Railway](docs/railway.md) and [GitHub](docs/github.md). Project requirements: [CyprusOpen_Codex_Instructions.md](CyprusOpen_Codex_Instructions.md).
