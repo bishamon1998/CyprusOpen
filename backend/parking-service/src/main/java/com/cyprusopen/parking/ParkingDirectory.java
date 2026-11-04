@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -12,9 +14,10 @@ import tools.jackson.databind.json.JsonMapper;
 class ParkingDirectory {
     private final Snapshot snapshot;
 
-    ParkingDirectory() throws IOException {
-        try (var input = new ClassPathResource("parking-directory.json").getInputStream()) {
-            snapshot = JsonMapper.builder().build().readValue(input, Snapshot.class);
+    @Autowired
+    ParkingDirectory(JsonMapper mapper, @Value("classpath:parking-directory.json") Resource resource) throws IOException {
+        try (var input = resource.getInputStream()) {
+            snapshot = mapper.readValue(input, Snapshot.class);
         }
         var identifiers = new HashSet<String>();
         if (snapshot.items().isEmpty()) throw new IllegalStateException("Empty parking directory");

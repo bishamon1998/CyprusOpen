@@ -1,20 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowUpRight, LocateFixed, Navigation, Search, X } from "lucide-react";
 import { type ParkingPlace, useParking } from "../api";
-import { areas, ParkingMap, type Position } from "./ParkingMap";
+import { areas, ParkingMap } from "./ParkingMap";
 import "./parking.css";
 import { useI18n } from "../i18n";
-import { type MessageKey } from "../locales";
-
-function distance(from: Position, to: Position) {
-  const radians = Math.PI / 180;
-  const a =
-    Math.sin(((to.latitude - from.latitude) * radians) / 2) ** 2 +
-    Math.cos(from.latitude * radians) *
-      Math.cos(to.latitude * radians) *
-      Math.sin(((to.longitude - from.longitude) * radians) / 2) ** 2;
-  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { distance, useParkingLocation } from "./useParkingLocation";
 
 function directions(place: ParkingPlace) {
   return `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}&travelmode=driving`;
@@ -27,9 +17,8 @@ export default function Parking() {
   const [areaId, setAreaId] = useState("cyprus");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [position, setPosition] = useState<Position | null>(null);
-  const [locating, setLocating] = useState(false);
-  const [locationError, setLocationError] = useState<MessageKey | null>(null);
+  const { position, locating, locationError, locate, clearLocation } =
+    useParkingLocation();
   const area = areas.find((item) => item.id === areaId)!;
   const places = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -56,32 +45,12 @@ export default function Parking() {
   const [visibleCount, setVisibleCount] = useState(30);
 
   function nearMe() {
-    if (!navigator.geolocation) {
-      setLocationError("locationUnavailable");
-      return;
-    }
-    setLocating(true);
-    setLocationError(null);
-    navigator.geolocation.getCurrentPosition(
-      (result) => {
-        setPosition({
-          latitude: result.coords.latitude,
-          longitude: result.coords.longitude,
-        });
-        setAreaId("cyprus");
-        setSearch("");
-        setSelectedId(null);
-        setVisibleCount(30);
-        setLocating(false);
-      },
-      (error) => {
-        setLocating(false);
-        setLocationError(
-          error.code === 1 ? "locationDeclined" : "locationFailed",
-        );
-      },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
-    );
+    locate(() => {
+      setAreaId("cyprus");
+      setSearch("");
+      setSelectedId(null);
+      setVisibleCount(30);
+    });
   }
 
   function choose(id: string) {
@@ -155,10 +124,7 @@ export default function Parking() {
                     : t("carParkCount", { count: places.length })}
               </h2>
               {position && (
-                <button
-                  onClick={() => setPosition(null)}
-                  aria-label={t("clearLocation")}
-                >
+                <button onClick={clearLocation} aria-label={t("clearLocation")}>
                   <X size={15} />
                   {t("nearest")}
                 </button>

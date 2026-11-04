@@ -6,13 +6,13 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import { type ParkingPlace, useMapConfig } from "../api";
 import { useI18n } from "../i18n";
 import { type MessageKey } from "../locales";
+import { type Position } from "./useParkingLocation";
 
 export type Area = {
   id: string;
   name: MessageKey;
   bounds: [[number, number], [number, number]];
 };
-export type Position = { latitude: number; longitude: number };
 
 export const areas: Area[] = [
   {

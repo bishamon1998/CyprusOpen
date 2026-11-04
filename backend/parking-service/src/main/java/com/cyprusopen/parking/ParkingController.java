@@ -2,18 +2,17 @@ package com.cyprusopen.parking;
 
 import java.time.Instant;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ParkingController {
     private final ParkingDirectory directory;
-
-    ParkingController(ParkingDirectory directory) {
-        this.directory = directory;
-    }
 
     @GetMapping("/api/v1/parking")
     ResponseEntity<ParkingResponse> parking() {
