@@ -163,7 +163,16 @@ async function main() {
     assert.match(firstDistance, /km · straight-line/);
     assert.ok(parseFloat(firstDistance) < 2);
     await page.getByRole("button", { name: "Clear location" }).click();
-    await context.clearPermissions();
+    const permissions = await context.newCDPSession(page);
+    const { targetInfo } = await permissions.send("Target.getTargetInfo");
+    await permissions.send("Browser.setPermission", {
+      permission: { name: "geolocation" },
+      setting: "denied",
+      origin: new URL(baseUrl).origin,
+      browserContextId: targetInfo.browserContextId,
+    });
+    assert.equal(await page.evaluate(async () => (await navigator.permissions.query({ name: "geolocation" })).state), "denied");
+    await permissions.detach();
     await page.getByRole("button", { name: "Near me", exact: true }).click();
     await page
       .getByText("Location access declined. Choose an area instead.")
