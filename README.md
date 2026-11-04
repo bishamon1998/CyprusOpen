@@ -72,3 +72,9 @@ Before deploying the new Parking service, provision its restricted database role
 Deploy the updated Parking backend together with the frontend release after review. The frontend currently follows GitHub main; Parking currently uses a manual source. The new frontend handles the old placeholder API as a retryable error. Only the frontend needs a public domain; set its upstreams to the actual Railway private service origins with their ports.
 
 Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.
+
+## Shared map and parsing components
+
+`frontend/src/components/map/MapView.tsx` accepts plain labelled coordinates, bounds, selection, marker symbol and labels. Tile loading, clustering, camera/resize handling and user-location display are shared. ParkingMap only adapts parking records and translations. Shared viewport presets, distance calculations and explicit-action geolocation live in `geo/` and `hooks/useBrowserLocation.ts`; map sizing can use `--map-height` and `--map-mobile-height`.
+
+`backend/common-library` provides the framework-free `XmlDocumentReader`: bounded namespace-aware XML reading, disabled DTD/external resources and required-field extraction. Parking supplies it through Spring DI; DATEX parking fields and validation stay in DirectoryXmlParser. Other XML resources can reuse the reader; CSV/JSON resources need their own format-specific parsing. Parking builds the shared JAR through the root `-pl ... -am` command; no external artifact registry is needed.

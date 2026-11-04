@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { get } from "./api/http";
 
 export type Dataset = {
   code: string;
@@ -32,12 +33,6 @@ export type ParkingReport = {
   items: ParkingPlace[];
 };
 
-async function get<T>(url: string): Promise<T> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error("The service is temporarily unavailable.");
-  return response.json() as Promise<T>;
-}
-
 export function useDatasets() {
   return useQuery({
     queryKey: ["datasets"],
@@ -57,17 +52,6 @@ export function useParking() {
       }
       return report;
     },
-  });
-}
-
-export function useMapConfig() {
-  return useQuery({
-    queryKey: ["map-config"],
-    queryFn: () =>
-      get<{ tileUrl: string; attribution: string; attributionUrl: string }>(
-        "/map-config.json",
-      ),
-    staleTime: Infinity,
   });
 }
 

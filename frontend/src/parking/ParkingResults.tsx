@@ -2,7 +2,7 @@ import { type RefObject } from "react";
 import { ArrowUpRight, Navigation, X } from "lucide-react";
 import { useI18n } from "../i18n";
 import { type ParkingPlace, useParking } from "../api";
-import { distance, type Position } from "./useParkingLocation";
+import { distance, type Position } from "../geo/coordinates";
 
 export function ParkingResults({
   report,

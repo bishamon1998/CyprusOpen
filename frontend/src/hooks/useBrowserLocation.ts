@@ -1,18 +1,8 @@
 import { useState } from "react";
-import { latLng } from "leaflet";
+import { type Position } from "../geo/coordinates";
 import { type MessageKey } from "../locales";
 
-export type Position = { latitude: number; longitude: number };
-
-export function distance(from: Position, to: Position) {
-  return (
-    latLng(from.latitude, from.longitude).distanceTo(
-      latLng(to.latitude, to.longitude),
-    ) / 1000
-  );
-}
-
-export function useParkingLocation() {
+export function useBrowserLocation() {
   const [position, setPosition] = useState<Position | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<MessageKey | null>(null);

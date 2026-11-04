@@ -1,36 +1,29 @@
 package com.cyprusopen.parking;
 
 import static com.cyprusopen.parking.DirectoryConstants.COMMON_NAMESPACE;
-import static com.cyprusopen.parking.DirectoryConstants.DISALLOW_DOCTYPE;
 import static com.cyprusopen.parking.DirectoryConstants.ENGLISH_TEXT_PATTERN;
 import static com.cyprusopen.parking.DirectoryConstants.LOCATION_ID_PREFIX;
 import static com.cyprusopen.parking.DirectoryConstants.PARKING_NAMESPACE;
 import static com.cyprusopen.parking.DirectoryConstants.UNNAMED_SOURCE_LABEL;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.time.Instant;
+import com.cyprusopen.common.xml.XmlDocumentReader;
 import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 @Component
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DirectoryXmlParser {
+    private final XmlDocumentReader reader;
+
     ParkingDirectory.Snapshot parse(byte[] bytes, ParkingDirectory.Snapshot previous, Instant retrievedAt) {
         try {
-            var factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature(DISALLOW_DOCTYPE, true);
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-            var xml = factory.newDocumentBuilder().parse(new ByteArrayInputStream(bytes));
+            var xml = reader.read(bytes);
             if (!"ParkingFacilitiesPublication".equals(xml.getDocumentElement().getLocalName())
                     || !PARKING_NAMESPACE.equals(xml.getDocumentElement().getNamespaceURI())) {
                 throw new IllegalArgumentException("Unexpected directory publication type");
@@ -51,12 +44,12 @@ class DirectoryXmlParser {
                     previous.license(), previous.licenseUrl(), published, retrievedAt, previous.transformations(), locations);
             ParkingDirectory.validate(snapshot);
             return snapshot;
-        } catch (IOException | SAXException | ParserConfigurationException | DateTimeException invalidXml) {
+        } catch (DateTimeException invalidXml) {
             throw new IllegalArgumentException("Invalid directory XML", invalidXml);
         }
     }
 
-    private static String englishName(Element facility) {
+    private String englishName(Element facility) {
         var names = facility.getElementsByTagNameNS(PARKING_NAMESPACE, "parkingFacilityName");
         for (int i = 0; i < names.getLength(); i++) {
             var entry = (Element) names.item(i);
@@ -68,9 +61,7 @@ class DirectoryXmlParser {
         return null;
     }
 
-    private static String text(Element element, String localName) {
-        var nodes = element.getElementsByTagNameNS(COMMON_NAMESPACE, localName);
-        if (nodes.getLength() != 1) throw new IllegalArgumentException("Missing or ambiguous directory field: " + localName);
-        return nodes.item(0).getTextContent().trim();
+    private String text(Element element, String localName) {
+        return reader.requiredText(element, COMMON_NAMESPACE, localName);
     }
 }

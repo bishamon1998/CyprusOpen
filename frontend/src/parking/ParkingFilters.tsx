@@ -1,5 +1,5 @@
 import { LocateFixed, Search } from "lucide-react";
-import { areas } from "./ParkingMap";
+import { areas } from "../geo/cyprusAreas";
 import { useI18n } from "../i18n";
 export function ParkingFilters({
   areaId,

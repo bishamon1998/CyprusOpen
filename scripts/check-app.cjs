@@ -81,7 +81,7 @@ async function main() {
           [...document.querySelectorAll("body *")]
             .filter(
               (element) =>
-                !element.closest(".parking-map") &&
+                !element.closest(".map-surface") &&
                 element.getClientRects().length &&
                 element.getBoundingClientRect().right > innerWidth + 1,
             )
@@ -110,7 +110,12 @@ async function main() {
       .getByRole("heading", { name: "Parking", exact: true, level: 1 })
       .waitFor();
     assert.equal(new URL(page.url()).pathname, "/parking");
-    await page.getByRole("heading", { name: `${report.items.length} car parks`, exact: true }).waitFor();
+    await page
+      .getByRole("heading", {
+        name: `${report.items.length} car parks`,
+        exact: true,
+      })
+      .waitFor();
     const attribution = (
       await page.locator(".parking-attribution").textContent()
     ).replace(/\s+/g, " ");
@@ -161,7 +166,7 @@ async function main() {
       .getByRole("region", { name: "Car park map" })
       .getByRole("button", { name: "Faneromenis (Municipal)", exact: true })
       .click();
-    assert.equal(await page.locator(".parking-pin.is-selected").count(), 1);
+    assert.equal(await page.locator(".map-pin.is-selected").count(), 1);
     await page
       .getByRole("searchbox", { name: "Search car parks" })
       .fill("no matching car park");

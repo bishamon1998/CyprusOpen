@@ -30,7 +30,6 @@ final class DirectoryConstants {
     static final String TRANSFORMATIONS = "English names only; missing/non-English names and OSM Origin placeholders are unnamed. Coordinates and identifiers preserved.";
     static final String PARKING_NAMESPACE = "http://datex2.eu/schema/3/parking";
     static final String COMMON_NAMESPACE = "http://datex2.eu/schema/3/common";
-    static final String DISALLOW_DOCTYPE = "http://apache.org/xml/features/disallow-doctype-decl";
     static final String ENGLISH_TEXT_PATTERN = "[\\x20-\\x7E]+";
     static final String UNNAMED_SOURCE_LABEL = "OSM Origin";
     static final String LOCATION_ID_PREFIX = "cynap-";

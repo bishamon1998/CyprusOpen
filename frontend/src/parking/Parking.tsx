@@ -3,10 +3,12 @@ import { ParkingAttribution } from "./ParkingAttribution";
 import { useMemo, useRef, useState } from "react";
 import { ParkingFilters } from "./ParkingFilters";
 import { useParking } from "../api";
-import { areas, ParkingMap } from "./ParkingMap";
+import { ParkingMap } from "./ParkingMap";
+import { areas } from "../geo/cyprusAreas";
 import "./parking.css";
 import { useI18n } from "../i18n";
-import { distance, useParkingLocation } from "./useParkingLocation";
+import { distance } from "../geo/coordinates";
+import { useBrowserLocation } from "../hooks/useBrowserLocation";
 
 export default function Parking() {
   const { t } = useI18n();
@@ -16,7 +18,7 @@ export default function Parking() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { position, locating, locationError, locate, clearLocation } =
-    useParkingLocation();
+    useBrowserLocation();
   const area = areas.find((item) => item.id === areaId)!;
   const places = useMemo(() => {
     const query = search.trim().toLowerCase();
