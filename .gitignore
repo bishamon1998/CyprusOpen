@@ -12,3 +12,7 @@
 .DS_Store
 Thumbs.db
 *.md
+!README.md
+*.tsbuildinfo
+/docs/prototype/
+/scripts/check-prototype.cjs
