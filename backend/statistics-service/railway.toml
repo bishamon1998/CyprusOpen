@@ -1,5 +1,4 @@
 [build]
-builder = "DOCKERFILE"
 dockerfilePath = "backend/statistics-service/Dockerfile"
 watchPatterns = ["backend/statistics-service/**", "backend/common-library/**", "pom.xml"]
 
