@@ -33,7 +33,9 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
   outline: 3px solid #4263eb;
   outline-offset: 4px;
 }
@@ -74,30 +76,6 @@ button:focus-visible {
 .wordmark-light {
   font-weight: 400;
 }
-.logo-mark {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 31px;
-  height: 31px;
-  background: var(--blue);
-  color: white;
-  border-radius: 9px;
-  font-size: 27px;
-  font-weight: 500;
-  line-height: 1;
-  margin-right: 10px;
-  padding-bottom: 5px;
-}
-.logo-mark > span {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  background: #b8c7ff;
-  border-radius: 50%;
-  right: 6px;
-  top: 6px;
-}
 nav {
   display: flex;
   align-self: stretch;
@@ -123,17 +101,8 @@ nav a:not(.active):hover {
   color: #191c24;
   background: #f7f8fa;
 }
-.preview-badge {
-  margin-left: auto;
-  font-size: 10px;
-  letter-spacing: 0.3px;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 5px 8px;
-  color: #858b98;
-}
 main {
-  min-height: calc(100vh - 180px);
+  padding-bottom: 44px;
 }
 .page-title {
   display: flex;
@@ -148,21 +117,6 @@ h1 {
   letter-spacing: -1px;
   line-height: 1.2;
   margin: 0;
-}
-.page-title p {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 9px 0 0;
-}
-.page-icon {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  color: #8a92a3;
-  background: white;
 }
 .dataset-grid {
   display: grid;
@@ -190,20 +144,6 @@ h2 {
   line-height: 1.4;
   margin: 0;
 }
-.status-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #858b96;
-  font-size: 10px;
-  white-space: nowrap;
-}
-.status-label > span {
-  height: 5px;
-  width: 5px;
-  border-radius: 50%;
-  background: #b7beca;
-}
 .card-description {
   color: var(--muted);
   font-size: 11px;
@@ -227,16 +167,9 @@ h2 {
   border-top: 1px solid #f0f1f5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 8px 24px;
-}
-.card-footer > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  color: #8a909d;
 }
 .source-link {
   display: inline-flex;
@@ -350,21 +283,6 @@ h2 {
   place-items: center;
   flex-shrink: 0;
 }
-.tool-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  padding: 18px 24px;
-  border-bottom: 1px solid #f0f1f5;
-}
-.tool-toolbar > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 12px;
-  color: #687183;
-}
 .tool-empty {
   min-height: 375px;
   padding: 40px 24px;
@@ -385,16 +303,6 @@ h2 {
 }
 .tool-empty .source-link {
   color: var(--blue);
-}
-.tool-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  border-top: 1px solid #f0f1f5;
-  padding: 8px 24px;
-  font-size: 10px;
-  color: #8a909d;
 }
 .sources-list {
   background: white;
@@ -423,12 +331,6 @@ h2 {
 .source-row .source-link {
   margin-left: auto;
 }
-.source-note {
-  font-size: 11px;
-  color: #8a909d;
-  margin-top: 18px;
-  line-height: 1.7;
-}
 .error-banner {
   display: flex;
   align-items: center;
@@ -442,38 +344,6 @@ h2 {
   font-size: 12px;
 }
 .error-banner button,
-.retry-button {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 8px 12px;
-  min-height: 40px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: inherit;
-  font-size: 12px;
-}
-.retry-button {
-  margin-top: 16px;
-}
-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  color: #969ca8;
-  font-size: 10px;
-  padding-block: 28px;
-  margin-top: 30px;
-}
-footer a {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  min-height: 32px;
-}
 .back-link {
   font-size: 14px;
   color: var(--blue);
@@ -481,9 +351,6 @@ footer a {
 @media (max-width: 950px) {
   .header-inner {
     gap: 30px;
-  }
-  .preview-badge {
-    display: none;
   }
   nav {
     margin-left: auto;
@@ -544,25 +411,12 @@ footer a {
   .card-footer {
     padding-inline: 20px;
   }
-  .tool-toolbar {
-    padding-inline: 18px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .tool-toolbar > span:first-child {
-    font-size: 11px;
-  }
   .tool-empty {
     min-height: 370px;
     padding-inline: 20px;
   }
   .tool-empty h2 {
     font-size: 18px;
-  }
-  .tool-bottom {
-    flex-wrap: wrap;
-    gap: 2px;
-    padding: 14px 18px;
   }
   .sources-list {
     padding-inline: 18px;
@@ -578,9 +432,6 @@ footer a {
   .source-row .source-link {
     margin-left: 54px;
   }
-  footer {
-    font-size: 9px;
-  }
 }
 @media (max-width: 360px) {
   nav a {
@@ -592,7 +443,67 @@ footer a {
     padding: 8px 4px;
     gap: 6px;
   }
-  .status-label {
-    font-size: 9px;
+}
+.mouflon-mark {
+  width: 43px;
+  height: 43px;
+  margin-right: 9px;
+}
+.route-loading {
+  padding-top: 44px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.language-select {
+  margin-left: auto;
+  padding: 7px 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: #505866;
+  font: inherit;
+  font-size: 11px;
+  min-height: 36px;
+}
+@media (max-width: 900px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px;
+  }
+  .header-inner nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    justify-content: space-between;
+    padding-bottom: 10px;
+  }
+}
+@media (max-width: 700px) {
+  nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  nav a {
+    justify-content: center;
+    flex-direction: column;
+    padding: 8px 2px;
+    gap: 6px;
+    min-width: 0;
+    font-size: 11px;
+  }
+  nav a span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+  .mouflon-mark {
+    width: 39px;
+    height: 39px;
+  }
+}
+@media (max-width: 360px) {
+  nav a {
+    font-size: 10px;
   }
 }

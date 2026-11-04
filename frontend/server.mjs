@@ -3,18 +3,36 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { fileURLToPath } from "node:url";
 
 const app = express();
+const tileUrl =
+  process.env.MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const tileOrigin = new URL(tileUrl);
+const attributionUrl =
+  process.env.MAP_ATTRIBUTION_URL || "https://www.openstreetmap.org/copyright";
+if (
+  tileOrigin.protocol !== "https:" ||
+  tileOrigin.username ||
+  tileOrigin.password ||
+  new URL(attributionUrl).protocol !== "https:"
+)
+  throw new Error("Invalid map configuration");
 app.disable("x-powered-by");
 app.use((_request, response, next) => {
   response.set({
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "X-Frame-Options": "DENY",
-    "Content-Security-Policy":
-      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'",
+    "Content-Security-Policy": `default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: ${tileOrigin.origin}; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'`,
   });
   next();
 });
 app.get("/healthz", (_request, response) => response.json({ status: "UP" }));
+app.get("/map-config.json", (_request, response) =>
+  response.json({
+    tileUrl,
+    attribution: process.env.MAP_ATTRIBUTION || "© OpenStreetMap contributors",
+    attributionUrl,
+  }),
+);
 
 for (const [prefix, target] of [
   [

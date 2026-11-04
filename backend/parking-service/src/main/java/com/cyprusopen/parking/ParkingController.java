@@ -9,12 +9,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 class ParkingController {
-    @GetMapping("/api/v1/parking")
-    ResponseEntity<ParkingResponse> parking() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(new ParkingResponse("unavailable", null, List.of()));
+    private final ParkingDirectory directory;
+
+    ParkingController(ParkingDirectory directory) {
+        this.directory = directory;
     }
 
-    record ParkingResponse(String freshness, Instant lastUpdatedAt, List<ParkingPlace> items) {}
-    record ParkingPlace(String id, String name, Integer availableSpaces) {}
+    @GetMapping("/api/v1/parking")
+    ResponseEntity<ParkingResponse> parking() {
+        var snapshot = directory.snapshot();
+        var source = new DirectorySource(snapshot.source(), snapshot.catalogUrl(), snapshot.license(),
+                snapshot.licenseUrl(), snapshot.publishedAt(), snapshot.retrievedAt());
+        var places = snapshot.items().stream().map(place -> new ParkingPlace(place.id(),
+                place.name() == null ? "Car park" : place.name(), place.latitude(), place.longitude(), null)).toList();
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(new ParkingResponse("unavailable", null, source, places));
+    }
+
+    record ParkingResponse(String freshness, Instant lastUpdatedAt, DirectorySource directory,
+                           List<ParkingPlace> items) {}
+    record DirectorySource(String name, String url, String license, String licenseUrl,
+                           Instant publishedAt, Instant retrievedAt) {}
+    record ParkingPlace(String id, String name, double latitude, double longitude, Integer availableSpaces) {}
 }

@@ -9,10 +9,26 @@ export type Dataset = {
   discoveryUrl: string;
 };
 
-type ParkingReport = {
+export type ParkingPlace = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  availableSpaces: number | null;
+};
+
+export type ParkingReport = {
   freshness: "unavailable";
   lastUpdatedAt: string | null;
-  items: { id: string; name: string; availableSpaces: number | null }[];
+  directory: {
+    name: string;
+    url: string;
+    license: string;
+    licenseUrl: string;
+    publishedAt: string;
+    retrievedAt: string;
+  };
+  items: ParkingPlace[];
 };
 
 async function get<T>(url: string): Promise<T> {
@@ -32,6 +48,17 @@ export function useParking() {
   return useQuery({
     queryKey: ["parking"],
     queryFn: () => get<ParkingReport>("/api/v1/parking"),
+  });
+}
+
+export function useMapConfig() {
+  return useQuery({
+    queryKey: ["map-config"],
+    queryFn: () =>
+      get<{ tileUrl: string; attribution: string; attributionUrl: string }>(
+        "/map-config.json",
+      ),
+    staleTime: Infinity,
   });
 }
 
