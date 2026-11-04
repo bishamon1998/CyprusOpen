@@ -584,9 +584,13 @@ footer a {
 }
 @media (max-width: 360px) {
   nav a {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
     font-size: 10px;
-    padding-inline: 6px;
-    gap: 5px;
+    min-height: 52px;
+    padding: 8px 4px;
+    gap: 6px;
   }
   .status-label {
     font-size: 9px;

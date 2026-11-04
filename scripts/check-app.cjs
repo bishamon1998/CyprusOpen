@@ -33,8 +33,12 @@ async function main() {
         const response = await page.goto(`${baseUrl}${route}`);
         assert.equal(response.status(), 200);
         await page.getByRole('heading', { name: heading, exact: true, level: 1 }).waitFor();
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-        assert.equal(overflow, false, `${route} overflows at ${width}px`);
+        const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')]
+          .filter((element) => element.getClientRects().length && element.getBoundingClientRect().right > innerWidth + 1)
+          .map((element) => `${element.tagName}.${element.className}`));
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false,
+          `${route} overflows at ${width}px: ${overflow.join(', ')}`);
+        assert.deepEqual(overflow, [], `${route} overflows at ${width}px`);
       }
     }
     await page.goto(baseUrl);
