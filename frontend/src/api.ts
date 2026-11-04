@@ -25,8 +25,9 @@ export type ParkingReport = {
     url: string;
     license: string;
     licenseUrl: string;
-    publishedAt: string;
-    retrievedAt: string;
+    publishedAt: string | null;
+    retrievedAt: string | null;
+    checkedAt: string | null;
   };
   items: ParkingPlace[];
 };
@@ -47,6 +48,8 @@ export function useDatasets() {
 export function useParking() {
   return useQuery({
     queryKey: ["parking"],
+    refetchInterval: (query) =>
+      query.state.data?.directory.publishedAt ? 300_000 : 10_000,
     queryFn: async () => {
       const report = await get<ParkingReport>("/api/v1/parking");
       if (!report.directory || !Array.isArray(report.items)) {

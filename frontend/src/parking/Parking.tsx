@@ -1,17 +1,15 @@
+import { ParkingResults } from "./ParkingResults";
+import { ParkingAttribution } from "./ParkingAttribution";
 import { useMemo, useRef, useState } from "react";
-import { ArrowUpRight, LocateFixed, Navigation, Search, X } from "lucide-react";
-import { type ParkingPlace, useParking } from "../api";
+import { ParkingFilters } from "./ParkingFilters";
+import { useParking } from "../api";
 import { areas, ParkingMap } from "./ParkingMap";
 import "./parking.css";
 import { useI18n } from "../i18n";
 import { distance, useParkingLocation } from "./useParkingLocation";
 
-function directions(place: ParkingPlace) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}&travelmode=driving`;
-}
-
 export default function Parking() {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const report = useParking();
   const results = useRef<HTMLDivElement>(null);
   const [areaId, setAreaId] = useState("cyprus");
@@ -66,41 +64,22 @@ export default function Parking() {
         <h1>{t("parking")}</h1>
       </div>
       <section className="parking-workspace" aria-label={t("findParking")}>
-        <div className="parking-filters">
-          <label className="parking-search">
-            <Search size={17} aria-hidden="true" />
-            <input
-              type="search"
-              placeholder={t("search")}
-              aria-label={t("search")}
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setSelectedId(null);
-                setVisibleCount(30);
-              }}
-            />
-          </label>
-          <select
-            aria-label={t("area")}
-            value={areaId}
-            onChange={(event) => {
-              setAreaId(event.target.value);
-              setSelectedId(null);
-              setVisibleCount(30);
-            }}
-          >
-            {areas.map((item) => (
-              <option key={item.id} value={item.id}>
-                {t(item.name)}
-              </option>
-            ))}
-          </select>
-          <button className="near-me" onClick={nearMe} disabled={locating}>
-            <LocateFixed size={17} aria-hidden="true" />
-            {t(locating ? "locating" : "nearMe")}
-          </button>
-        </div>
+        <ParkingFilters
+          areaId={areaId}
+          search={search}
+          locating={locating}
+          onSearch={(value) => {
+            setSearch(value);
+            setSelectedId(null);
+            setVisibleCount(30);
+          }}
+          onArea={(value) => {
+            setAreaId(value);
+            setSelectedId(null);
+            setVisibleCount(30);
+          }}
+          onNearMe={nearMe}
+        />
         {locationError && (
           <p className="parking-feedback" role="status">
             {t(locationError)}
@@ -114,137 +93,20 @@ export default function Parking() {
             position={position}
             onSelect={choose}
           />
-          <div ref={results} className="parking-results">
-            <div className="parking-result-heading">
-              <h2>
-                {report.isPending
-                  ? t("loading")
-                  : report.isError && !report.data
-                    ? t("carParks")
-                    : t("carParkCount", { count: places.length })}
-              </h2>
-              {position && (
-                <button onClick={clearLocation} aria-label={t("clearLocation")}>
-                  <X size={15} />
-                  {t("nearest")}
-                </button>
-              )}
-            </div>
-            <p className="availability-note">{t("availability")}</p>
-            {report.isError && (
-              <div className="parking-list-empty" role="alert">
-                <p>{t("loadError")}</p>
-                <button onClick={() => void report.refetch()}>
-                  {t("retry")}
-                </button>
-              </div>
-            )}
-            {!report.isPending && !report.isError && places.length === 0 && (
-              <p className="parking-list-empty">{t("noMatches")}</p>
-            )}
-            {selected && (
-              <div className="selected-parking" aria-live="polite">
-                <span>{t("selected")}</span>
-                <h3>
-                  {selected.name === "Car park" ? t("carPark") : selected.name}
-                </h3>
-                <a
-                  href={directions(selected)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Navigation size={15} aria-hidden="true" />
-                  {t("directions")}
-                  <ArrowUpRight size={14} aria-hidden="true" />
-                </a>
-              </div>
-            )}
-            <ol className="parking-list" aria-label={t("carParks")}>
-              {places.slice(0, visibleCount).map((place) => (
-                <li key={place.id}>
-                  <button
-                    className={`parking-row${selectedId === place.id ? " selected" : ""}`}
-                    aria-pressed={selectedId === place.id}
-                    onClick={() => choose(place.id)}
-                  >
-                    <span className="parking-row-icon" aria-hidden="true">
-                      P
-                    </span>
-                    <span>
-                      <strong>
-                        {place.name === "Car park" ? t("carPark") : place.name}
-                      </strong>
-                      <small>
-                        {position
-                          ? t("distance", {
-                              distance: distance(
-                                position,
-                                place,
-                              ).toLocaleString(language, {
-                                minimumFractionDigits: 1,
-                                maximumFractionDigits: 1,
-                              }),
-                            })
-                          : `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`}
-                      </small>
-                    </span>
-                    <ArrowUpRight size={16} aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-            </ol>
-            {visibleCount < places.length && (
-              <button
-                className="show-more"
-                onClick={() => setVisibleCount((count) => count + 30)}
-              >
-                {t("more")}
-              </button>
-            )}
-          </div>
+          <ParkingResults
+            report={report}
+            places={places}
+            selected={selected}
+            selectedId={selectedId}
+            position={position}
+            visibleCount={visibleCount}
+            results={results}
+            onSelect={choose}
+            onMore={() => setVisibleCount((count) => count + 30)}
+            onClearLocation={clearLocation}
+          />
         </div>
-        <div className="parking-attribution">
-          <a
-            href={
-              report.data?.directory.url ||
-              "https://www.traffic4cyprus.org.cy/en/dataset/parking_areas"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src="/cynap-logo.png" alt="CYNAP" />
-            {t("department")}
-          </a>
-          <span>
-            {t("checked", {
-              date: report.data
-                ? new Date(
-                    report.data.directory.retrievedAt,
-                  ).toLocaleDateString(language === "en" ? "en-GB" : language, {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "…",
-            })}{" "}
-            ·{" "}
-            <a
-              href="https://creativecommons.org/licenses/by/4.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              CC BY 4.0
-            </a>{" "}
-            ·{" "}
-            <a
-              href="https://www.openstreetmap.org/copyright"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("osm")}
-            </a>
-          </span>
-        </div>
+        <ParkingAttribution directory={report.data?.directory} />
       </section>
     </>
   );

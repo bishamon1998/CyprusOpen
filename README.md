@@ -2,51 +2,64 @@
 
 Public statistics and everyday tools for people living in Cyprus.
 
-**Live preview: https://cyprus-open.up.railway.app**
+[Live preview](https://cyprus-open.up.railway.app) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-The app includes English, Russian and Greek interfaces, Statistics and Parking APIs, source links, health checks and Railway-ready Docker builds. Parking has a searchable map/list of 651 source-backed locations across Cyprus, area filters, optional nearby sorting and directions in Google Maps. Statistics imports and live parking availability are not connected yet. Pharmacies are planned.
+React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics imports, live parking occupancy and on-duty pharmacy data are not connected yet.
 
-## Run locally
+## Local development
 
-With Docker Desktop running, copy `.env.example` to `.env` only if it does not exist and set three distinct database passwords. Then:
+Use Docker Desktop. Preserve the existing `.env`; for a new checkout copy `.env.example` and set three distinct database passwords. Run:
 
 ```sh
 docker compose up -d --build frontend statistics-service parking-service
 ```
 
-Open **http://localhost:3000**. The app does not require PostgreSQL until data imports are implemented. To start the optional isolated development databases, run `docker compose up -d postgres`. Never remove the existing volume to update the app.
+Open http://localhost:3000. Parking now requires PostgreSQL; Compose starts it automatically and preserves the existing volume. The Parking role owns its database/schema, separately from Statistics. Liquibase owns schema migrations. Never remove the database volume to update the app.
 
-## Development
-
-Java 25, Maven Wrapper, React, TypeScript, Vite and pnpm 11.25.0. Backends build independently:
+Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and pnpm 11.25.0. Build/test independently:
 
 ```sh
-./mvnw -B -pl backend/statistics-service -am verify
-./mvnw -B -pl backend/parking-service -am verify
+./mvnw -B -ntp -pl backend/parking-service -am verify
+./mvnw -B -ntp -pl backend/statistics-service -am verify
 cd frontend
 pnpm install --frozen-lockfile
 pnpm build
+pnpm test:e2e
 ```
 
-The frontend development server uses `pnpm dev`; it proxies to local backends on ports 8081/8082. The production server uses `pnpm start`, listens on `PORT` (default 3000), and reads `STATISTICS_UPSTREAM` and `PARKING_UPSTREAM` as server-only HTTP origins. Health endpoints are `/healthz` and backend `/actuator/health/readiness`.
+Parking integration tests use an isolated PostgreSQL Testcontainer and a local HTTP server. Browser CI uses `docker-compose.test.yml` with a private XML fixture server; the real refresh job fills the database from that server. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
 
-## Parking data and maps
+For Vite development, run the backends locally and `pnpm start` alongside `pnpm dev` for runtime map configuration. The production frontend listens on `PORT` (3000 by default), proxies `STATISTICS_UPSTREAM` and `PARKING_UPSTREAM`, and exposes `/healthz`. Backend readiness is `/actuator/health/readiness`.
 
-The reviewed directory snapshot comes from the [Cyprus National Access Point / Public Works Department](https://www.traffic4cyprus.org.cy/en/dataset/parking_areas), under CC BY 4.0. Its [DATEX II XML resource](https://fixcyprus.cy/gnosis/open/api/nap/datasets/parking_areas/) provides identifiers, names and coordinates, with no occupancy, prices or opening hours. The bundled snapshot records publication/retrieval times and transformations. Missing English names and OSM-origin placeholders are displayed as unnamed car parks. Area filters are approximate map viewports, not municipal boundaries. Original coordinates are preserved; they are not verified entrance points.
+## Parking data and refresh
 
-The [owner-selected Nicosia dataset](https://www.data.gov.cy/el/dataset/trehoysa-diathesimotita-horon-stathmeysis-dimoy-leykosias) links to a public [RSS XML feed](https://www.nicosia.org.cy/el-GR/rss/parkingspaces/). On 4 November 2026, all four observations were dated 5 December 2022; negative counts were also present. These are not usable live readings. The API deliberately returns `freshness: unavailable`, a null occupancy timestamp and null counts. Directory retrieval never makes occupancy fresh. No upstream requests occur during application startup, API reads or tests.
+The [CYNAP / Public Works Department directory](https://www.traffic4cyprus.org.cy/en/dataset/parking_areas) links to the [DATEX II XML resource](https://fixcyprus.cy/gnosis/open/api/nap/datasets/parking_areas/) under CC BY 4.0. It contains locations, not occupancy, prices, opening hours or verified entrances. Its declared publication frequency is less frequent than yearly. Some entries originate from OpenStreetMap. Missing English names and OSM-origin placeholders display as unnamed car parks; source identifiers and coordinates are preserved. Area filters are approximate viewports, not municipal boundaries.
 
-To prepare a replacement directory, download the verified resource once after checking its terms, then run `./scripts/prepare-parking-directory.ps1 -InputPath <local-xml-file>` in PowerShell. The script only reads a local file, disables XML external entities and retains English names. Review the diff and metadata before publishing. No automatic refresh is enabled.
+PostgreSQL holds the latest normalized directory document (JSONB) and sync metadata in `parking.parking_directory`. One atomic document matches the upstream publication and current whole-directory API; no per-location joins or occupancy history are needed. `JdbcClient` serves persisted data. There is no bundled JSON or seed data. A new database stays empty until the shared HTTP refresh job loads its first successful publication. The same job handles every later update; no source-file edits or rebuild are needed.
 
-Leaflet uses clustered markers and standard OpenStreetMap tiles with visible attribution, normal browser caching and no prefetch. Tiles are best-effort; the list and directions remain usable if tiles fail. Production can configure `MAP_TILE_URL`, `MAP_ATTRIBUTION` and `MAP_ATTRIBUTION_URL` without rebuilding; use HTTPS and honor the chosen provider's terms. The map configuration contains public client information, so do not put secrets there. Run `pnpm start` alongside Vite to serve `/map-config.json` during development.
+The UI distinguishes the source publication timestamp, successful retrieval and last successful check. Displayed dates use Cyprus time (Asia/Nicosia). Publication time is the timestamp on the source's XML package, not a verified modification time for every parking location. On HTTP 304 only the successful-check time changes. Failed requests change attempt/status metadata and preserve the previous document and successful-check date.
 
-Geolocation is requested only through Near me, used in memory for straight-line distances, and not sent to our API or stored. Map tiles reveal the viewed area to the map provider. Google Maps directions links need no API key and open only on user action; an embedded Google Maps replacement would require a separately configured API key and billing.
+Automatic checking is **disabled by default**. When enabled, the shared job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **03:00 UTC on the first day of each month**. This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
 
-`pnpm test:e2e` checks real APIs, area coverage, search/map/list selection, directions, geolocation/denial, tile failure and responsive layouts/language persistence. External map requests are intercepted locally; no government or tile-provider requests leave CI.
+```sh
+docker compose run --rm --no-deps parking-service --spring.profiles.active=directory-refresh
+```
+
+The job uses Spring `RestClient`, conditional ETag/Last-Modified headers, fixed verified HTTPS host, no redirects, 5-second connection / 15-second read timeout, and a 2 MiB response limit. A PostgreSQL advisory transaction lock serializes refreshes across instances; a persisted next-attempt time enforces at least 5 seconds between attempts. There are no immediate retries. Failures defer the next attempt for at least one day, honor a longer Retry-After and pause after three failures. An administrator must investigate before resetting the failure counter/next-attempt time. There is no public refresh endpoint. User API requests never call upstream. The browser polls our API every 10 seconds while the directory is empty and every 5 minutes after initialization.
+
+A valid, non-empty publication replaces the previous directory atomically. Invalid XML/DOCTYPE, duplicate identifiers, invalid coordinates or older publication times preserve the previous directory. A 304 preserves publication/retrieval times. Database migrations never reset existing directory data.
+
+The owner's [Nicosia availability dataset](https://www.data.gov.cy/el/dataset/trehoysa-diathesimotita-horon-stathmeysis-dimoy-leykosias) points to [RSS XML](https://www.nicosia.org.cy/el-GR/rss/parkingspaces/). On 4 November 2026 all four observations were dated 5 December 2022, with negative counts also present. Those are not live readings: the API keeps occupancy freshness unavailable and counts/timestamp null. Research into usable live sources is tracked in issue #13; implementation remains in #6.
+
+## Maps and privacy
+
+Leaflet with clustered markers uses standard OSM tiles, visible attribution and ordinary browser caching, without prefetch. Runtime `MAP_TILE_URL`, `MAP_ATTRIBUTION` and `MAP_ATTRIBUTION_URL` can change the provider without rebuilding. Use HTTPS and respect provider terms; this public client configuration must not contain secrets. The list and Google Maps directions remain usable if tiles fail.
+
+Near me requests location only on click, calculates straight-line distance with Leaflet, and keeps coordinates in tab memory. Location is not sent to our API or stored. The tile provider sees the viewed area. Google directions links need no key; embedding Google Maps would require a separately configured API key and billing.
 
 ## Railway
 
-Keep the repository root as build context for three independent Railway services. Configure each service's Dockerfile path, port and health check in Railway:
+Keep repository root as the build context. Service settings are managed directly in Railway; obsolete legacy TOML config paths are removed.
 
 | Service | Dockerfile | PORT | Health check |
 | --- | --- | --- | --- |
@@ -54,10 +67,8 @@ Keep the repository root as build context for three independent Railway services
 | Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
 | Parking | `backend/parking-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
 
-Railway detects the Docker build from the Dockerfile path; do not set an unsupported builder enum. The current API rejects new legacy `railway.toml` config paths, so service settings are managed directly in Railway. All builds run their checks before creating the runtime image.
+Before deploying the new Parking service, provision its restricted database role and schema and configure `PARKING_JDBC_URL`, `PARKING_DB_USER`, `PARKING_DB_PASSWORD` and optionally `PARKING_DB_SCHEMA` (default `parking`). Database secrets stay outside Git. Production database provisioning/deployment is not performed by this PR. Directory fetching remains disabled until explicitly enabled.
 
-Set backend `PORT` to 8081 for Statistics and 8082 for Parking. Set the frontend upstream variables to the corresponding Railway private HTTP origins including those ports; use the actual internal hostnames assigned to your services. Only the frontend needs a public domain. The frontend honors Railway's injected `PORT`. No scheduler or external data fetching is implemented or enabled in this release.
+Deploy the updated Parking backend together with the frontend release after review. The frontend currently follows GitHub main; Parking currently uses a manual source. The new frontend handles the old placeholder API as a retryable error. Only the frontend needs a public domain; set its upstreams to the actual Railway private service origins with their ports.
 
-Deploy the updated Parking backend together with this frontend release after review. The existing frontend follows GitHub main automatically, while the Parking backend currently uses a manually deployed source. If the directory API has not been deployed yet, the new frontend shows a retryable loading error instead of treating the old placeholder response as an empty directory.
-
-Submit related changes together through a PR. The owner reviews and merges; never push directly to main. README is published; other Markdown documentation stays local. The primary data catalog is [data.gov.cy](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset).
+Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.

@@ -1,0 +1,2 @@
+<!DOCTYPE invalid [<!ENTITY unsafe SYSTEM "file:///must-not-be-read">]>
+<invalid>&unsafe;</invalid>

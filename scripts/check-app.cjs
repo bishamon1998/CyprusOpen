@@ -51,8 +51,15 @@ async function main() {
     );
     const report = await (await fetch(`${baseUrl}/api/v1/parking`)).json();
     assert.equal(report.freshness, "unavailable");
-    assert.equal(report.items.length, 651);
+    assert.ok(report.items.length > 0);
     assert.ok(report.items.every((item) => item.availableSpaces === null));
+    const date = (value) =>
+      new Date(value).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "Asia/Nicosia",
+      });
     const missing = await fetch(`${baseUrl}/api/unknown`);
     assert.equal(missing.status, 404);
     assert.match(missing.headers.get("content-type"), /json/);
@@ -103,9 +110,20 @@ async function main() {
       .getByRole("heading", { name: "Parking", exact: true, level: 1 })
       .waitFor();
     assert.equal(new URL(page.url()).pathname, "/parking");
-    await page
-      .getByRole("heading", { name: "651 car parks", exact: true })
-      .waitFor();
+    await page.getByRole("heading", { name: `${report.items.length} car parks`, exact: true }).waitFor();
+    const attribution = (
+      await page.locator(".parking-attribution").textContent()
+    ).replace(/\s+/g, " ");
+    assert.ok(
+      attribution.includes(
+        `Source published ${date(report.directory.publishedAt)}`,
+      ),
+    );
+    assert.ok(
+      attribution.includes(
+        `Directory checked ${date(report.directory.checkedAt)}`,
+      ),
+    );
     for (const area of [
       "nicosia",
       "limassol",
@@ -184,7 +202,9 @@ async function main() {
       ),
       "denied",
     );
-    await deniedPage.getByRole("button", { name: "Near me", exact: true }).click();
+    await deniedPage
+      .getByRole("button", { name: "Near me", exact: true })
+      .click();
     await deniedPage
       .getByText("Location access declined. Choose an area instead.")
       .waitFor();
@@ -279,7 +299,10 @@ async function main() {
     parkingFailure = "";
     await page.getByRole("button", { name: "Try again", exact: true }).click();
     await page
-      .getByRole("heading", { name: "651 car parks", exact: true })
+      .getByRole("heading", {
+        name: `${report.items.length} car parks`,
+        exact: true,
+      })
       .waitFor();
     assert.deepEqual(errors, []);
 
@@ -287,7 +310,10 @@ async function main() {
       await fs.mkdir(process.env.APP_SCREENSHOT_DIR, { recursive: true });
       await page.goto(`${baseUrl}/parking`);
       await page
-        .getByRole("heading", { name: "651 car parks", exact: true })
+        .getByRole("heading", {
+          name: `${report.items.length} car parks`,
+          exact: true,
+        })
         .waitFor();
       for (const [name, width] of [
         ["desktop", 1280],

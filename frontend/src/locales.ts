@@ -53,6 +53,8 @@ export const en = {
   more: "Show more",
   department: "Public Works Department",
   checked: "Directory checked {date}",
+  published: "Source published {date}",
+  directoryPending: "The parking directory has not been loaded yet.",
   osm: "OSM contributors",
   mapLabel: "Car park map",
   tilesUnavailable:
@@ -127,6 +129,8 @@ const ru: Messages = {
   more: "Показать ещё",
   department: "Департамент общественных работ",
   checked: "Справочник проверен {date}",
+  published: "Источник опубликовал {date}",
+  directoryPending: "Справочник парковок ещё не загружен.",
   osm: "Участники OSM",
   mapLabel: "Карта парковок",
   tilesUnavailable: "Карта недоступна. Список и маршруты работают.",
@@ -196,6 +200,8 @@ const el: Messages = {
   more: "Περισσότερα",
   department: "Τμήμα Δημοσίων Έργων",
   checked: "Έλεγχος καταλόγου: {date}",
+  published: "Δημοσίευση πηγής: {date}",
+  directoryPending: "Ο κατάλογος στάθμευσης δεν έχει φορτωθεί ακόμη.",
   osm: "Συνεισφέροντες OSM",
   mapLabel: "Χάρτης στάθμευσης",
   tilesUnavailable:

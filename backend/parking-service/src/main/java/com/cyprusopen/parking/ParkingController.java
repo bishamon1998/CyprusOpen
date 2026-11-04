@@ -16,9 +16,10 @@ class ParkingController {
 
     @GetMapping("/api/v1/parking")
     ResponseEntity<ParkingResponse> parking() {
-        var snapshot = directory.snapshot();
+        var stored = directory.read();
+        var snapshot = stored.snapshot();
         var source = new DirectorySource(snapshot.source(), snapshot.catalogUrl(), snapshot.license(),
-                snapshot.licenseUrl(), snapshot.publishedAt(), snapshot.retrievedAt());
+                snapshot.licenseUrl(), snapshot.publishedAt(), snapshot.retrievedAt(), stored.checkedAt());
         var places = snapshot.items().stream().map(place -> new ParkingPlace(place.id(),
                 place.name() == null ? "Car park" : place.name(), place.latitude(), place.longitude(), null)).toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
@@ -28,6 +29,6 @@ class ParkingController {
     record ParkingResponse(String freshness, Instant lastUpdatedAt, DirectorySource directory,
                            List<ParkingPlace> items) {}
     record DirectorySource(String name, String url, String license, String licenseUrl,
-                           Instant publishedAt, Instant retrievedAt) {}
+                           Instant publishedAt, Instant retrievedAt, Instant checkedAt) {}
     record ParkingPlace(String id, String name, double latitude, double longitude, Integer availableSpaces) {}
 }
