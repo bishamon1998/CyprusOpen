@@ -58,4 +58,6 @@ Railway detects the Docker build from the Dockerfile path; do not set an unsuppo
 
 Set backend `PORT` to 8081 for Statistics and 8082 for Parking. Set the frontend upstream variables to the corresponding Railway private HTTP origins including those ports; use the actual internal hostnames assigned to your services. Only the frontend needs a public domain. The frontend honors Railway's injected `PORT`. No scheduler or external data fetching is implemented or enabled in this release.
 
+Deploy the updated Parking backend together with this frontend release after review. The existing frontend follows GitHub main automatically, while the Parking backend currently uses a manually deployed source. If the directory API has not been deployed yet, the new frontend shows a retryable loading error instead of treating the old placeholder response as an empty directory.
+
 Submit related changes together through a PR. The owner reviews and merges; never push directly to main. README is published; other Markdown documentation stays local. The primary data catalog is [data.gov.cy](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset).

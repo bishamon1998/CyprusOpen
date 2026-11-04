@@ -47,7 +47,13 @@ export function useDatasets() {
 export function useParking() {
   return useQuery({
     queryKey: ["parking"],
-    queryFn: () => get<ParkingReport>("/api/v1/parking"),
+    queryFn: async () => {
+      const report = await get<ParkingReport>("/api/v1/parking");
+      if (!report.directory || !Array.isArray(report.items)) {
+        throw new Error("Parking directory is not available.");
+      }
+      return report;
+    },
   });
 }
 

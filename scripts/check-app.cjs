@@ -171,7 +171,13 @@ async function main() {
       origin: new URL(baseUrl).origin,
       browserContextId: targetInfo.browserContextId,
     });
-    assert.equal(await page.evaluate(async () => (await navigator.permissions.query({ name: "geolocation" })).state), "denied");
+    assert.equal(
+      await page.evaluate(
+        async () =>
+          (await navigator.permissions.query({ name: "geolocation" })).state,
+      ),
+      "denied",
+    );
     await permissions.detach();
     await page.getByRole("button", { name: "Near me", exact: true }).click();
     await page
@@ -237,28 +243,34 @@ async function main() {
       await page.getByText("Not published", { exact: true }).count(),
       0,
     );
-    let failParking = true;
+    let parkingFailure = "legacy";
     await context.route(`${baseUrl}/api/v1/parking`, (route) =>
-      failParking
+      parkingFailure
         ? route.fulfill({
-            status: 503,
+            status: parkingFailure === "legacy" ? 200 : 503,
             contentType: "application/json",
-            body: '{"title":"Service unavailable"}',
+            body:
+              parkingFailure === "legacy"
+                ? '{"freshness":"unavailable","lastUpdatedAt":null,"items":[]}'
+                : '{"title":"Service unavailable"}',
           })
         : route.continue(),
     );
-    await page.goto(`${baseUrl}/parking`);
-    await page
-      .getByRole("alert")
-      .getByText("Car parks could not be loaded.")
-      .waitFor();
-    assert.equal(
+    for (const failure of ["legacy", "unavailable"]) {
+      parkingFailure = failure;
+      await page.goto(`${baseUrl}/parking`);
       await page
-        .getByRole("heading", { name: "0 car parks", exact: true })
-        .count(),
-      0,
-    );
-    failParking = false;
+        .getByRole("alert")
+        .getByText("Car parks could not be loaded.")
+        .waitFor();
+      assert.equal(
+        await page
+          .getByRole("heading", { name: "0 car parks", exact: true })
+          .count(),
+        0,
+      );
+    }
+    parkingFailure = "";
     await page.getByRole("button", { name: "Try again", exact: true }).click();
     await page
       .getByRole("heading", { name: "651 car parks", exact: true })
