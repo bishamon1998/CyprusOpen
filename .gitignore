@@ -11,3 +11,4 @@
 *.key
 .DS_Store
 Thumbs.db
+*.md
