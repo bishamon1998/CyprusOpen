@@ -12,27 +12,16 @@ import { useI18n } from "../i18n";
 import { type Pharmacy, usePharmacySchedule } from "./api";
 
 const LOCAL_PHONE = /^[0-9]{8}$/;
-/** Greek search prefix (owner-approved) so Google Maps finds the pharmacy listing rather than a street address. */
-const PHARMACY_SEARCH_PREFIX = "Φαρμακείο";
 
 /** Address with the municipality appended unless the address already names it. */
 export const pharmacyAddress = ({ address, municipality }: Pharmacy) =>
   !municipality || address.includes(municipality) ? address : `${address}, ${municipality}`;
 
-/**
- * Route to the map point when it is exact; otherwise let Google find the pharmacy by name, street and
- * municipality (shop numbers and other notes after the first comma confuse its geocoder).
- */
+/** Route to the pharmacy's map point, like Parking; the roster address only when there is no point. */
 function pharmacyDirections(pharmacy: Pharmacy) {
   const { location } = pharmacy;
-  if (location?.precision === "exact") {
-    return googleDirections(`${location.latitude},${location.longitude}`);
-  }
-  const street = pharmacy.address.split(",")[0].trim();
   return googleDirections(
-    [`${PHARMACY_SEARCH_PREFIX} ${pharmacy.name}`, street, pharmacy.municipality, "Κύπρος"]
-      .filter(Boolean)
-      .join(", "),
+    location ? `${location.latitude},${location.longitude}` : `${pharmacyAddress(pharmacy)}, Cyprus`,
   );
 }
 
