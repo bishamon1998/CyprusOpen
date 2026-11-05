@@ -14,7 +14,6 @@ import {
   ChartColumn,
   Database,
   Globe2,
-  LocateFixed,
   MapPin,
   ParkingCircle,
   Pill,
@@ -31,6 +30,7 @@ const parkingSource =
 const pharmacySource =
   "https://www.data.gov.cy/el/dataset/katalogos-diimereyonton-farmakeion";
 const Parking = lazy(() => import("./parking/Parking"));
+const Pharmacies = lazy(() => import("./pharmacies/Pharmacies"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, staleTime: 30000, refetchOnWindowFocus: false },
@@ -129,10 +129,9 @@ function App() {
   );
 }
 
-function Illustration({ kind }: { kind: "people" | "travel" | "pharmacy" }) {
-  const MainIcon = { people: Users, travel: Globe2, pharmacy: Pill }[kind];
-  const SmallIcon =
-    kind === "pharmacy" ? LocateFixed : kind === "people" ? Globe2 : MapPin;
+function Illustration({ kind }: { kind: "people" | "travel" }) {
+  const MainIcon = { people: Users, travel: Globe2 }[kind];
+  const SmallIcon = kind === "people" ? Globe2 : MapPin;
   return (
     <div className={`illustration ${kind}`} aria-hidden="true">
       <span className="orbit orbit-one" />
@@ -213,25 +212,6 @@ function DatasetCard({
         <SourceLink href={catalogUrl}>{t("source")}</SourceLink>
       </div>
     </article>
-  );
-}
-
-function Pharmacies() {
-  const { t } = useI18n();
-  return (
-    <>
-      <PageTitle title={t("pharmacies")} />
-      <section className="tool-panel">
-        <div className="tool-empty">
-          <Illustration kind="pharmacy" />
-          <h2>{t("pharmacySoon")}</h2>
-          <p>{t("pharmacyDescription")}</p>
-        </div>
-        <div className="card-footer">
-          <SourceLink href={pharmacySource}>{t("source")}</SourceLink>
-        </div>
-      </section>
-    </>
   );
 }
 

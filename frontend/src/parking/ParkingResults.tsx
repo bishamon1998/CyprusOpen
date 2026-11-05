@@ -3,6 +3,7 @@ import { ArrowUpRight, Navigation, X } from "lucide-react";
 import { useI18n } from "../i18n";
 import { type ParkingPlace, useParking } from "../api";
 import { distance, type Position } from "../geo/coordinates";
+import { googleDirections } from "../geo/directions";
 
 export function ParkingResults({
   report,
@@ -28,12 +29,6 @@ export function ParkingResults({
   onClearLocation: () => void;
 }) {
   const { t, language } = useI18n();
-  const directions = (place: ParkingPlace) =>
-    "https://www.google.com/maps/dir/?api=1&destination=" +
-    place.latitude +
-    "," +
-    place.longitude +
-    "&travelmode=driving";
   return (
     <div ref={results} className="parking-results">
       <div className="parking-result-heading">
@@ -73,7 +68,7 @@ export function ParkingResults({
           <span>{t("selected")}</span>
           <h3>{selected.name === "Car park" ? t("carPark") : selected.name}</h3>
           <a
-            href={directions(selected)}
+            href={googleDirections(selected.latitude + "," + selected.longitude)}
             target="_blank"
             rel="noopener noreferrer"
           >

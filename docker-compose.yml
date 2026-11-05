@@ -23,6 +23,16 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  pharmacies-service:
+    build:
+      context: .
+      dockerfile: backend/pharmacies-service/Dockerfile
+    environment:
+      PHARMACY_SCHEDULE_DIRECTORY: /schedules
+    volumes:
+      - ./backend/pharmacies-service/target/official:/schedules:ro
+    restart: unless-stopped
+
   frontend:
     build:
       context: .
@@ -31,11 +41,13 @@ services:
       PORT: 3000
       STATISTICS_UPSTREAM: http://statistics-service:8081
       PARKING_UPSTREAM: http://parking-service:8082
+      PHARMACIES_UPSTREAM: http://pharmacies-service:8083
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
       - statistics-service
       - parking-service
+      - pharmacies-service
     restart: unless-stopped
 
   postgres:
