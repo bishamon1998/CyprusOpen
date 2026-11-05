@@ -32,8 +32,7 @@
   font: inherit;
   font-size: 14px;
 }
-.tool-filters select,
-.tool-filters input[type="date"] {
+.tool-filters select {
   font: inherit;
   font-size: 13px;
   min-width: 0;
@@ -45,6 +44,7 @@
   color: #303540;
 }
 .tool-filters button {
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,11 +233,10 @@
     padding: 12px;
     gap: 8px;
   }
-  .tool-search {
+  .tool-search:not(.compact) {
     flex-basis: 100%;
   }
-  .tool-filters select,
-  .tool-filters input[type="date"] {
+  .tool-filters select {
     flex: 1;
     height: 40px;
     width: 0;
@@ -262,15 +261,21 @@
     padding: 12px;
   }
 }
-.tool-filters input[type="date"] {
-  height: 44px;
+.tool-search input[type="date"] {
+  min-width: 0;
+  color: #303540;
+  cursor: pointer;
 }
-.tool-filters .tool-filter-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--muted);
-  font-size: 12px;
+.tool-search input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+.tool-search input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+  cursor: pointer;
+}
+/* A short field (a date) that keeps its action button on the same row on small screens. */
+.tool-search.compact {
+  flex: 1 1 0;
 }
 .selected-result p {
   margin: -8px 0 12px;
