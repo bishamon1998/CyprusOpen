@@ -1,11 +1,6 @@
 package com.cyprusopen.parking;
 
-import static com.cyprusopen.parking.DirectoryConstants.INVALID;
-import static com.cyprusopen.parking.DirectoryConstants.UNAVAILABLE;
-import static com.cyprusopen.parking.DirectoryConstants.UNCHANGED;
-import static com.cyprusopen.parking.DirectoryConstants.UPDATED;
-
-import java.time.Instant;
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,31 +13,29 @@ class DirectorySync {
     private final ParkingDirectory directory;
     private final DirectoryClient client;
     private final DirectoryXmlParser parser;
+    private final Clock clock;
 
-    public String refresh() {
-        var validators = directory.validators();
+    RefreshResult refresh() {
         DirectoryClient.Response response;
         try {
-            response = client.fetch(validators);
+            response = client.fetch(directory.validators());
         } catch (RestClientException | IllegalArgumentException unavailable) {
-            return UNAVAILABLE;
+            return RefreshResult.UNAVAILABLE;
         }
         if (response.status() == HttpStatus.NOT_MODIFIED.value()) {
-            if (directory.snapshot().items().isEmpty()) return INVALID;
+            if (directory.snapshot().items().isEmpty()) return RefreshResult.INVALID;
             directory.markUnchanged();
-            return UNCHANGED;
+            return RefreshResult.UNCHANGED;
         }
-        if (response.status() != HttpStatus.OK.value()) return UNAVAILABLE;
+        if (response.status() != HttpStatus.OK.value()) return RefreshResult.UNAVAILABLE;
 
-        var previous = directory.snapshot();
         ParkingDirectory.Snapshot snapshot;
         try {
-            snapshot = parser.parse(response.body(), previous, Instant.now());
+            snapshot = parser.parse(response.body(), directory.snapshot(), clock.instant());
         } catch (IllegalArgumentException invalid) {
-            return INVALID;
+            return RefreshResult.INVALID;
         }
         directory.replace(snapshot, response.etag(), response.modified());
-        return UPDATED;
+        return RefreshResult.UPDATED;
     }
-
 }

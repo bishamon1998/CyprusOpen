@@ -4,19 +4,12 @@ import static com.cyprusopen.parking.DirectoryConstants.CATALOG_URL;
 import static com.cyprusopen.parking.DirectoryConstants.DIRECTORY_ID;
 import static com.cyprusopen.parking.DirectoryConstants.LICENSE;
 import static com.cyprusopen.parking.DirectoryConstants.LICENSE_URL;
-import static com.cyprusopen.parking.DirectoryConstants.MAX_CLOCK_SKEW;
-import static com.cyprusopen.parking.DirectoryConstants.MAX_LATITUDE;
-import static com.cyprusopen.parking.DirectoryConstants.MAX_LOCATIONS;
-import static com.cyprusopen.parking.DirectoryConstants.MAX_LONGITUDE;
-import static com.cyprusopen.parking.DirectoryConstants.MIN_LATITUDE;
-import static com.cyprusopen.parking.DirectoryConstants.MIN_LONGITUDE;
 import static com.cyprusopen.parking.DirectoryConstants.RESOURCE_URL;
 import static com.cyprusopen.parking.DirectoryConstants.SOURCE_NAME;
 import static com.cyprusopen.parking.DirectoryConstants.TRANSFORMATIONS;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +18,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.json.JsonMapper;
 
+/** Persists the single normalized parking directory document. Validation belongs to {@link DirectoryXmlParser}. */
 @Repository
 @DependsOn("liquibase")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -46,7 +40,6 @@ class ParkingDirectory {
     }
 
     void replace(Snapshot snapshot, String etag, String modified) {
-        validate(snapshot);
         statement(DirectorySql.REPLACE)
                 .param("document", mapper.writeValueAsString(snapshot))
                 .param("checked", Timestamp.from(snapshot.retrievedAt()))
@@ -69,21 +62,6 @@ class ParkingDirectory {
     private static Snapshot empty() {
         return new Snapshot(SOURCE_NAME, CATALOG_URL, RESOURCE_URL, LICENSE, LICENSE_URL,
                 null, null, TRANSFORMATIONS, List.of());
-    }
-
-    static void validate(Snapshot snapshot) {
-        var identifiers = new HashSet<String>();
-        if (snapshot.items().isEmpty() || snapshot.items().size() > MAX_LOCATIONS || snapshot.publishedAt() == null
-                || snapshot.publishedAt().isAfter(Instant.now().plus(MAX_CLOCK_SKEW))) {
-            throw new IllegalArgumentException("Invalid directory publication");
-        }
-        for (var place : snapshot.items()) {
-            if (place.id() == null || !identifiers.add(place.id()) || !Double.isFinite(place.latitude())
-                    || !Double.isFinite(place.longitude()) || place.latitude() < MIN_LATITUDE || place.latitude() > MAX_LATITUDE
-                    || place.longitude() < MIN_LONGITUDE || place.longitude() > MAX_LONGITUDE) {
-                throw new IllegalArgumentException("Invalid parking location");
-            }
-        }
     }
 
     record Snapshot(String source, String catalogUrl, String resourceUrl, String license,
