@@ -29,8 +29,12 @@ services:
       dockerfile: backend/pharmacies-service/Dockerfile
     environment:
       PHARMACY_SCHEDULE_DIRECTORY: /schedules
+      PHARMACY_SYNC_ENABLED: ${PHARMACY_SYNC_ENABLED:-false}
+      PHARMACY_SNAPSHOT_FILE: /data/pharmacy-schedules.json
+      PHARMACY_LOCATIONS_FILE: ${PHARMACY_LOCATIONS_FILE:-}
     volumes:
       - ./backend/pharmacies-service/target/official:/schedules:ro
+      - pharmacy-data:/data
     restart: unless-stopped
 
   frontend:
@@ -70,4 +74,5 @@ services:
       retries: 12
 
 volumes:
+  pharmacy-data:
   postgres-data:
