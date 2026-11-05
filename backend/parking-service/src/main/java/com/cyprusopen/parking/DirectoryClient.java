@@ -1,18 +1,15 @@
 package com.cyprusopen.parking;
 
 import static com.cyprusopen.parking.DirectoryConstants.CONNECT_TIMEOUT;
-import static com.cyprusopen.parking.DirectoryConstants.HTTP_SCHEMES;
 import static com.cyprusopen.parking.DirectoryConstants.MAX_RESPONSE_BYTES;
 import static com.cyprusopen.parking.DirectoryConstants.READ_TIMEOUT;
-import static com.cyprusopen.parking.DirectoryConstants.USER_AGENT;
 
+import com.cyprusopen.common.http.Upstream;
 import java.net.URI;
-import java.net.http.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -23,15 +20,8 @@ class DirectoryClient {
 
     @Autowired
     DirectoryClient(RestClient.Builder builder, @Value("${parking.directory.resource-url}") URI resource) {
-        if (!resource.isAbsolute() || !HTTP_SCHEMES.contains(resource.getScheme()) || resource.getHost() == null
-                || resource.getUserInfo() != null || resource.getFragment() != null) {
-            throw new IllegalArgumentException("Invalid directory endpoint configuration");
-        }
-        this.resource = resource;
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                .connectTimeout(CONNECT_TIMEOUT).followRedirects(HttpClient.Redirect.NEVER).build());
-        factory.setReadTimeout(READ_TIMEOUT);
-        client = builder.requestFactory(factory).defaultHeader(HttpHeaders.USER_AGENT, USER_AGENT).build();
+        this.resource = Upstream.requireHttpEndpoint(resource);
+        client = Upstream.restClient(builder, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
 
     Response fetch(ParkingDirectory.Validators validators) {
@@ -40,8 +30,7 @@ class DirectoryClient {
             if (validators.modified() != null) headers.set(HttpHeaders.IF_MODIFIED_SINCE, validators.modified());
         }).exchange((request, response) -> {
             var body = response.getStatusCode().value() == HttpStatus.OK.value()
-                    ? response.getBody().readNBytes(MAX_RESPONSE_BYTES + 1) : new byte[0];
-            if (body.length > MAX_RESPONSE_BYTES) throw new IllegalArgumentException("Directory exceeds size limit");
+                    ? Upstream.readLimited(response.getBody(), MAX_RESPONSE_BYTES) : new byte[0];
             var headers = response.getHeaders();
             return new Response(response.getStatusCode().value(), body, headers.getETag(),
                     headers.getFirst(HttpHeaders.LAST_MODIFIED));

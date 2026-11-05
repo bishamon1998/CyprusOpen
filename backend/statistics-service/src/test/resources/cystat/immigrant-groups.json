@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Immigrants by Age, Sex, Citizenship, Country of Birth and Country of Previous Residence, Annual",
+  "source": "Statistical Service of Cyprus",
+  "updated": "2025-12-19T06:00:00Z",
+  "role": {"time": ["YEAR"]},
+  "id": ["CITIZENSHIP, COUNTRY OF BIRTH, COUNTRY OF PREVIOUS RESIDENCE", "SEX", "YEAR", "AGE"],
+  "size": [3, 2, 2, 2],
+  "dimension": {
+    "CITIZENSHIP, COUNTRY OF BIRTH, COUNTRY OF PREVIOUS RESIDENCE": {
+      "category": {
+        "index": {"0": 0, "2": 1, "8": 2},
+        "label": {
+          "0": "Total Immigrants",
+          "2": "Citizenship - EU",
+          "8": "Country of previous residence - Non EU"
+        }
+      }
+    },
+    "SEX": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "Total", "1": "Males"}}},
+    "YEAR": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "2023", "1": "2024"}}},
+    "AGE": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "Total", "1": "0 - 19"}}}
+  },
+  "value": [
+    30000, 3000, 31000, 3100,
+    16000, 1600, 16500, 1650,
+    7000, 700, 7200, 720,
+    8000, 800, 8100, 810,
+    9000, 900, 9100, 910,
+    4000, 400, 4100, 410
+  ]
+}

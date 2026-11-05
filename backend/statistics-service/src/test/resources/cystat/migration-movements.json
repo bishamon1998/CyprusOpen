@@ -1,0 +1,21 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Migration Movements, Annual",
+  "source": "Statistical Service of Cyprus",
+  "updated": "2025-12-19T06:00:00Z",
+  "role": {"time": ["YEAR"]},
+  "id": ["YEAR", "MIGRATION MOVEMENTS"],
+  "size": [2, 3],
+  "dimension": {
+    "YEAR": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "1981", "1": "2024"}}},
+    "MIGRATION MOVEMENTS": {
+      "category": {
+        "index": {"0": 0, "3": 1, "4": 2},
+        "label": {"0": "Total of long term immigrants", "3": "Emigrants", "4": "Net migration"}
+      }
+    }
+  },
+  "value": [246, null, null, 31000, 18000, 13000],
+  "status": {"1": "...", "2": "..."}
+}

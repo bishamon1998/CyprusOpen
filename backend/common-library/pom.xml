@@ -7,4 +7,12 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>common-library</artifactId>
+
+  <!-- Every service already ships these; the library uses them for shared refresh scheduling and upstream clients. -->
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-autoconfigure</artifactId></dependency>
+    <dependency><groupId>org.springframework</groupId><artifactId>spring-web</artifactId></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></dependency>
+    <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><scope>provided</scope><optional>true</optional></dependency>
+  </dependencies>
 </project>

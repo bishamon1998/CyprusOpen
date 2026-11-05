@@ -1,0 +1,80 @@
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px 0;
+}
+.chart {
+  margin: 12px 16px 0;
+}
+.chart-summary {
+  margin: 4px 24px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.chart-select {
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+}
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: #f1f3f7;
+}
+.segmented button {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #5c6a8d;
+  font-size: 12px;
+}
+.segmented button[aria-checked="true"] {
+  background: #fff;
+  color: #191c24;
+  box-shadow: 0 1px 2px rgb(25 28 36 / 0.08);
+}
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font-size: 13px;
+  min-height: 40px;
+}
+.card-footer:has(.card-updated) {
+  justify-content: space-between;
+}
+.card-updated {
+  color: var(--muted);
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .chart-controls {
+    padding-inline: 20px;
+  }
+  .chart {
+    margin-inline: 8px;
+  }
+  .chart-summary {
+    margin-inline: 20px;
+  }
+  .segmented button {
+    min-height: 40px;
+  }
+}

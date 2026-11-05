@@ -7,22 +7,16 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.List;
-import java.util.Set;
 
 final class PharmacyConstants {
     static final ZoneId CYPRUS = ZoneId.of("Asia/Nicosia");
     static final String SOURCE = "https://www.data.gov.cy/el/dataset/katalogos-diimereyonton-farmakeion";
 
     // Upstream access
-    static final Set<String> HTTP_SCHEMES = Set.of("http", "https");
     static final int MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
     static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
-    static final String USER_AGENT = "CyprusOpen/0.1 (+https://github.com/bishamon1998/CyprusOpen)";
 
-    // Refresh schedule
-    static final String DAILY_CRON = "0 15 6 * * *";
-    static final String SCHEDULE_ZONE = "Asia/Nicosia";
     static final Duration MAX_SCHEDULE_AGE = Duration.ofDays(1);
 
     // DCAT-AP catalog metadata fields

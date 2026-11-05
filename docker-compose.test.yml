@@ -15,6 +15,19 @@ services:
     depends_on:
       parking-fixture:
         condition: service_started
+  statistics-fixture:
+    image: node:24-alpine
+    volumes:
+      - ./scripts/fixtures/statistics-server.mjs:/fixtures/statistics-server.mjs:ro
+      - ./backend/statistics-service/src/test/resources/cystat:/cystat:ro
+    command: ["node", "/fixtures/statistics-server.mjs"]
+  statistics-service:
+    environment:
+      STATISTICS_SYNC_ENABLED: "true"
+      STATISTICS_CYSTAT_API_URL: http://statistics-fixture:9091/api/
+    depends_on:
+      statistics-fixture:
+        condition: service_started
   pharmacy-fixture:
     image: node:24-alpine
     volumes:

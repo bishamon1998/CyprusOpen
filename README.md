@@ -2,9 +2,9 @@
 
 Public statistics and everyday tools for people living in Cyprus.
 
-[Live preview](https://cyprus-open.up.railway.app) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
+[cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics imports, live parking occupancy and on-duty pharmacy data are not connected yet.
+React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
@@ -39,7 +39,7 @@ PostgreSQL holds the latest normalized directory document (JSONB) and sync metad
 
 The UI distinguishes the source publication timestamp, successful retrieval and last successful check. Displayed dates use Cyprus time (Asia/Nicosia). Publication time is the timestamp on the source's XML package, not a verified modification time for every parking location. On HTTP 304 only the successful-check time changes. Failed requests change attempt/status metadata and preserve the previous document and successful-check date.
 
-Automatic checking is **disabled by default**. When enabled, the shared job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **03:00 UTC on the first day of each month**. This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
+Automatic checking is **disabled by default**. When enabled, the job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **05:00 Cyprus time on the first day of each month** (see [Refresh schedule](#refresh-schedule)). This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
 
 ```sh
 docker compose run --rm --no-deps parking-service --spring.profiles.active=directory-refresh
@@ -50,6 +50,26 @@ The job uses Spring `RestClient`, conditional ETag/Last-Modified headers, server
 A valid, non-empty publication replaces the previous directory atomically. Invalid XML/DOCTYPE, duplicate identifiers, invalid coordinates or older publication times preserve the previous directory. A 304 preserves publication/retrieval times. Database migrations never reset existing directory data.
 
 The owner's [Nicosia availability dataset](https://www.data.gov.cy/el/dataset/trehoysa-diathesimotita-horon-stathmeysis-dimoy-leykosias) points to [RSS XML](https://www.nicosia.org.cy/el-GR/rss/parkingspaces/). On 4 November 2026 all four observations were dated 5 December 2022, with negative counts also present. Those are not live readings: the API keeps occupancy freshness unavailable and counts/timestamp null. Research into usable live sources is tracked in issue #13; implementation remains in #6.
+
+## Statistics data and refresh
+
+Charts read official [CYSTAT](https://www.cystat.gov.cy) tables, linked from data.gov.cy under CC BY 4.0: [tourist arrivals by country of usual residence, monthly](https://www.data.gov.cy/en/dataset/2285), [immigrants by citizenship, country of birth and previous residence, annual](https://www.data.gov.cy/en/dataset/2174) and [migration movements, annual](https://www.data.gov.cy/en/dataset/2172). The immigrant table publishes only Cyprus / EU / non-EU groups, not individual countries; the UI says so instead of substituting another measure.
+
+`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). Jackson binds the JSON-stat document; each dataset class only maps table categories to series keys, and fetching, storage and refresh are shared, so a new chart needs one small class. Country names become ISO codes through the JDK's locale data. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed or invalid table keeps its last stored values. Country series use ISO codes so the browser localizes names.
+
+Automatic refresh is **disabled by default**. `STATISTICS_SYNC_ENABLED=true` imports missing tables on startup and checks every **Monday at 04:30 Cyprus time** (see [Refresh schedule](#refresh-schedule)). User requests never call CYSTAT. Integration tests and browser CI use local JSON-stat fixtures.
+
+## Refresh schedule
+
+Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`](backend/common-library/src/main/resources/cyprus-open-refresh.properties): job name, cron (Cyprus time) and the environment variable that enables it. Each service implements `RefreshJob` for its own source; the shared `RefreshScheduler` in `common-library` runs it once after startup when data is missing or stale, then on its cron, and logs the schedule and the outcome and duration of every run.
+
+| Job | Service | When | Enabled by |
+| --- | --- | --- | --- |
+| `parking-directory` | parking | 1st of each month, 05:00 | `PARKING_DIRECTORY_SYNC_ENABLED` |
+| `pharmacy-schedule` | pharmacies | daily, 06:15 | `PHARMACY_SYNC_ENABLED` |
+| `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
+
+Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
 
 ## Maps and privacy
 
@@ -66,6 +86,9 @@ Keep repository root as the build context. Service settings are managed directly
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
 | Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
 | Parking | `backend/parking-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
+| Pharmacies | `backend/pharmacies-service/Dockerfile` | 8083 | `/actuator/health/readiness` |
+
+Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
 
 Before deploying the new Parking service, provision its restricted database role and schema and configure `PARKING_JDBC_URL`, `PARKING_DB_USER`, `PARKING_DB_PASSWORD` and optionally `PARKING_DB_SCHEMA` (default `parking`). Database secrets stay outside Git. Production database provisioning/deployment is not performed by this PR. Set `PARKING_DIRECTORY_SYNC_ENABLED=true` on the Railway Parking service for the release. On startup, Liquibase prepares the database and Parking imports the official directory if it is empty. Verify that `/api/v1/parking` returns items and a directory check timestamp. If the initial import fails, inspect the Parking logs before restarting the service to retry.
 
@@ -83,7 +106,7 @@ Publish feature branches through PRs; the owner controls merging. README is publ
 
 The independent Spring service (port 8083) stores the Pharmaceutical Services duty roster in its own PostgreSQL database (`pharmacies`, role `pharmacies_app`), created by Liquibase. The API and the Pharmacies page show entries for the selected date, defaulting to the current roster in Cyprus. The page links to address directions and the pharmacy's public telephone number; house numbers are never stored.
 
-Set `PHARMACY_SYNC_ENABLED=true` to enable automatic checks. The service reads the five district CSV links from the official catalog metadata (`PHARMACY_CATALOG_METADATA_URL`), downloads only from that origin and replaces the stored roster when all five files are valid. It checks at startup if the last successful check is older than one day, then daily at 06:15 Cyprus time. A failed check keeps the stored roster. Each district's schedule is replaced from the first day its new file covers, so earlier days remain available by date. The current roster rolls over at 08:00 Cyprus time; late-evening and overnight entries are marked on call for urgent prescriptions.
+Set `PHARMACY_SYNC_ENABLED=true` to enable automatic checks. The service reads the five district CSV links from the official catalog metadata (`PHARMACY_CATALOG_METADATA_URL`), downloads only from that origin and replaces the stored roster when all five files are valid. It checks at startup if the last successful check is older than one day, then daily at 06:15 Cyprus time (see [Refresh schedule](#refresh-schedule)). A failed check keeps the stored roster. Each district's schedule is replaced from the first day its new file covers, so earlier days remain available by date. The current roster rolls over at 08:00 Cyprus time; late-evening and overnight entries are marked on call for urgent prescriptions.
 
 Volumes created before the pharmacies database existed need it added once. Set `PHARMACIES_DB_PASSWORD` in `.env`, then run `infra/postgres/002-pharmacies.sql` as the admin user (the command is in the file).
 
