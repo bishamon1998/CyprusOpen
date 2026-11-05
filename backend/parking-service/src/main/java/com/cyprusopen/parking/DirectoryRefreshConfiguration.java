@@ -1,9 +1,7 @@
 package com.cyprusopen.parking;
 
-import static com.cyprusopen.parking.DirectoryConstants.INVALID;
 import static com.cyprusopen.parking.DirectoryConstants.MONTHLY_CRON;
 import static com.cyprusopen.parking.DirectoryConstants.SCHEDULE_ZONE;
-import static com.cyprusopen.parking.DirectoryConstants.UNAVAILABLE;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +25,7 @@ class DirectoryRefreshConfiguration {
         return arguments -> {
             var result = sync.refresh();
             log.info("Directory refresh: {}", result);
-            if (INVALID.equals(result) || UNAVAILABLE.equals(result)) {
-                throw new IllegalStateException("Directory refresh failed: " + result);
-            }
+            if (result.failed()) throw new IllegalStateException("Directory refresh failed: " + result);
         };
     }
 

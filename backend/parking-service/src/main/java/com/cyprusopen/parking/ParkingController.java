@@ -1,6 +1,6 @@
 package com.cyprusopen.parking;
 
-import static com.cyprusopen.parking.DirectoryConstants.UNAVAILABLE;
+import static com.cyprusopen.parking.DirectoryConstants.FRESHNESS_UNAVAILABLE;
 import static com.cyprusopen.parking.DirectoryConstants.UNNAMED_LOCATION;
 
 import java.time.Instant;
@@ -23,10 +23,14 @@ class ParkingController {
         var snapshot = stored.snapshot();
         var source = new DirectorySource(snapshot.source(), snapshot.catalogUrl(), snapshot.license(),
                 snapshot.licenseUrl(), snapshot.publishedAt(), snapshot.retrievedAt(), stored.checkedAt());
-        var places = snapshot.items().stream().map(place -> new ParkingPlace(place.id(),
-                place.name() == null ? UNNAMED_LOCATION : place.name(), place.latitude(), place.longitude(), null)).toList();
+        var places = snapshot.items().stream().map(ParkingController::place).toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(new ParkingResponse(UNAVAILABLE, null, source, places));
+                .body(new ParkingResponse(FRESHNESS_UNAVAILABLE, null, source, places));
+    }
+
+    private static ParkingPlace place(ParkingDirectory.Location location) {
+        var name = location.name() == null ? UNNAMED_LOCATION : location.name();
+        return new ParkingPlace(location.id(), name, location.latitude(), location.longitude(), null);
     }
 
     record ParkingResponse(String freshness, Instant lastUpdatedAt, DirectorySource directory,
