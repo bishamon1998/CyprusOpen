@@ -21,11 +21,15 @@ export type PharmacySchedule = {
   items: Pharmacy[];
 };
 
-/** Loads a chosen date, or the current roster (refreshed every 30 seconds) when no date is set. */
+// The current roster changes only at 08:00 and when overnight on-call service starts.
+const CURRENT_ROSTER_REFRESH = 5 * 60_000;
+
+/** Loads a chosen date once, or the current roster, rechecked every five minutes and on return to the tab. */
 export function usePharmacySchedule(date: string) {
   return useQuery({
     queryKey: ["pharmacies", date],
-    refetchInterval: date ? false : 30_000,
+    staleTime: date ? Infinity : CURRENT_ROSTER_REFRESH,
+    refetchInterval: date ? false : CURRENT_ROSTER_REFRESH,
     refetchOnWindowFocus: !date,
     queryFn: () =>
       get<PharmacySchedule>(
