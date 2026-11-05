@@ -18,7 +18,7 @@ export function PharmacyFilters({
   const { t } = useI18n();
   return (
     <ToolFilters>
-      <label className="tool-search">
+      <label className="tool-search compact">
         <CalendarDays size={17} aria-hidden="true" />
         <input
           type="date"

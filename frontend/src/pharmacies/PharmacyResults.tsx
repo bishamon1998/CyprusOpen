@@ -13,8 +13,17 @@ import { type Pharmacy, usePharmacySchedule } from "./api";
 
 const LOCAL_PHONE = /^[0-9]{8}$/;
 
-export const pharmacyAddress = (pharmacy: Pharmacy) =>
-  [pharmacy.address, pharmacy.municipality].filter(Boolean).join(", ");
+/** Address with the municipality appended unless the address already names it. */
+export const pharmacyAddress = ({ address, municipality }: Pharmacy) =>
+  !municipality || address.includes(municipality) ? address : `${address}, ${municipality}`;
+
+/** Route to the pharmacy's map point, like Parking; the roster address only when there is no point. */
+function pharmacyDirections(pharmacy: Pharmacy) {
+  const { location } = pharmacy;
+  return googleDirections(
+    location ? `${location.latitude},${location.longitude}` : `${pharmacyAddress(pharmacy)}, Cyprus`,
+  );
+}
 
 export function PharmacyResults({
   schedule,
@@ -92,7 +101,7 @@ export function PharmacyResults({
             </a>
           )}
           <a
-            href={googleDirections(pharmacyAddress(selected) + ", Cyprus")}
+            href={pharmacyDirections(selected)}
             target="_blank"
             rel="noopener noreferrer"
           >
