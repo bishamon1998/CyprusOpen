@@ -1,6 +1,8 @@
-import { LocateFixed, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { NearMeButton, ToolFilters } from "../components/tool/Tool";
 import { areas } from "../geo/cyprusAreas";
 import { useI18n } from "../i18n";
+
 export function ParkingFilters({
   areaId,
   search,
@@ -18,8 +20,8 @@ export function ParkingFilters({
 }) {
   const { t } = useI18n();
   return (
-    <div className="parking-filters">
-      <label className="parking-search">
+    <ToolFilters>
+      <label className="tool-search">
         <Search size={17} aria-hidden="true" />
         <input
           type="search"
@@ -40,10 +42,7 @@ export function ParkingFilters({
           </option>
         ))}
       </select>
-      <button className="near-me" onClick={onNearMe} disabled={locating}>
-        <LocateFixed size={17} aria-hidden="true" />
-        {t(locating ? "locating" : "nearMe")}
-      </button>
-    </div>
+      <NearMeButton locating={locating} onClick={onNearMe} />
+    </ToolFilters>
   );
 }

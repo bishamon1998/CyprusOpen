@@ -107,8 +107,8 @@ async function main() {
       }
     }
     await page.goto(`${baseUrl}/pharmacies`);
-    await page.locator(".pharmacy-list li").nth(4).waitFor();
-    assert.equal(await page.locator(".pharmacy-list li").count(), 5);
+    await page.locator(".result-list li").nth(4).waitFor();
+    assert.equal(await page.locator(".result-list li").count(), 5);
 
     await page.goto(baseUrl);
     assert.equal(
@@ -130,7 +130,7 @@ async function main() {
       })
       .waitFor();
     const attribution = (
-      await page.locator(".parking-attribution").textContent()
+      await page.locator(".tool-attribution").textContent()
     ).replace(/\s+/g, " ");
     assert.ok(
       attribution.includes(
@@ -154,7 +154,7 @@ async function main() {
         () =>
           Number(
             document
-              .querySelector(".parking-result-heading h2")
+              .querySelector(".tool-results-heading h2")
               .textContent.split(" ")[0],
           ) > 0,
       );
@@ -194,7 +194,7 @@ async function main() {
       "cyprus",
     );
     const firstDistance = await page
-      .locator(".parking-row small")
+      .locator(".result-row small")
       .first()
       .textContent();
     assert.match(firstDistance, /km · straight-line/);
