@@ -6,14 +6,10 @@ import java.util.Set;
 final class DirectoryConstants {
     static final Set<String> HTTP_SCHEMES = Set.of("http", "https");
     static final int DIRECTORY_ID = 1;
-    static final long REFRESH_LOCK_ID = 620041;
-    static final int MAX_FAILURES = 3;
     static final int MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
     static final int MAX_LOCATIONS = 20_000;
-    static final Duration REQUEST_SPACING = Duration.ofSeconds(5);
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
     static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
-    static final Duration FAILURE_BACKOFF = Duration.ofDays(1);
     static final Duration MAX_CLOCK_SKEW = Duration.ofMinutes(5);
     static final double MIN_LATITUDE = 34;
     static final double MAX_LATITUDE = 36;
@@ -34,14 +30,10 @@ final class DirectoryConstants {
     static final String UNNAMED_SOURCE_LABEL = "OSM Origin";
     static final String LOCATION_ID_PREFIX = "cynap-";
     static final String UNNAMED_LOCATION = "Car park";
-    static final String BUSY = "busy";
-    static final String DEFERRED = "deferred";
     static final String UPDATED = "updated";
     static final String UNCHANGED = "unchanged";
     static final String UNAVAILABLE = "unavailable";
     static final String INVALID = "invalid";
-    static final String PAUSED = "paused";
-    static final String ERROR = "error";
 
     private DirectoryConstants() {}
 }

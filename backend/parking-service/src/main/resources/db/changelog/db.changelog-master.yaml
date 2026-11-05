@@ -13,3 +13,10 @@ databaseChangeLog:
         - sqlFile:
             path: empty-start.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 3-simplify-directory-refresh
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: simplify-refresh.sql
+            relativeToChangelogFile: true

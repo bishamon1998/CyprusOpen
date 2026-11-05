@@ -2,24 +2,17 @@ package com.cyprusopen.parking;
 
 import static com.cyprusopen.parking.DirectoryConstants.CATALOG_URL;
 import static com.cyprusopen.parking.DirectoryConstants.DIRECTORY_ID;
-import static com.cyprusopen.parking.DirectoryConstants.ERROR;
 import static com.cyprusopen.parking.DirectoryConstants.LICENSE;
 import static com.cyprusopen.parking.DirectoryConstants.LICENSE_URL;
 import static com.cyprusopen.parking.DirectoryConstants.MAX_CLOCK_SKEW;
-import static com.cyprusopen.parking.DirectoryConstants.MAX_FAILURES;
 import static com.cyprusopen.parking.DirectoryConstants.MAX_LATITUDE;
 import static com.cyprusopen.parking.DirectoryConstants.MAX_LOCATIONS;
 import static com.cyprusopen.parking.DirectoryConstants.MAX_LONGITUDE;
 import static com.cyprusopen.parking.DirectoryConstants.MIN_LATITUDE;
 import static com.cyprusopen.parking.DirectoryConstants.MIN_LONGITUDE;
-import static com.cyprusopen.parking.DirectoryConstants.PAUSED;
-import static com.cyprusopen.parking.DirectoryConstants.REFRESH_LOCK_ID;
-import static com.cyprusopen.parking.DirectoryConstants.REQUEST_SPACING;
 import static com.cyprusopen.parking.DirectoryConstants.RESOURCE_URL;
 import static com.cyprusopen.parking.DirectoryConstants.SOURCE_NAME;
 import static com.cyprusopen.parking.DirectoryConstants.TRANSFORMATIONS;
-import static com.cyprusopen.parking.DirectoryConstants.UNCHANGED;
-import static com.cyprusopen.parking.DirectoryConstants.UPDATED;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -57,19 +50,7 @@ class ParkingDirectory {
         statement(DirectorySql.REPLACE)
                 .param("document", mapper.writeValueAsString(snapshot))
                 .param("checked", Timestamp.from(snapshot.retrievedAt()))
-                .param("etag", etag).param("modified", modified).param("status", UPDATED).update();
-    }
-
-    boolean tryLock() {
-        return jdbc.sql(DirectorySql.TRY_LOCK).param("lockId", REFRESH_LOCK_ID).query(Boolean.class).single();
-    }
-
-    boolean isDue() {
-        return statement(DirectorySql.IS_DUE).param("maxFailures", MAX_FAILURES).query(Boolean.class).single();
-    }
-
-    void markAttempt() {
-        statement(DirectorySql.MARK_ATTEMPT).param("spacing", REQUEST_SPACING.toSeconds()).update();
+                .param("etag", etag).param("modified", modified).update();
     }
 
     Validators validators() {
@@ -78,13 +59,7 @@ class ParkingDirectory {
     }
 
     void markUnchanged() {
-        statement(DirectorySql.MARK_UNCHANGED).param("status", UNCHANGED).update();
-    }
-
-    void markFailed(Instant nextAttempt) {
-        statement(DirectorySql.MARK_FAILED).param("maxFailures", MAX_FAILURES)
-                .param("paused", PAUSED).param("error", ERROR)
-                .param("next", Timestamp.from(nextAttempt)).update();
+        statement(DirectorySql.MARK_UNCHANGED).update();
     }
 
     private JdbcClient.StatementSpec statement(String sql) {

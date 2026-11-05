@@ -10,9 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -32,27 +29,17 @@ import tools.jackson.databind.json.JsonMapper;
 class ParkingApiIT {
     static final AtomicInteger requests = new AtomicInteger();
     static final AtomicInteger mode = new AtomicInteger(200);
-    static volatile CountDownLatch requestStarted = new CountDownLatch(0);
-    static volatile CountDownLatch allowResponse = new CountDownLatch(0);
     static final HttpServer upstream;
     static {
         try {
             upstream = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
             upstream.createContext("/directory", exchange -> {
                 requests.incrementAndGet();
-                requestStarted.countDown();
-                try {
-                    if (!allowResponse.await(10, TimeUnit.SECONDS)) throw new IOException("Timed out waiting to release the response");
-                } catch (InterruptedException interrupted) {
-                    Thread.currentThread().interrupt();
-                    throw new IOException(interrupted);
-                }
                 var status = mode.get();
                 if (status == 304) {
                     assertThat(exchange.getRequestHeaders().getFirst("If-None-Match")).isEqualTo("\"revision-1\"");
                     exchange.sendResponseHeaders(304, -1);
                 } else if (status == 503) {
-                    exchange.getResponseHeaders().add("Retry-After", "864000");
                     exchange.sendResponseHeaders(503, -1);
                 } else {
                     var fixture = status == 200 ? "directory.xml" : "directory-invalid.xml";
@@ -96,27 +83,6 @@ class ParkingApiIT {
     static void stopUpstream() { upstream.stop(0); }
 
     @Test
-    void preventsOverlappingRefreshWhileTheSourceIsStillResponding() throws Exception {
-        requestStarted = new CountDownLatch(1);
-        allowResponse = new CountDownLatch(1);
-        var refresh = CompletableFuture.supplyAsync(sync::refresh);
-        try {
-            assertThat(requestStarted.await(10, TimeUnit.SECONDS)).isTrue();
-            assertThat(sync.refresh()).isEqualTo("busy");
-        } finally {
-            allowResponse.countDown();
-            try {
-                assertThat(refresh.get(10, TimeUnit.SECONDS)).isEqualTo("updated");
-            } finally {
-                requestStarted = new CountDownLatch(0);
-                allowResponse = new CountDownLatch(0);
-                jdbc.sql(DirectoryTestSql.RESET).update();
-                allowNextRequest();
-            }
-        }
-    }
-
-    @Test
     void refreshesThroughHttpIntoPostgresAndPreservesGoodDataOnErrors() throws Exception {
         assertThat(directory.snapshot().items()).isEmpty();
         try {
@@ -131,40 +97,21 @@ class ParkingApiIT {
             }
             assertThat(requests.get()).isEqualTo(before + 1);
             assertThat(directory.snapshot().publishedAt()).isEqualTo(Instant.parse("2026-11-04T00:00:00Z"));
-            assertThat(sync.refresh()).isEqualTo("deferred");
-            assertThat(requests.get()).isEqualTo(before + 1);
             var retrieved = directory.snapshot().retrievedAt();
             mode.set(304);
-            allowNextRequest();
             assertThat(sync.refresh()).isEqualTo("unchanged");
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
             mode.set(503);
-            allowNextRequest();
             assertThat(sync.refresh()).isEqualTo("unavailable");
-            assertThat(jdbc.sql(DirectoryTestSql.RETRY_IS_DEFERRED).query(Boolean.class).single()).isTrue();
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
             mode.set(422);
-            allowNextRequest();
             assertThat(sync.refresh()).isEqualTo("invalid");
             assertThat(directory.snapshot().items()).hasSize(1);
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
-            mode.set(503);
-            allowNextRequest();
-            assertThat(sync.refresh()).isEqualTo("unavailable");
-            assertThat(jdbc.sql(DirectoryTestSql.SYNC_STATUS).query(String.class).single()).isEqualTo("paused");
-            var attempts = requests.get();
-            allowNextRequest();
-            assertThat(sync.refresh()).isEqualTo("deferred");
-            assertThat(requests.get()).isEqualTo(attempts);
         } finally {
             jdbc.sql(DirectoryTestSql.RESET).update();
-            allowNextRequest();
             mode.set(200);
         }
-    }
-
-    private void allowNextRequest() {
-        jdbc.sql(DirectoryTestSql.ALLOW_NEXT_REQUEST).update();
     }
 
     @Test

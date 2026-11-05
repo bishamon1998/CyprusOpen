@@ -8,9 +8,6 @@ import static com.cyprusopen.parking.DirectoryConstants.USER_AGENT;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -47,19 +44,9 @@ class DirectoryClient {
             if (body.length > MAX_RESPONSE_BYTES) throw new IllegalArgumentException("Directory exceeds size limit");
             var headers = response.getHeaders();
             return new Response(response.getStatusCode().value(), body, headers.getETag(),
-                    headers.getFirst(HttpHeaders.LAST_MODIFIED), retryAt(headers.getFirst(HttpHeaders.RETRY_AFTER)));
+                    headers.getFirst(HttpHeaders.LAST_MODIFIED));
         });
     }
 
-    private static Instant retryAt(String value) {
-        if (value == null) return null;
-        try {
-            return value.matches("\\d+") ? Instant.now().plusSeconds(Long.parseLong(value))
-                    : ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
-        } catch (RuntimeException invalidHeader) {
-            return null;
-        }
-    }
-
-    record Response(int status, byte[] body, String etag, String modified, Instant retryAt) {}
+    record Response(int status, byte[] body, String etag, String modified) {}
 }

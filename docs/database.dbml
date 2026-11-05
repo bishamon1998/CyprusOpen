@@ -2,10 +2,6 @@ Table parking.parking_directory {
   id integer [pk, note: 'Singleton source: id=1']
   document jsonb [note: 'Latest normalized directory and source publication/retrieval metadata; no occupancy history']
   last_checked_at timestamptz [note: 'Last successful 200 or 304 check']
-  last_attempt_at timestamptz
   etag text
   last_modified text
-  next_attempt_at timestamptz [not null]
-  consecutive_failures integer [not null, default: 0]
-  sync_status text [not null, default: 'not_imported']
 }
