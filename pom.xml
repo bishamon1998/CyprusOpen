@@ -1,13 +1,77 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.2</version>
+    <relativePath/>
+  </parent>
   <groupId>com.cyprusopen</groupId>
   <artifactId>cyprus-open</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+
   <modules>
     <module>backend/common-library</module>
     <module>backend/statistics-service</module>
     <module>backend/parking-service</module>
     <module>backend/pharmacies-service</module>
   </modules>
+
+  <properties>
+    <java.version>25</java.version>
+    <!-- Must match the Spring Boot parent version above; used to manage the test starter exclusions. -->
+    <spring-boot.version>4.1.2</spring-boot.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.cyprusopen</groupId>
+        <artifactId>common-library</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <version>${spring-boot.version}</version>
+        <exclusions>
+          <exclusion><groupId>org.mockito</groupId><artifactId>mockito-core</artifactId></exclusion>
+          <exclusion><groupId>org.mockito</groupId><artifactId>mockito-junit-jupiter</artifactId></exclusion>
+        </exclusions>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <annotationProcessorPaths>
+              <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId></exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <executions>
+            <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

@@ -1,14 +1,17 @@
-import { ParkingResults } from "./ParkingResults";
-import { ParkingAttribution } from "./ParkingAttribution";
 import { useMemo, useRef, useState } from "react";
-import { ParkingFilters } from "./ParkingFilters";
-import { useParking } from "../api";
-import { ParkingMap } from "./ParkingMap";
-import { areas } from "../geo/cyprusAreas";
-import "./parking.css";
-import { useI18n } from "../i18n";
+import { PageTitle } from "../components/PageTitle";
 import { distance } from "../geo/coordinates";
+import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
+import { useI18n } from "../i18n";
+import { UNNAMED_PARKING, useParking } from "./api";
+import { ParkingAttribution } from "./ParkingAttribution";
+import { ParkingFilters } from "./ParkingFilters";
+import { ParkingMap } from "./ParkingMap";
+import { ParkingResults } from "./ParkingResults";
+import "./parking.css";
+
+const PAGE_SIZE = 30;
 
 export default function Parking() {
   const { t } = useI18n();
@@ -17,39 +20,43 @@ export default function Parking() {
   const [areaId, setAreaId] = useState("cyprus");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const { position, locating, locationError, locate, clearLocation } =
     useBrowserLocation();
   const area = areas.find((item) => item.id === areaId)!;
   const places = useMemo(() => {
     const query = search.trim().toLowerCase();
-    const matches = (report.data?.items || []).filter((place) => {
-      const [[south, west], [north, east]] = area.bounds;
-      return (
+    const [[south, west], [north, east]] = area.bounds;
+    const matches = (report.data?.items || []).filter(
+      (place) =>
         (area.id === "cyprus" ||
           (place.latitude >= south &&
             place.latitude <= north &&
             place.longitude >= west &&
             place.longitude <= east)) &&
-        place.name.toLowerCase().includes(query)
-      );
-    });
+        place.name.toLowerCase().includes(query),
+    );
     return matches.sort((a, b) =>
       position
         ? distance(position, a) - distance(position, b)
-        : Number(a.name === "Car park") - Number(b.name === "Car park") ||
+        : Number(a.name === UNNAMED_PARKING) -
+            Number(b.name === UNNAMED_PARKING) ||
           a.name.localeCompare(b.name) ||
           a.id.localeCompare(b.id),
     );
   }, [report.data, area, search, position]);
   const selected = places.find((place) => place.id === selectedId);
-  const [visibleCount, setVisibleCount] = useState(30);
+
+  function resetSelection() {
+    setSelectedId(null);
+    setVisibleCount(PAGE_SIZE);
+  }
 
   function nearMe() {
     locate(() => {
       setAreaId("cyprus");
       setSearch("");
-      setSelectedId(null);
-      setVisibleCount(30);
+      resetSelection();
     });
   }
 
@@ -62,9 +69,7 @@ export default function Parking() {
 
   return (
     <>
-      <div className="page-title">
-        <h1>{t("parking")}</h1>
-      </div>
+      <PageTitle title={t("parking")} />
       <section className="parking-workspace" aria-label={t("findParking")}>
         <ParkingFilters
           areaId={areaId}
@@ -72,13 +77,11 @@ export default function Parking() {
           locating={locating}
           onSearch={(value) => {
             setSearch(value);
-            setSelectedId(null);
-            setVisibleCount(30);
+            resetSelection();
           }}
           onArea={(value) => {
             setAreaId(value);
-            setSelectedId(null);
-            setVisibleCount(30);
+            resetSelection();
           }}
           onNearMe={nearMe}
         />
@@ -99,12 +102,11 @@ export default function Parking() {
             report={report}
             places={places}
             selected={selected}
-            selectedId={selectedId}
             position={position}
             visibleCount={visibleCount}
             results={results}
             onSelect={choose}
-            onMore={() => setVisibleCount((count) => count + 30)}
+            onMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
             onClearLocation={clearLocation}
           />
         </div>

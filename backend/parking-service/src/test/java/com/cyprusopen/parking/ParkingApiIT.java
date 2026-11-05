@@ -87,7 +87,7 @@ class ParkingApiIT {
         assertThat(directory.snapshot().items()).isEmpty();
         try {
             var before = requests.get();
-            assertThat(sync.refresh()).isEqualTo("updated");
+            assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
             assertThat(directory.snapshot().items()).hasSize(1);
             try (var client = HttpClient.newHttpClient()) {
                 for (int i = 0; i < 3; i++) {
@@ -99,13 +99,13 @@ class ParkingApiIT {
             assertThat(directory.snapshot().publishedAt()).isEqualTo(Instant.parse("2026-11-04T00:00:00Z"));
             var retrieved = directory.snapshot().retrievedAt();
             mode.set(304);
-            assertThat(sync.refresh()).isEqualTo("unchanged");
+            assertThat(sync.refresh()).isEqualTo(RefreshResult.UNCHANGED);
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
             mode.set(503);
-            assertThat(sync.refresh()).isEqualTo("unavailable");
+            assertThat(sync.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
             mode.set(422);
-            assertThat(sync.refresh()).isEqualTo("invalid");
+            assertThat(sync.refresh()).isEqualTo(RefreshResult.INVALID);
             assertThat(directory.snapshot().items()).hasSize(1);
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
         } finally {
