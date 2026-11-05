@@ -17,9 +17,6 @@ final class PharmacyConstants {
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
     static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
 
-    // Refresh schedule
-    static final String DAILY_CRON = "0 15 6 * * *";
-    static final String SCHEDULE_ZONE = "Asia/Nicosia";
     static final Duration MAX_SCHEDULE_AGE = Duration.ofDays(1);
 
     // DCAT-AP catalog metadata fields

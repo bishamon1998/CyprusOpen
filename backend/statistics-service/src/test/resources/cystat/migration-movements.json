@@ -8,10 +8,10 @@
   "id": ["YEAR", "MIGRATION MOVEMENTS"],
   "size": [2, 3],
   "dimension": {
-    "YEAR": {"category": {"index": ["0", "1"], "label": {"0": "1981", "1": "2024"}}},
+    "YEAR": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "1981", "1": "2024"}}},
     "MIGRATION MOVEMENTS": {
       "category": {
-        "index": ["0", "3", "4"],
+        "index": {"0": 0, "3": 1, "4": 2},
         "label": {"0": "Total of long term immigrants", "3": "Emigrants", "4": "Net migration"}
       }
     }

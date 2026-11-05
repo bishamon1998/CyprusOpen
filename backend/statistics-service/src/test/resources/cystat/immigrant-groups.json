@@ -10,7 +10,7 @@
   "dimension": {
     "CITIZENSHIP, COUNTRY OF BIRTH, COUNTRY OF PREVIOUS RESIDENCE": {
       "category": {
-        "index": ["0", "2", "8"],
+        "index": {"0": 0, "2": 1, "8": 2},
         "label": {
           "0": "Total Immigrants",
           "2": "Citizenship - EU",
@@ -18,9 +18,9 @@
         }
       }
     },
-    "SEX": {"category": {"index": ["0", "1"], "label": {"0": "Total", "1": "Males"}}},
-    "YEAR": {"category": {"index": ["0", "1"], "label": {"0": "2023", "1": "2024"}}},
-    "AGE": {"category": {"index": ["0", "1"], "label": {"0": "Total", "1": "0 - 19"}}}
+    "SEX": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "Total", "1": "Males"}}},
+    "YEAR": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "2023", "1": "2024"}}},
+    "AGE": {"category": {"index": {"0": 0, "1": 1}, "label": {"0": "Total", "1": "0 - 19"}}}
   },
   "value": [
     30000, 3000, 31000, 3100,

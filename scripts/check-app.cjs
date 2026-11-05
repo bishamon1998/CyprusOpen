@@ -285,7 +285,7 @@ async function main() {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }
     await page.getByRole("radio", { name: "Since 1981" }).click();
-    await page.getByRole("radio", { name: "Summer" }).click();
+    await page.getByRole("radio", { name: "Winter" }).click();
     await page
       .getByRole("img", { name: "Tourist arrivals by country of usual residence" })
       .waitFor();

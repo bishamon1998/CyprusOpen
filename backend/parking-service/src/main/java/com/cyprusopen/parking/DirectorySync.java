@@ -1,5 +1,6 @@
 package com.cyprusopen.parking;
 
+import com.cyprusopen.common.refresh.RefreshJob;
 import com.cyprusopen.common.refresh.RefreshResult;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
@@ -10,13 +11,24 @@ import org.springframework.web.client.RestClientException;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class DirectorySync {
+class DirectorySync implements RefreshJob {
     private final ParkingDirectory directory;
     private final DirectoryClient client;
     private final DirectoryXmlParser parser;
     private final Clock clock;
 
-    RefreshResult refresh() {
+    @Override
+    public String name() {
+        return "parking-directory";
+    }
+
+    @Override
+    public boolean needsInitialRun() {
+        return directory.snapshot().items().isEmpty();
+    }
+
+    @Override
+    public RefreshResult refresh() {
         DirectoryClient.Response response;
         try {
             response = client.fetch(directory.validators());

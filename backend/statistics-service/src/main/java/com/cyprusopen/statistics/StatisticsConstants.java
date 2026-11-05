@@ -10,10 +10,6 @@ final class StatisticsConstants {
     /** PxWeb query selecting every cell of a table, returned as JSON-stat 2.0. */
     static final String FULL_TABLE_QUERY = "{\"query\":[],\"response\":{\"format\":\"json-stat2\"}}";
 
-    // Refresh schedule: CYSTAT publishes these tables monthly or annually, so a weekly check is enough.
-    static final String WEEKLY_CRON = "0 30 4 * * MON";
-    static final String SCHEDULE_ZONE = "Asia/Nicosia";
-
     // Attribution
     static final String SOURCE_NAME = "Statistical Service of Cyprus (CYSTAT)";
     static final String LICENSE = "CC BY 4.0";

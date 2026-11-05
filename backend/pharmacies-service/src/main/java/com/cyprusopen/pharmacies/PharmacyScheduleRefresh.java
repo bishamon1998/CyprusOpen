@@ -1,7 +1,9 @@
 package com.cyprusopen.pharmacies;
 
 import static com.cyprusopen.pharmacies.PharmacyConstants.CYPRUS;
+import static com.cyprusopen.pharmacies.PharmacyConstants.MAX_SCHEDULE_AGE;
 
+import com.cyprusopen.common.refresh.RefreshJob;
 import com.cyprusopen.common.refresh.RefreshResult;
 import java.io.IOException;
 import java.io.StringReader;
@@ -20,14 +22,27 @@ import org.springframework.web.client.RestClientException;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class PharmacyScheduleRefresh {
+class PharmacyScheduleRefresh implements RefreshJob {
     private final ScheduleClient client;
     private final CatalogDistributions distributions;
     private final PharmacyCsvReader reader;
     private final PharmacySchedules schedules;
     private final Clock clock;
 
-    synchronized RefreshResult refresh() {
+    @Override
+    public String name() {
+        return "pharmacy-schedule";
+    }
+
+    /** The roster is checked again after start-up when the last successful check is over a day old. */
+    @Override
+    public boolean needsInitialRun() {
+        var checkedAt = schedules.checkedAt();
+        return checkedAt == null || checkedAt.isBefore(clock.instant().minus(MAX_SCHEDULE_AGE));
+    }
+
+    @Override
+    public synchronized RefreshResult refresh() {
         Map<District, List<DutyEntry>> downloaded;
         try {
             downloaded = download();

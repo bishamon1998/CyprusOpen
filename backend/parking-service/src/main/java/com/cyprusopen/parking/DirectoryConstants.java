@@ -9,8 +9,6 @@ final class DirectoryConstants {
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
     static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
     static final Duration MAX_CLOCK_SKEW = Duration.ofMinutes(5);
-    static final String MONTHLY_CRON = "0 0 3 1 * *";
-    static final String SCHEDULE_ZONE = "UTC";
     static final String SOURCE_NAME = "Cyprus National Access Point / Public Works Department";
     static final String CATALOG_URL = "https://www.traffic4cyprus.org.cy/en/dataset/parking_areas";
     static final String RESOURCE_URL = "https://fixcyprus.cy/gnosis/open/api/nap/datasets/parking_areas/";

@@ -7,13 +7,10 @@ import static com.cyprusopen.statistics.StatisticsConstants.READ_TIMEOUT;
 
 import com.cyprusopen.common.http.Upstream;
 import java.net.URI;
-import java.net.http.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -27,10 +24,7 @@ class CystatClient {
     @Autowired
     CystatClient(RestClient.Builder builder, @Value("${statistics.cystat-api-url}") URI api) {
         this.api = Upstream.requireHttpEndpoint(api);
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                .connectTimeout(CONNECT_TIMEOUT).followRedirects(HttpClient.Redirect.NEVER).build());
-        factory.setReadTimeout(READ_TIMEOUT);
-        client = builder.requestFactory(factory).defaultHeader(HttpHeaders.USER_AGENT, Upstream.USER_AGENT).build();
+        client = Upstream.restClient(builder, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
 
     byte[] table(String path) {

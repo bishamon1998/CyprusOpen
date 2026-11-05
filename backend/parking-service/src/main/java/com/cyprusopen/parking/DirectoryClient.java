@@ -6,12 +6,10 @@ import static com.cyprusopen.parking.DirectoryConstants.READ_TIMEOUT;
 
 import com.cyprusopen.common.http.Upstream;
 import java.net.URI;
-import java.net.http.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -23,10 +21,7 @@ class DirectoryClient {
     @Autowired
     DirectoryClient(RestClient.Builder builder, @Value("${parking.directory.resource-url}") URI resource) {
         this.resource = Upstream.requireHttpEndpoint(resource);
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                .connectTimeout(CONNECT_TIMEOUT).followRedirects(HttpClient.Redirect.NEVER).build());
-        factory.setReadTimeout(READ_TIMEOUT);
-        client = builder.requestFactory(factory).defaultHeader(HttpHeaders.USER_AGENT, Upstream.USER_AGENT).build();
+        client = Upstream.restClient(builder, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
 
     Response fetch(ParkingDirectory.Validators validators) {

@@ -3,7 +3,12 @@ package com.cyprusopen.common.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.Set;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 
 /** Shared safeguards for requests to official upstream sources. */
 public final class Upstream {
@@ -11,6 +16,14 @@ public final class Upstream {
     private static final Set<String> HTTP_SCHEMES = Set.of("http", "https");
 
     private Upstream() {}
+
+    /** A client with connect/read timeouts, no redirects and the project user agent. */
+    public static RestClient restClient(RestClient.Builder builder, Duration connectTimeout, Duration readTimeout) {
+        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
+                .connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build());
+        factory.setReadTimeout(readTimeout);
+        return builder.requestFactory(factory).defaultHeader(HttpHeaders.USER_AGENT, USER_AGENT).build();
+    }
 
     /** Rejects configured endpoints that are relative, non-HTTP, carry credentials or a fragment. */
     public static URI requireHttpEndpoint(URI endpoint) {

@@ -1,5 +1,6 @@
 package com.cyprusopen.statistics;
 
+import com.cyprusopen.common.refresh.RefreshJob;
 import com.cyprusopen.common.refresh.RefreshResult;
 import java.time.Clock;
 import java.util.LinkedHashMap;
@@ -15,22 +16,36 @@ import org.springframework.web.client.RestClientException;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class StatisticsRefresh {
+class StatisticsRefresh implements RefreshJob {
     private final List<StatisticsDataset> datasets;
     private final CystatClient client;
     private final JsonStatParser parser;
     private final ObservationStore store;
     private final Clock clock;
 
+    @Override
+    public String name() {
+        return "statistics";
+    }
+
+    /** Runs after start-up when any dataset has never been imported. */
+    @Override
+    public boolean needsInitialRun() {
+        var imported = store.imported();
+        return datasets.stream().anyMatch(dataset -> !imported.containsKey(dataset.code()));
+    }
+
+    @Override
+    public RefreshResult refresh() {
+        var results = refreshAll();
+        log.info("Statistics datasets: {}", results);
+        return RefreshResult.combine(results.values());
+    }
+
     Map<String, RefreshResult> refreshAll() {
         var results = new LinkedHashMap<String, RefreshResult>();
         datasets.forEach(dataset -> results.put(dataset.code(), refresh(dataset)));
         return results;
-    }
-
-    boolean anyMissing() {
-        var imported = store.imported();
-        return datasets.stream().anyMatch(dataset -> !imported.containsKey(dataset.code()));
     }
 
     RefreshResult refresh(StatisticsDataset dataset) {
