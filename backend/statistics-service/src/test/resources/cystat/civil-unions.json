@@ -1,0 +1,86 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Civil Unions, Total and Residents of Cyprus by Sex, Annual by YEAR and CIVIL UNIONS",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-05-12T05:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "CIVIL UNIONS"
+ ],
+ "size": [
+  3,
+  8
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "6": 0,
+     "7": 1,
+     "8": 2
+    },
+    "label": {
+     "6": "2022",
+     "7": "2023",
+     "8": "2024"
+    }
+   }
+  },
+  "CIVIL UNIONS": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7
+    },
+    "label": {
+     "0": "Total Civil Unions",
+     "1": "Opposite sex",
+     "2": "Same sex (Males)",
+     "3": "Same sex (Females)",
+     "4": "Civil Unions - Residents of Cyprus",
+     "5": "Opposite sex - Residents of Cyprus",
+     "6": "Same sex (Males) - Residents of Cyprus",
+     "7": "Same sex (Females) - Residents of Cyprus"
+    }
+   }
+  }
+ },
+ "value": [
+  1001,
+  914,
+  51,
+  36,
+  927,
+  887,
+  23,
+  17,
+  929,
+  846,
+  42,
+  41,
+  895,
+  837,
+  32,
+  26,
+  917,
+  855,
+  42,
+  20,
+  882,
+  839,
+  31,
+  12
+ ]
+}

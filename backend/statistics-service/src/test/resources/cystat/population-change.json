@@ -1,0 +1,84 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Population Changes, Annual by YEAR, NUMBER/RATES and INCREASE/MIGRATION/CHANGE",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "NUMBER/RATES",
+  "INCREASE/MIGRATION/CHANGE"
+ ],
+ "size": [
+  3,
+  2,
+  3
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "48": 0,
+     "49": 1,
+     "50": 2
+    },
+    "label": {
+     "48": "2022",
+     "49": "2023",
+     "50": "2024"
+    }
+   }
+  },
+  "NUMBER/RATES": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Number",
+     "1": "Rates (per 1.000 population)"
+    }
+   }
+  },
+  "INCREASE/MIGRATION/CHANGE": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Natural Increase",
+     "1": "Net Migration",
+     "2": "Population Change"
+    }
+   }
+  }
+ },
+ "value": [
+  2880,
+  16440,
+  19320,
+  3.1,
+  17.5,
+  20.6,
+  3499,
+  13782,
+  17281,
+  3.7,
+  14.4,
+  18,
+  3013,
+  13588,
+  16601,
+  3.1,
+  13.9,
+  17
+ ]
+}

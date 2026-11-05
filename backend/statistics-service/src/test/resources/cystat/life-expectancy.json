@@ -1,0 +1,56 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Life Expectancy at Birth, Annual by YEAR and LIFE EXPECTANCY AT BIRTH",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "LIFE EXPECTANCY AT BIRTH"
+ ],
+ "size": [
+  3,
+  2
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "20": 0,
+     "21": 1,
+     "22": 2
+    },
+    "label": {
+     "20": "2022",
+     "21": "2023",
+     "22": "2024"
+    }
+   }
+  },
+  "LIFE EXPECTANCY AT BIRTH": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Males",
+     "1": "Females"
+    }
+   }
+  }
+ },
+ "value": [
+  80.2,
+  83.9,
+  81,
+  85,
+  81.4,
+  85.8
+ ]
+}

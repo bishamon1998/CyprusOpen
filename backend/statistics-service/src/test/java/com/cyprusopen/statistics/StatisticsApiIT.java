@@ -12,7 +12,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -30,11 +35,11 @@ import tools.jackson.databind.json.JsonMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class StatisticsApiIT {
-    static final Map<String, String> FIXTURES = Map.of(
-            "/api/Tourism/Tourists/Monthly/2021010E.px", "tourist-arrivals.json",
-            "/api/Population/Migration/1840030E.px", "immigrant-groups.json",
-            "/api/Population/Migration/1840010E.px", "migration-movements.json");
+    /** Table path below the API root to fixture file, shared with the browser CI fixture server. */
+    static final Map<String, String> FIXTURES = fixtures();
     static final AtomicReference<String> mode = new AtomicReference<>("initial");
+    /** Answers the next request with 429 Too Many Requests, as CYSTAT does for bursts. */
+    static final AtomicBoolean throttleNext = new AtomicBoolean();
     static final HttpServer upstream;
 
     static {
@@ -56,6 +61,7 @@ class StatisticsApiIT {
     static void configure(DynamicPropertyRegistry registry) {
         registry.add("statistics.cystat-api-url",
                 () -> "http://127.0.0.1:" + upstream.getAddress().getPort() + "/api/");
+        registry.add("statistics.cystat-request-interval", () -> "0s");
         registry.add("spring.datasource.url", () -> postgres.getJdbcUrl()
                 + (postgres.getJdbcUrl().contains("?") ? "&" : "?") + "currentSchema=statistics");
         registry.add("spring.datasource.username", postgres::getUsername);
@@ -71,6 +77,9 @@ class StatisticsApiIT {
     @Autowired
     private StatisticsRefresh refresh;
 
+    @Autowired
+    private List<StatisticsDataset> datasets;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
@@ -79,15 +88,18 @@ class StatisticsApiIT {
     @Test
     void importsCystatTablesAndKeepsThemOnSourceErrors() throws Exception {
         var sources = get("/api/v1/statistics/datasets", 200);
-        assertThat(sources.size()).isEqualTo(3);
+        assertThat(sources.size()).isEqualTo(datasets.size()).isEqualTo(FIXTURES.size());
         assertThat(sources.get(0).get("code").asString()).isEqualTo("immigrant-groups");
-        assertThat(sources.get(2).get("code").asString()).isEqualTo("tourist-arrivals");
-        assertThat(sources.get(2).get("updatedAt").isNull()).isTrue();
+        assertThat(sources.get(0).get("updatedAt").isNull()).isTrue();
         assertThat(get("/api/v1/statistics/datasets/tourist-arrivals", 200).get("series").size()).isZero();
 
-        assertThat(refresh.refreshAll()).containsOnly(Map.entry("immigrant-groups", RefreshResult.UPDATED),
-                Map.entry("migration-movements", RefreshResult.UPDATED),
-                Map.entry("tourist-arrivals", RefreshResult.UPDATED));
+        var imported = refresh.refreshAll();
+        assertThat(imported).hasSize(datasets.size())
+                .allSatisfy((code, result) -> assertThat(result).as(code).isEqualTo(RefreshResult.UPDATED));
+        for (var dataset : datasets) {
+            assertThat(get("/api/v1/statistics/datasets/" + dataset.code(), 200).get("series").size())
+                    .as(dataset.code()).isPositive();
+        }
 
         var tourism = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(tourism.get("source").get("updatedAt").asString()).isEqualTo("2026-10-19T05:00:00Z");
@@ -109,19 +121,47 @@ class StatisticsApiIT {
         assertThat(line(movements, "emigrants").get("values").toString()).isEqualTo("[null,18000.0]");
         get("/api/v1/statistics/datasets/unknown", 404);
 
+        // A table without a series dimension, one with two series dimensions and pinned dimensions.
+        var inflation = get("/api/v1/statistics/datasets/inflation", 200);
+        assertThat(inflation.get("series").size()).isEqualTo(1);
+        assertThat(line(inflation, "inflation").get("values").size()).isEqualTo(3);
+        var earnings = get("/api/v1/statistics/datasets/earnings", 200);
+        assertThat(line(earnings, "median-total")).isNotNull();
+        assertThat(line(earnings, "mean-women")).isNotNull();
+        var fuel = get("/api/v1/statistics/datasets/fuel-sales", 200);
+        assertThat(line(fuel, "diesel")).isNotNull();
+        assertThat(line(fuel, "lpg")).isNotNull();
+        assertThat(get("/api/v1/statistics/datasets/price-changes", 200).get("periods").size()).isEqualTo(2);
+
         assertThat(refresh.refreshAll()).containsValue(RefreshResult.UNCHANGED).doesNotContainValue(RefreshResult.UPDATED);
         mode.set("invalid");
-        assertThat(refresh.refreshAll()).containsOnlyKeys("immigrant-groups", "migration-movements", "tourist-arrivals")
+        assertThat(refresh.refreshAll()).hasSize(datasets.size())
                 .allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.INVALID));
         mode.set("unavailable");
         assertThat(refresh.refreshAll()).allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.UNAVAILABLE));
         assertThat(line(get("/api/v1/statistics/datasets/tourist-arrivals", 200), "GB")).isNotNull();
 
         mode.set("revised");
-        assertThat(refresh.refresh(new TouristArrivals())).isEqualTo(RefreshResult.UPDATED);
+        throttleNext.set(true);
+        var tourist = datasets.stream().filter(dataset -> dataset.code().equals("tourist-arrivals")).findFirst().orElseThrow();
+        assertThat(refresh.refresh(tourist)).isEqualTo(RefreshResult.UPDATED);
         var revised = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(revised.get("source").get("updatedAt").asString()).isEqualTo("2026-11-19T05:00:00Z");
         assertThat(line(revised, "total").get("values").toString()).isEqualTo("[1000.0,1100.0,1250.0]");
+    }
+
+    private static Map<String, String> fixtures() {
+        var fixtures = new HashMap<String, String>();
+        try (var reader = new BufferedReader(new InputStreamReader(
+                StatisticsApiIT.class.getResourceAsStream("/cystat/tables.properties"), StandardCharsets.UTF_8))) {
+            reader.lines().filter(line -> !line.isBlank() && !line.startsWith("#")).forEach(line -> {
+                var separator = line.indexOf('=');
+                fixtures.put("/api/" + line.substring(0, separator), line.substring(separator + 1));
+            });
+        } catch (IOException error) {
+            throw new ExceptionInInitializerError(error);
+        }
+        return fixtures;
     }
 
     private JsonNode get(String path, int status) throws Exception {
@@ -143,6 +183,11 @@ class StatisticsApiIT {
     private static void table(HttpExchange exchange) throws IOException {
         var query = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         var fixture = FIXTURES.get(exchange.getRequestURI().getPath());
+        if (throttleNext.getAndSet(false)) {
+            exchange.sendResponseHeaders(429, -1);
+            exchange.close();
+            return;
+        }
         if (!"POST".equals(exchange.getRequestMethod()) || !query.contains("json-stat2") || fixture == null
                 || mode.get().equals("unavailable")) {
             exchange.sendResponseHeaders(mode.get().equals("unavailable") ? 503 : 404, -1);

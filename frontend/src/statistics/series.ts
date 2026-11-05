@@ -22,26 +22,42 @@ export function valuesByPeriod(table: SeriesTable, key: string) {
   return table.periods.map((_, index) => series?.values[index] ?? null);
 }
 
-/** Years that appear in a monthly table, newest first. */
+/** Whether periods are months (`2024-07`) rather than years (`2024`). */
+export function isMonthly(table: SeriesTable) {
+  return table.periods.some((period) => period.length > 4);
+}
+
+/** Years that appear in a table, newest first. */
 export function yearsOf(table: SeriesTable) {
   return [...new Set(table.periods.map((period) => period.slice(0, 4)))]
     .sort()
     .reverse();
 }
 
-/** Indexes of the monthly periods that fall in a year and season. */
+/** Indexes of the periods in a year (and, for monthly tables, a season). */
 export function seasonPeriods(table: SeriesTable, year: string, season: Season) {
   const months = seasonMonths[season];
   return table.periods.flatMap((period, index) =>
-    period.startsWith(year + "-") && months.includes(Number(period.slice(5)))
+    period.slice(0, 4) === year &&
+    (period.length === 4 || months.includes(Number(period.slice(5))))
       ? [index]
       : [],
   );
 }
 
-/** Whether every month of the season is published for that year. */
+/** Whether the whole year or season is published; annual tables are always complete. */
 export function seasonComplete(table: SeriesTable, year: string, season: Season) {
-  return seasonPeriods(table, year, season).length === seasonMonths[season].length;
+  const indexes = seasonPeriods(table, year, season);
+  return (
+    indexes.length > 0 &&
+    (!isMonthly(table) || indexes.length === seasonMonths[season].length)
+  );
+}
+
+/** Latest year with complete data, or the latest year when none is complete. */
+export function defaultYear(table: SeriesTable) {
+  const years = yearsOf(table);
+  return years.find((year) => seasonComplete(table, year, "year")) ?? years[0];
 }
 
 export type Total = { key: string; value: number; lowReliability: boolean };
