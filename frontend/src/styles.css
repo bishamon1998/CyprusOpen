@@ -283,27 +283,6 @@ h2 {
   place-items: center;
   flex-shrink: 0;
 }
-.tool-empty {
-  min-height: 375px;
-  padding: 40px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.tool-empty h2 {
-  margin-top: 16px;
-  font-size: 19px;
-}
-.tool-empty > p {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin: 11px 0 10px;
-}
-.tool-empty .source-link {
-  color: var(--blue);
-}
 .sources-list {
   background: white;
   border: 1px solid var(--line);
@@ -410,13 +389,6 @@ h2 {
   }
   .card-footer {
     padding-inline: 20px;
-  }
-  .tool-empty {
-    min-height: 370px;
-    padding-inline: 20px;
-  }
-  .tool-empty h2 {
-    font-size: 18px;
   }
   .sources-list {
     padding-inline: 18px;

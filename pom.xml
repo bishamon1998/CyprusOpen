@@ -15,6 +15,7 @@
     <module>backend/common-library</module>
     <module>backend/statistics-service</module>
     <module>backend/parking-service</module>
+    <module>backend/pharmacies-service</module>
   </modules>
 
   <properties>

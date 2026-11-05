@@ -1,0 +1,42 @@
+.pharmacy-panel {
+  padding: clamp(16px, 4vw, 28px);
+}
+
+.pharmacy-toolbar, .pharmacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.pharmacy-toolbar label, .pharmacy-actions a {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pharmacy-toolbar input {
+  font: inherit;
+  padding: 6px 8px;
+}
+
+.pharmacy-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+}
+
+.pharmacy-list li {
+  border: 1px solid #dce3eb;
+  border-radius: 12px;
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+
+.pharmacy-list h2 {
+  margin: 0;
+  font-size: 1rem;
+}

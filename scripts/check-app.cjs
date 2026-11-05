@@ -53,6 +53,10 @@ async function main() {
     assert.equal(report.freshness, "unavailable");
     assert.ok(report.items.length > 0);
     assert.ok(report.items.every((item) => item.availableSpaces === null));
+    const pharmacies = await (await fetch(`${baseUrl}/api/v1/pharmacies`)).json();
+    assert.equal(pharmacies.items.length, 5);
+    assert.ok(pharmacies.checkedAt);
+    assert.ok(pharmacies.items.every((item) => item.id && "location" in item));
     const date = (value) =>
       new Date(value).toLocaleDateString("en-GB", {
         day: "numeric",
@@ -97,6 +101,10 @@ async function main() {
         assert.deepEqual(overflow, [], `${route} overflows at ${width}px`);
       }
     }
+    await page.goto(`${baseUrl}/pharmacies`);
+    await page.locator(".pharmacy-list li").nth(4).waitFor();
+    assert.equal(await page.locator(".pharmacy-list li").count(), 5);
+
     await page.goto(baseUrl);
     assert.equal(
       await page
