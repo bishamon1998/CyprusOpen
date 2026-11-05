@@ -27,11 +27,15 @@ export type ParkingReport = {
   items: ParkingPlace[];
 };
 
+/** The directory changes monthly, so it is loaded once; polling only waits for the first import. */
 export function useParking() {
   return useQuery({
     queryKey: ["parking"],
+    staleTime: Infinity,
     refetchInterval: (query) =>
-      query.state.data?.directory.publishedAt ? 300_000 : 10_000,
+      query.state.data && !query.state.data.directory.publishedAt
+        ? 30_000
+        : false,
     queryFn: async () => {
       const report = await get<ParkingReport>("/api/v1/parking");
       if (!report.directory || !Array.isArray(report.items)) {
