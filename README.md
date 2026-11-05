@@ -74,6 +74,7 @@ Keep repository root as the build context. Service settings are managed directly
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
 | Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
 | Parking | `backend/parking-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
+| Pharmacies | `backend/pharmacies-service/Dockerfile` | 8083 | `/actuator/health/readiness` |
 
 Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
 
