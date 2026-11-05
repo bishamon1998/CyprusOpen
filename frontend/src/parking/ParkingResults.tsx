@@ -1,5 +1,13 @@
 import { type RefObject } from "react";
-import { ArrowUpRight, Navigation, X } from "lucide-react";
+import { ArrowUpRight, Navigation } from "lucide-react";
+import {
+  NearestFirst,
+  ResultRow,
+  ResultsMessage,
+  ResultsPanel,
+  SelectedResult,
+  ShowMore,
+} from "../components/tool/Tool";
 import { distance, type Position } from "../geo/coordinates";
 import { googleDirections } from "../geo/directions";
 import { useI18n } from "../i18n";
@@ -46,32 +54,20 @@ export function ParkingResults({
       : `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`;
 
   return (
-    <div ref={results} className="parking-results">
-      <div className="parking-result-heading">
-        <h2>{heading}</h2>
-        {position && (
-          <button onClick={onClearLocation} aria-label={t("clearLocation")}>
-            <X size={15} />
-            {t("nearest")}
-          </button>
-        )}
-      </div>
-      <p className="availability-note">{t("availability")}</p>
+    <ResultsPanel
+      panelRef={results}
+      heading={heading}
+      action={position && <NearestFirst onClear={onClearLocation} />}
+      notes={[t("availability")]}
+    >
       {report.isError && (
-        <div className="parking-list-empty" role="alert">
-          <p>{t("loadError")}</p>
-          <button onClick={() => void report.refetch()}>{t("retry")}</button>
-        </div>
+        <ResultsMessage onRetry={() => void report.refetch()}>{t("loadError")}</ResultsMessage>
       )}
       {!report.isPending && !report.isError && places.length === 0 && (
-        <p className="parking-list-empty">
-          {t(published ? "noMatches" : "directoryPending")}
-        </p>
+        <ResultsMessage>{t(published ? "noMatches" : "directoryPending")}</ResultsMessage>
       )}
       {selected && (
-        <div className="selected-parking" aria-live="polite">
-          <span>{t("selected")}</span>
-          <h3>{name(selected)}</h3>
+        <SelectedResult label={t("selected")} title={name(selected)}>
           <a
             href={googleDirections(`${selected.latitude},${selected.longitude}`)}
             target="_blank"
@@ -81,36 +77,21 @@ export function ParkingResults({
             {t("directions")}
             <ArrowUpRight size={14} aria-hidden="true" />
           </a>
-        </div>
+        </SelectedResult>
       )}
-      <ol className="parking-list" aria-label={t("carParks")}>
-        {places.slice(0, visibleCount).map((place) => {
-          const isSelected = selected?.id === place.id;
-          return (
-            <li key={place.id}>
-              <button
-                className={`parking-row${isSelected ? " selected" : ""}`}
-                aria-pressed={isSelected}
-                onClick={() => onSelect(place.id)}
-              >
-                <span className="parking-row-icon" aria-hidden="true">
-                  P
-                </span>
-                <span>
-                  <strong>{name(place)}</strong>
-                  <small>{detail(place)}</small>
-                </span>
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </button>
-            </li>
-          );
-        })}
+      <ol className="result-list" aria-label={t("carParks")}>
+        {places.slice(0, visibleCount).map((place) => (
+          <ResultRow
+            key={place.id}
+            icon="P"
+            title={name(place)}
+            details={[detail(place)]}
+            selected={selected?.id === place.id}
+            onSelect={() => onSelect(place.id)}
+          />
+        ))}
       </ol>
-      {visibleCount < places.length && (
-        <button className="show-more" onClick={onMore}>
-          {t("more")}
-        </button>
-      )}
-    </div>
+      {visibleCount < places.length && <ShowMore onClick={onMore} />}
+    </ResultsPanel>
   );
 }

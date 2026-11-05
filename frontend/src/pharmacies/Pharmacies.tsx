@@ -1,127 +1,114 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { Pill } from "lucide-react";
 import { MapView, type MapLabels } from "../components/map/MapView";
 import { PageTitle } from "../components/PageTitle";
+import {
+  ExternalLink,
+  SourceAttribution,
+  ToolFeedback,
+  ToolLayout,
+  ToolWorkspace,
+  useCyprusDate,
+} from "../components/tool/Tool";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
 import { useI18n } from "../i18n";
+import { ccByLicenseUrl, osmCopyrightUrl, pharmacyScheduleUrl } from "../sources";
 import { type Pharmacy, usePharmacySchedule } from "./api";
-import { PharmacyList, pharmacyElementId } from "./PharmacyList";
-import { PharmacyToolbar } from "./PharmacyToolbar";
-import "./pharmacies.css";
+import { PharmacyFilters } from "./PharmacyFilters";
+import { PharmacyResults } from "./PharmacyResults";
 
 export default function Pharmacies() {
-  const { t, language } = useI18n();
-  const [date, setDate] = useState("");
-  const [selectedId, setSelectedId] = useState<string>();
-  const location = useBrowserLocation();
-  const schedule = usePharmacySchedule(date);
-  const items = schedule.data?.items ?? [];
+  const { t } = useI18n();
+  const date = useCyprusDate();
+  const results = useRef<HTMLDivElement>(null);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { position, locating, locationError, locate, clearLocation } = useBrowserLocation();
+  const schedule = usePharmacySchedule(scheduleDate);
+  const items = useMemo(() => schedule.data?.items ?? [], [schedule.data]);
 
+  const distanceTo = (pharmacy: Pharmacy) =>
+    position && pharmacy.location ? distance(position, pharmacy.location) : null;
+  const pharmacies = position
+    ? [...items].sort((a, b) => (distanceTo(a) ?? Infinity) - (distanceTo(b) ?? Infinity))
+    : items;
+  const selected = items.find((pharmacy) => pharmacy.id === selectedId);
   const points = useMemo(
     () =>
       items.flatMap((pharmacy) =>
-        pharmacy.location
-          ? [{ ...pharmacy.location, id: pharmacy.id, label: pharmacy.name }]
-          : [],
+        pharmacy.location ? [{ ...pharmacy.location, id: pharmacy.id, label: pharmacy.name }] : [],
       ),
     [items],
   );
-  const distanceTo = (pharmacy: Pharmacy) =>
-    location.position && pharmacy.location
-      ? distance(location.position, pharmacy.location)
-      : null;
-  const results = location.position
-    ? [...items].sort(
-        (a, b) => (distanceTo(a) ?? Infinity) - (distanceTo(b) ?? Infinity),
-      )
-    : items;
   const labels = useMemo<MapLabels>(
     () => ({
       region: t("pharmacies"),
       unavailable: t("tilesUnavailable"),
       hint: t("mapHint"),
       location: t("yourLocation"),
-      cluster: (count) => `${count} ${t("pharmacies")}`,
+      cluster: (count) => t("pharmacyCount", { count }),
     }),
     [t],
   );
-  const status = schedule.data?.items.length
-    ? schedule.data.onCall
-      ? "pharmacyOnCall"
-      : "dutyHoursUnconfirmed"
-    : "scheduleUnavailable";
+
+  function choose(id: string) {
+    setSelectedId(id);
+    results.current?.scrollTo({ top: 0 });
+  }
 
   return (
     <>
       <PageTitle title={t("pharmacies")} />
-      <section className="tool-panel pharmacy-panel">
-        <PharmacyToolbar
-          date={date}
+      <ToolWorkspace label={t("dutyPharmacies")}>
+        <PharmacyFilters
+          date={scheduleDate}
           scheduleDate={schedule.data?.date}
-          source={schedule.data?.source}
-          canLocate={points.length > 0}
-          locating={location.locating}
-          onDate={setDate}
-          onNearMe={() => location.locate(() => setSelectedId(undefined))}
+          locating={locating}
+          onDate={(value) => {
+            setScheduleDate(value);
+            setSelectedId(null);
+          }}
+          onNearMe={() => locate(() => setSelectedId(null))}
         />
-        {schedule.isPending && <p role="status">{t("loading")}</p>}
-        {location.locationError && (
-          <p role="status">{t(location.locationError)}</p>
-        )}
-        {schedule.isError && (
-          <div role="alert">
-            <p>{t("pharmacyLoadError")}</p>
-            <button onClick={() => void schedule.refetch()}>
-              {t("retry")}
-            </button>
-          </div>
-        )}
-        {schedule.data && (
-          <>
-            <p>{t(status)}</p>
-            {schedule.data.checkedAt && (
-              <p>
-                {t("pharmacyChecked", {
-                  time: new Date(schedule.data.checkedAt).toLocaleString(
-                    language,
-                    {
-                      timeZone: "Asia/Nicosia",
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    },
-                  ),
-                })}
-              </p>
-            )}
-            {items.length > points.length && (
-              <p>
-                {t("pharmacyMapCoverage", {
-                  mapped: points.length,
-                  total: items.length,
-                })}
-              </p>
-            )}
-            {points.length > 0 && (
-              <MapView
-                points={points}
-                bounds={areas[0].bounds}
-                selectedId={selectedId}
-                position={location.position}
-                onSelect={(id) => {
-                  setSelectedId(id);
-                  document
-                    .getElementById(pharmacyElementId(id))
-                    ?.scrollIntoView({ block: "nearest" });
-                }}
-                markerSymbol="+"
-                labels={labels}
-              />
-            )}
-            <PharmacyList pharmacies={results} distanceTo={distanceTo} />
-          </>
-        )}
-      </section>
+        {locationError && <ToolFeedback>{t(locationError)}</ToolFeedback>}
+        <ToolLayout
+          map={
+            <MapView
+              points={points}
+              bounds={areas[0].bounds}
+              selectedId={selectedId ?? undefined}
+              position={position}
+              onSelect={choose}
+              markerSymbol="+"
+              labels={labels}
+            />
+          }
+        >
+          <PharmacyResults
+            schedule={schedule}
+            pharmacies={pharmacies}
+            mapped={points.length}
+            selected={selected}
+            sortedByDistance={Boolean(position)}
+            distanceTo={distanceTo}
+            results={results}
+            onSelect={choose}
+            onClearLocation={clearLocation}
+          />
+        </ToolLayout>
+        <SourceAttribution
+          href={schedule.data?.source ?? pharmacyScheduleUrl}
+          badge={<Pill size={20} aria-hidden="true" />}
+          name={t("pharmaceuticalServices")}
+          facts={[
+            t("scheduleChecked", { date: date(schedule.data?.checkedAt) }),
+            <ExternalLink href={ccByLicenseUrl}>CC BY 4.0</ExternalLink>,
+            <ExternalLink href={osmCopyrightUrl}>{t("osm")}</ExternalLink>,
+          ]}
+        />
+      </ToolWorkspace>
     </>
   );
 }

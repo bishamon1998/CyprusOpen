@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { PageTitle } from "../components/PageTitle";
+import { ToolFeedback, ToolLayout, ToolWorkspace } from "../components/tool/Tool";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
@@ -9,7 +10,6 @@ import { ParkingAttribution } from "./ParkingAttribution";
 import { ParkingFilters } from "./ParkingFilters";
 import { ParkingMap } from "./ParkingMap";
 import { ParkingResults } from "./ParkingResults";
-import "./parking.css";
 
 const PAGE_SIZE = 30;
 
@@ -70,7 +70,7 @@ export default function Parking() {
   return (
     <>
       <PageTitle title={t("parking")} />
-      <section className="parking-workspace" aria-label={t("findParking")}>
+      <ToolWorkspace label={t("findParking")}>
         <ParkingFilters
           areaId={areaId}
           search={search}
@@ -85,19 +85,18 @@ export default function Parking() {
           }}
           onNearMe={nearMe}
         />
-        {locationError && (
-          <p className="parking-feedback" role="status">
-            {t(locationError)}
-          </p>
-        )}
-        <div className="parking-layout">
-          <ParkingMap
-            places={places}
-            area={area}
-            selected={selected}
-            position={position}
-            onSelect={choose}
-          />
+        {locationError && <ToolFeedback>{t(locationError)}</ToolFeedback>}
+        <ToolLayout
+          map={
+            <ParkingMap
+              places={places}
+              area={area}
+              selected={selected}
+              position={position}
+              onSelect={choose}
+            />
+          }
+        >
           <ParkingResults
             report={report}
             places={places}
@@ -109,9 +108,9 @@ export default function Parking() {
             onMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
             onClearLocation={clearLocation}
           />
-        </div>
+        </ToolLayout>
         <ParkingAttribution directory={report.data?.directory} />
-      </section>
+      </ToolWorkspace>
     </>
   );
 }
