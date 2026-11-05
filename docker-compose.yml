@@ -28,13 +28,17 @@ services:
       context: .
       dockerfile: backend/pharmacies-service/Dockerfile
     environment:
-      PHARMACY_SCHEDULE_DIRECTORY: /schedules
+      PORT: 8083
+      PHARMACIES_JDBC_URL: jdbc:postgresql://postgres:5432/pharmacies?currentSchema=pharmacies
+      PHARMACIES_DB_USER: pharmacies_app
+      PHARMACIES_DB_PASSWORD: ${PHARMACIES_DB_PASSWORD:?Set PHARMACIES_DB_PASSWORD in .env}
       PHARMACY_SYNC_ENABLED: ${PHARMACY_SYNC_ENABLED:-false}
-      PHARMACY_SNAPSHOT_FILE: /data/pharmacy-schedules.json
       PHARMACY_LOCATIONS_FILE: ${PHARMACY_LOCATIONS_FILE:-}
     volumes:
-      - ./backend/pharmacies-service/target/official:/schedules:ro
-      - pharmacy-data:/data
+      - ./data/pharmacies:/locations:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -62,6 +66,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set POSTGRES_ADMIN_PASSWORD in .env}
       STATISTICS_DB_PASSWORD: ${STATISTICS_DB_PASSWORD:?Set STATISTICS_DB_PASSWORD in .env}
       PARKING_DB_PASSWORD: ${PARKING_DB_PASSWORD:?Set PARKING_DB_PASSWORD in .env}
+      PHARMACIES_DB_PASSWORD: ${PHARMACIES_DB_PASSWORD:?Set PHARMACIES_DB_PASSWORD in .env}
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -74,5 +79,4 @@ services:
       retries: 12
 
 volumes:
-  pharmacy-data:
   postgres-data:

@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-duty-schedule
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: duty-schedule.sql
+            relativeToChangelogFile: true

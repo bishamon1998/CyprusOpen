@@ -5,3 +5,22 @@ Table parking.parking_directory {
   etag text
   last_modified text
 }
+
+Table pharmacies.duty_entry {
+  duty_date date [pk, note: 'Roster day; the current day changes at 08:00 Cyprus time']
+  district text [pk, note: 'nicosia, larnaca, limassol, paphos or famagusta']
+  registration_number text [pk]
+  name text
+  address text
+  municipality text
+  phone text [note: 'Public pharmacy number only; house numbers are never stored']
+
+  indexes {
+    (district, duty_date)
+  }
+}
+
+Table pharmacies.schedule_refresh {
+  id integer [pk, note: 'Singleton: id=1']
+  last_checked_at timestamptz [note: 'Last successful refresh of all five districts']
+}

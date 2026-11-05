@@ -1,9 +1,8 @@
-import { Globe2, LocateFixed, MapPin, Pill, Users } from "lucide-react";
+import { Globe2, MapPin, Users } from "lucide-react";
 
 const icons = {
   people: [Users, Globe2],
   travel: [Globe2, MapPin],
-  pharmacy: [Pill, LocateFixed],
 } as const;
 
 export type IllustrationKind = keyof typeof icons;

@@ -16,3 +16,4 @@ Thumbs.db
 *.tsbuildinfo
 /docs/prototype/
 /scripts/check-prototype.cjs
+/data/

@@ -21,6 +21,16 @@ $checks = @(
         Command = 'PGPASSWORD="$PARKING_DB_PASSWORD" psql -h 127.0.0.1 -U parking_app -d statistics -c "SELECT 1;"'
         ExpectedSuccess = $false
     }
+    @{
+        Name = 'Pharmacies schema and write access'
+        Command = 'PGPASSWORD="$PHARMACIES_DB_PASSWORD" psql -h 127.0.0.1 -U pharmacies_app -d pharmacies -v ON_ERROR_STOP=1 -c "BEGIN; CREATE TABLE pharmacies.connection_check (id integer PRIMARY KEY); INSERT INTO pharmacies.connection_check VALUES (1); SELECT * FROM pharmacies.connection_check; ROLLBACK;"'
+        ExpectedSuccess = $true
+    }
+    @{
+        Name = 'Pharmacies cannot connect to Parking'
+        Command = 'PGPASSWORD="$PHARMACIES_DB_PASSWORD" psql -h 127.0.0.1 -U pharmacies_app -d parking -c "SELECT 1;"'
+        ExpectedSuccess = $false
+    }
 )
 
 foreach ($check in $checks) {
