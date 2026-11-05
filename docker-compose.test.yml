@@ -28,3 +28,15 @@ services:
     depends_on:
       statistics-fixture:
         condition: service_started
+  pharmacy-fixture:
+    image: node:24-alpine
+    volumes:
+      - ./scripts/fixtures:/fixtures:ro
+    command: ["node", "/fixtures/pharmacy-server.mjs"]
+  pharmacies-service:
+    environment:
+      PHARMACY_SYNC_ENABLED: "true"
+      PHARMACY_CATALOG_METADATA_URL: http://pharmacy-fixture:9091/metadata
+    depends_on:
+      pharmacy-fixture:
+        condition: service_started

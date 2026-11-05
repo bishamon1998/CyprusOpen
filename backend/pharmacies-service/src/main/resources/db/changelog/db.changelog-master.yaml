@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-duty-schedule
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: duty-schedule.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: 2-pharmacy-location
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: pharmacy-location.sql
+            relativeToChangelogFile: true
+  - include:
+      file: pharmacy-location-seed.sql
+      relativeToChangelogFile: true
+  - include:
+      file: pharmacy-location-osm-corrections.sql
+      relativeToChangelogFile: true
+  - include:
+      file: pharmacy-location-source-corrections.sql
+      relativeToChangelogFile: true

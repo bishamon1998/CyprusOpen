@@ -22,3 +22,33 @@ Table statistics.observation {
     (dataset_code, series, period) [pk]
   }
 }
+
+Table pharmacies.duty_entry {
+  duty_date date [pk, note: 'Roster day; the current day changes at 08:00 Cyprus time']
+  district text [pk, note: 'nicosia, larnaca, limassol, paphos or famagusta']
+  registration_number text [pk]
+  name text
+  address text
+  municipality text
+  phone text [note: 'Public pharmacy number only; house numbers are never stored']
+
+  indexes {
+    (district, duty_date)
+  }
+}
+
+Table pharmacies.schedule_refresh {
+  id integer [pk, note: 'Singleton: id=1']
+  last_checked_at timestamptz [note: 'Last successful refresh of all five districts']
+}
+
+Table pharmacies.pharmacy_location {
+  registration_number text [pk, note: 'Official registration number; unique across Cyprus']
+  latitude double
+  longitude double
+  precision text [note: 'exact, street or locality']
+  source text [note: 'Origin of the point; must permit storage and display on OpenStreetMap']
+  updated_at timestamptz
+}
+
+Ref: pharmacies.duty_entry.registration_number > pharmacies.pharmacy_location.registration_number
