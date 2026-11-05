@@ -2,6 +2,7 @@ package com.cyprusopen.pharmacies;
 
 import static com.cyprusopen.pharmacies.PharmacyConstants.CYPRUS;
 
+import com.cyprusopen.common.refresh.RefreshResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.Clock;
