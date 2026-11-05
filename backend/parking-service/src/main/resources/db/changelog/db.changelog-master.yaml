@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-parking-directory
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: directory.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: 2-directory-empty-start
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: empty-start.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: 3-simplify-directory-refresh
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: simplify-refresh.sql
+            relativeToChangelogFile: true

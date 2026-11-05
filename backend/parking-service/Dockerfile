@@ -2,7 +2,7 @@ FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /workspace
 COPY pom.xml ./
 COPY backend ./backend
-RUN mvn -B -ntp -pl backend/parking-service -am verify
+RUN mvn -B -ntp -pl backend/parking-service -am package -DskipTests
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app

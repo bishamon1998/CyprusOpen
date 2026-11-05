@@ -1,3 +1,7 @@
-// No domain tables exist yet. Database provisioning: infra/postgres/001-databases.sql.
-// Separate databases: statistics (schema statistics), parking (schema parking).
-// Add tables here in the same change as the corresponding Liquibase migration.
+Table parking.parking_directory {
+  id integer [pk, note: 'Singleton source: id=1']
+  document jsonb [note: 'Latest normalized directory and source publication/retrieval metadata; no occupancy history']
+  last_checked_at timestamptz [note: 'Last successful 200 or 304 check']
+  etag text
+  last_modified text
+}

@@ -1,8 +1,0 @@
-[build]
-dockerfilePath = "backend/parking-service/Dockerfile"
-watchPatterns = ["backend/parking-service/**", "backend/common-library/**", "pom.xml"]
-
-[deploy]
-healthcheckPath = "/actuator/health/readiness"
-healthcheckTimeout = 120
-restartPolicyType = "ON_FAILURE"

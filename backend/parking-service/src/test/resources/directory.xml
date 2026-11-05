@@ -1,0 +1,8 @@
+<ParkingFacilitiesPublication xmlns="http://datex2.eu/schema/3/parking" xmlns:c="http://datex2.eu/schema/3/common" xmlns:l="http://datex2.eu/schema/3/locationReferencing">
+  <c:publicationTime>2026-11-04T00:00:00Z</c:publicationTime>
+  <parkingFacility>
+    <c:versionedIdentifier><c:identifier>test-1</c:identifier></c:versionedIdentifier>
+    <parkingFacilityName><c:lang>en</c:lang><c:value>Integration car park</c:value></parkingFacilityName>
+    <l:location><l:pointByCoordinates><l:pointCoordinates><c:latitude>34.9</c:latitude><c:longitude>33.6</c:longitude></l:pointCoordinates></l:pointByCoordinates></l:location>
+  </parkingFacility>
+</ParkingFacilitiesPublication>

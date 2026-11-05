@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { get } from "./api/http";
 
 export type Dataset = {
   code: string;
@@ -9,17 +10,28 @@ export type Dataset = {
   discoveryUrl: string;
 };
 
-type ParkingReport = {
-  freshness: "unavailable";
-  lastUpdatedAt: string | null;
-  items: { id: string; name: string; availableSpaces: number | null }[];
+export type ParkingPlace = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  availableSpaces: number | null;
 };
 
-async function get<T>(url: string): Promise<T> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error("The service is temporarily unavailable.");
-  return response.json() as Promise<T>;
-}
+export type ParkingReport = {
+  freshness: "unavailable";
+  lastUpdatedAt: string | null;
+  directory: {
+    name: string;
+    url: string;
+    license: string;
+    licenseUrl: string;
+    publishedAt: string | null;
+    retrievedAt: string | null;
+    checkedAt: string | null;
+  };
+  items: ParkingPlace[];
+};
 
 export function useDatasets() {
   return useQuery({
@@ -31,7 +43,15 @@ export function useDatasets() {
 export function useParking() {
   return useQuery({
     queryKey: ["parking"],
-    queryFn: () => get<ParkingReport>("/api/v1/parking"),
+    refetchInterval: (query) =>
+      query.state.data?.directory.publishedAt ? 300_000 : 10_000,
+    queryFn: async () => {
+      const report = await get<ParkingReport>("/api/v1/parking");
+      if (!report.directory || !Array.isArray(report.items)) {
+        throw new Error("Parking directory is not available.");
+      }
+      return report;
+    },
   });
 }
 

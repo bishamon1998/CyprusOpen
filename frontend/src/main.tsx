@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -12,7 +12,6 @@ import {
 import {
   ArrowUpRight,
   ChartColumn,
-  Clock3,
   Database,
   Globe2,
   LocateFixed,
@@ -22,13 +21,16 @@ import {
   RefreshCw,
   Users,
 } from "lucide-react";
-import { catalogUrl, useDatasets, useParking } from "./api";
+import { catalogUrl, useDatasets } from "./api";
+import { I18nProvider, useI18n } from "./i18n";
+import { type Language, type MessageKey } from "./locales";
 import "./styles.css";
 
 const parkingSource =
   "https://www.data.gov.cy/el/dataset/trehoysa-diathesimotita-horon-stathmeysis-dimoy-leykosias";
 const pharmacySource =
   "https://www.data.gov.cy/el/dataset/katalogos-diimereyonton-farmakeion";
+const Parking = lazy(() => import("./parking/Parking"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, staleTime: 30000, refetchOnWindowFocus: false },
@@ -57,91 +59,80 @@ function SourceLink({
 
 function App() {
   const location = useLocation();
+  const { language, setLanguage, t } = useI18n();
   useEffect(() => {
-    const title =
-      {
-        "/": "Statistics",
-        "/parking": "Parking",
-        "/pharmacies": "Pharmacies",
-        "/about": "Sources",
-      }[location.pathname] || "Not found";
-    document.title = `${title} · Cyprus Open`;
+    const titles: Record<string, MessageKey> = {
+      "/": "statistics",
+      "/parking": "parking",
+      "/pharmacies": "pharmacies",
+      "/about": "sources",
+    };
+    document.title = `${t(titles[location.pathname] || "notFound")} · Cyprus Open`;
+  }, [location.pathname, language]);
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
-
   return (
     <>
       <a className="skip-link" href="#main">
-        Skip to content
+        {t("skip")}
       </a>
       <header className="site-header">
         <div className="wrap header-inner">
-          <Link to="/" className="wordmark" aria-label="Cyprus Open home">
-            <span className="logo-mark" aria-hidden="true">
-              c<span />
-            </span>
+          <Link to="/" className="wordmark" aria-label={t("home")}>
+            <img className="mouflon-mark" src="/mouflon-friendly.png" alt="" />
             cyprus<span className="wordmark-light">open</span>
           </Link>
-          <nav aria-label="Main navigation">
+          <nav aria-label={t("navigation")}>
             <NavLink to="/" end>
               <ChartColumn size={17} aria-hidden="true" />
-              <span>Statistics</span>
+              <span>{t("statistics")}</span>
             </NavLink>
             <NavLink to="/parking">
               <ParkingCircle size={18} aria-hidden="true" />
-              <span>Parking</span>
+              <span>{t("parking")}</span>
             </NavLink>
             <NavLink to="/pharmacies">
               <Pill size={17} aria-hidden="true" />
-              <span>Pharmacies</span>
+              <span>{t("pharmacies")}</span>
             </NavLink>
             <NavLink to="/about">
               <Database size={16} aria-hidden="true" />
-              <span>Sources</span>
+              <span>{t("sources")}</span>
             </NavLink>
           </nav>
-          <span className="preview-badge">Preview</span>
+          <select
+            id="language"
+            className="language-select"
+            aria-label={t("language")}
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as Language)}
+          >
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+            <option value="el">EL</option>
+          </select>
         </div>
       </header>
       <main id="main" className="wrap">
-        <Routes>
-          <Route path="/" element={<Statistics />} />
-          <Route path="/parking" element={<Parking />} />
-          <Route path="/pharmacies" element={<Pharmacies />} />
-          <Route path="/about" element={<Sources />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<p className="route-loading">{t("loading")}</p>}>
+          <Routes>
+            <Route path="/" element={<Statistics />} />
+            <Route path="/parking" element={<Parking />} />
+            <Route path="/pharmacies" element={<Pharmacies />} />
+            <Route path="/about" element={<Sources />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
-      <footer className="wrap">
-        <span>Cyprus Open</span>
-        <Link to="/about">
-          Official sources. Open data.
-          <ArrowUpRight size={13} aria-hidden="true" />
-        </Link>
-      </footer>
     </>
   );
 }
 
-function Illustration({
-  kind,
-}: {
-  kind: "people" | "travel" | "parking" | "pharmacy";
-}) {
-  const MainIcon = {
-    people: Users,
-    travel: Globe2,
-    parking: ParkingCircle,
-    pharmacy: Pill,
-  }[kind];
+function Illustration({ kind }: { kind: "people" | "travel" | "pharmacy" }) {
+  const MainIcon = { people: Users, travel: Globe2, pharmacy: Pill }[kind];
   const SmallIcon =
-    kind === "parking"
-      ? MapPin
-      : kind === "pharmacy"
-        ? LocateFixed
-        : kind === "people"
-          ? Globe2
-          : MapPin;
+    kind === "pharmacy" ? LocateFixed : kind === "people" ? Globe2 : MapPin;
   return (
     <div className={`illustration ${kind}`} aria-hidden="true">
       <span className="orbit orbit-one" />
@@ -162,36 +153,33 @@ function Illustration({
 
 function Statistics() {
   const datasets = useDatasets();
+  const { t } = useI18n();
   return (
     <>
-      <PageTitle
-        title="Statistics"
-        subtitle="People & travel"
-        icon={<ChartColumn size={19} />}
-      />
+      <PageTitle title={t("statistics")} />
       {datasets.isError && (
         <div className="error-banner" role="alert">
-          <span>Statistics are temporarily unavailable.</span>
+          <span>{t("statisticsError")}</span>
           <button
             onClick={() => void datasets.refetch()}
             disabled={datasets.isFetching}
           >
             <RefreshCw size={15} aria-hidden="true" />
-            Retry
+            {t("retry")}
           </button>
         </div>
       )}
-      <section className="dataset-grid" aria-label="Statistical datasets">
+      <section className="dataset-grid" aria-label={t("datasets")}>
         <DatasetCard
           kind="people"
-          title="Immigration"
-          description="Country of previous residence · annual"
+          title={t("immigration")}
+          description={t("immigrationDescription")}
           loading={datasets.isPending}
         />
         <DatasetCard
           kind="travel"
-          title="Tourist arrivals"
-          description="Country of usual residence · seasonal"
+          title={t("tourism")}
+          description={t("tourismDescription")}
           loading={datasets.isPending}
         />
       </section>
@@ -210,108 +198,37 @@ function DatasetCard({
   description: string;
   loading: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <article className="dataset-card">
       <div className="card-heading">
         <h2>{title}</h2>
-        <span className="status-label">
-          <span />
-          Not published
-        </span>
       </div>
       <p className="card-description">{description}</p>
       <div className="chart-empty" aria-live="polite" aria-busy={loading}>
         <Illustration kind={kind} />
-        <p>{loading ? "Loading…" : "No verified data yet"}</p>
+        <p>{t(loading ? "loading" : "noData")}</p>
       </div>
       <div className="card-footer">
-        <span>
-          <Clock3 size={14} aria-hidden="true" />
-          Awaiting first import
-        </span>
-        <SourceLink href={catalogUrl}>Source</SourceLink>
+        <SourceLink href={catalogUrl}>{t("source")}</SourceLink>
       </div>
     </article>
   );
 }
 
-function Parking() {
-  const report = useParking();
-  return (
-    <>
-      <PageTitle
-        title="Parking"
-        subtitle="Nicosia"
-        icon={<ParkingCircle size={20} />}
-      />
-      <section className="tool-panel">
-        <div className="tool-toolbar">
-          <span>
-            <MapPin size={16} aria-hidden="true" />
-            Municipal car parks
-          </span>
-          <span className="status-label">
-            <span />
-            Feed not connected
-          </span>
-        </div>
-        <div className="tool-empty">
-          <Illustration kind="parking" />
-          <h2>No availability reports yet</h2>
-          <p>The official feed is being verified.</p>
-          <SourceLink href={parkingSource}>View official dataset</SourceLink>
-        </div>
-        <div className="tool-bottom">
-          <span role="status">
-            {report.isPending
-              ? "Loading…"
-              : report.isError
-                ? "Connection unavailable"
-                : "No live readings"}
-          </span>
-          <SourceLink href="https://www.nicosia.org.cy/en-GB/municipality/services/cashier/parking/">
-            Municipal parking guide
-          </SourceLink>
-        </div>
-      </section>
-      {report.isError && (
-        <button
-          className="retry-button"
-          onClick={() => void report.refetch()}
-          disabled={report.isFetching}
-        >
-          <RefreshCw size={15} aria-hidden="true" />
-          Retry connection
-        </button>
-      )}
-    </>
-  );
-}
-
 function Pharmacies() {
+  const { t } = useI18n();
   return (
     <>
-      <PageTitle
-        title="Pharmacies"
-        subtitle="On duty & nearby"
-        icon={<Pill size={19} />}
-      />
+      <PageTitle title={t("pharmacies")} />
       <section className="tool-panel">
-        <div className="tool-toolbar">
-          <span>
-            <LocateFixed size={16} aria-hidden="true" />
-            Map & nearby search
-          </span>
-          <span className="status-label">
-            <span />
-            Coming next
-          </span>
-        </div>
         <div className="tool-empty">
           <Illustration kind="pharmacy" />
-          <h2>Duty schedules are being checked</h2>
-          <p>Nearby search will use your location only when requested.</p>
-          <SourceLink href={pharmacySource}>View official dataset</SourceLink>
+          <h2>{t("pharmacySoon")}</h2>
+          <p>{t("pharmacyDescription")}</p>
+        </div>
+        <div className="card-footer">
+          <SourceLink href={pharmacySource}>{t("source")}</SourceLink>
         </div>
       </section>
     </>
@@ -319,37 +236,36 @@ function Pharmacies() {
 }
 
 function Sources() {
+  const { t } = useI18n();
   return (
     <>
-      <PageTitle
-        title="Sources"
-        subtitle="Cyprus Government Open Data Portal"
-        icon={<Database size={19} />}
-      />
-      <section className="sources-list" aria-label="Data sources">
+      <PageTitle title={t("sources")} />
+      <section className="sources-list" aria-label={t("dataSources")}>
         <SourceRow
-          title="Statistics"
-          description="Dataset selection in progress"
+          title={t("statistics")}
+          description={t("statisticsSource")}
           href={catalogUrl}
           icon={<ChartColumn size={21} />}
         />
         <SourceRow
-          title="Nicosia parking"
-          description="Nicosia Municipality · XML · CC BY 4.0"
+          title={t("parkingLocations")}
+          description={t("directorySource")}
+          href="https://www.traffic4cyprus.org.cy/en/dataset/parking_areas"
+          icon={<MapPin size={21} />}
+        />
+        <SourceRow
+          title={t("nicosiaParking")}
+          description={t("nicosiaSource")}
           href={parkingSource}
           icon={<ParkingCircle size={23} />}
         />
         <SourceRow
-          title="On-duty pharmacies"
-          description="Pharmaceutical Services · CSV · CC BY 4.0"
+          title={t("dutyPharmacies")}
+          description={t("pharmacySource")}
           href={pharmacySource}
           icon={<Pill size={22} />}
         />
       </section>
-      <p className="source-note">
-        Data imports are not connected in this preview. No sample readings are
-        shown.
-      </p>
     </>
   );
 }
@@ -365,6 +281,7 @@ function SourceRow({
   href: string;
   icon: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="source-row">
       <span className="quick-icon" aria-hidden="true">
@@ -374,43 +291,25 @@ function SourceRow({
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
-      <SourceLink href={href}>Open</SourceLink>
+      <SourceLink href={href}>{t("open")}</SourceLink>
     </div>
   );
 }
 
-function PageTitle({
-  title,
-  subtitle,
-  icon,
-}: {
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-}) {
+function PageTitle({ title }: { title: string }) {
   return (
     <div className="page-title">
-      <div>
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-      </div>
-      <span className="page-icon" aria-hidden="true">
-        {icon}
-      </span>
+      <h1>{title}</h1>
     </div>
   );
 }
-
 function NotFound() {
+  const { t } = useI18n();
   return (
     <>
-      <PageTitle
-        title="Page not found"
-        subtitle="404"
-        icon={<MapPin size={19} />}
-      />
+      <PageTitle title={t("notFound")} />
       <Link className="back-link" to="/">
-        Back to statistics
+        {t("back")}
       </Link>
     </>
   );
@@ -418,10 +317,12 @@ function NotFound() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <I18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </I18nProvider>
   </React.StrictMode>,
 );

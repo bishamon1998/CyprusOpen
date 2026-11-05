@@ -1,0 +1,1 @@
+CREATE SCHEMA parking AUTHORIZATION parking_app;
