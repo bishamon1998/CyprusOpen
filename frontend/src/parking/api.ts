@@ -1,14 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { get } from "./api/http";
+import { get } from "../api/http";
 
-export type Dataset = {
-  code: string;
-  title: string;
-  breakdown: string;
-  availability: "not_imported";
-  lastUpdatedAt: string | null;
-  discoveryUrl: string;
-};
+/** Name the parking service uses for facilities without a usable English name. */
+export const UNNAMED_PARKING = "Car park";
 
 export type ParkingPlace = {
   id: string;
@@ -33,13 +27,6 @@ export type ParkingReport = {
   items: ParkingPlace[];
 };
 
-export function useDatasets() {
-  return useQuery({
-    queryKey: ["datasets"],
-    queryFn: () => get<Dataset[]>("/api/v1/statistics/datasets"),
-  });
-}
-
 export function useParking() {
   return useQuery({
     queryKey: ["parking"],
@@ -54,6 +41,3 @@ export function useParking() {
     },
   });
 }
-
-export const catalogUrl =
-  "https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset";

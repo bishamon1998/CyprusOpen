@@ -7,7 +7,6 @@ export const en = {
   navigation: "Main navigation",
   skip: "Skip to content",
   language: "Language",
-  preview: "Preview",
   loading: "Loading…",
   source: "Source",
   open: "Open",
@@ -81,7 +80,6 @@ const ru: Messages = {
   navigation: "Основная навигация",
   skip: "К содержимому",
   language: "Язык",
-  preview: "Бета",
   loading: "Загрузка…",
   source: "Источник",
   open: "Открыть",
@@ -153,7 +151,6 @@ const el: Messages = {
   navigation: "Κύρια πλοήγηση",
   skip: "Μετάβαση στο περιεχόμενο",
   language: "Γλώσσα",
-  preview: "Δοκιμαστικό",
   loading: "Φόρτωση…",
   source: "Πηγή",
   open: "Άνοιγμα",
@@ -218,3 +215,4 @@ const el: Messages = {
 
 export const messages = { en, ru, el };
 export type Language = keyof typeof messages;
+export const languages = Object.keys(messages) as Language[];
