@@ -2,7 +2,7 @@
 
 Public statistics and everyday tools for people living in Cyprus.
 
-[Live preview](https://cyprus-open.up.railway.app) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
+[cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
 React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts use official CYSTAT tables; live parking occupancy is not connected yet.
 
