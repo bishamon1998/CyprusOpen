@@ -10,7 +10,9 @@ export type Pharmacy = {
   address: string;
   municipality: string;
   phone: string;
-  location: (Position & { source: string }) | null;
+  location:
+    | (Position & { precision: "exact" | "street" | "locality"; source: string })
+    | null;
 };
 
 export type PharmacySchedule = {

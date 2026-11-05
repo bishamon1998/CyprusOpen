@@ -2,9 +2,12 @@ package com.cyprusopen.pharmacies;
 
 final class PharmacySql {
     static final String ENTRIES_ON = """
-            SELECT duty_date, district, registration_number, name, address, municipality, phone
-            FROM duty_entry WHERE duty_date = :date
-            ORDER BY district, name, registration_number
+            SELECT d.duty_date, d.district, d.registration_number, d.name, d.address, d.municipality, d.phone,
+                l.latitude, l.longitude, l.precision, l.source
+            FROM duty_entry d
+            LEFT JOIN pharmacy_location l ON l.registration_number = d.registration_number
+            WHERE d.duty_date = :date
+            ORDER BY d.district, d.name, d.registration_number
             """;
     static final String CHECKED_AT = "SELECT last_checked_at FROM schedule_refresh WHERE id = 1";
     static final String DELETE_FROM = "DELETE FROM duty_entry WHERE district = :district AND duty_date >= :from";

@@ -27,6 +27,9 @@ export function PharmacyList({
           <li key={pharmacy.id} id={pharmacyElementId(pharmacy.id)}>
             <h2 lang="el">{pharmacy.name}</h2>
             <p lang="el">{address}</p>
+            {pharmacy.location && pharmacy.location.precision !== "exact" && (
+              <p>{t("approximateLocation")}</p>
+            )}
             {distance !== null && (
               <p>
                 {t("distance", {

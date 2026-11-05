@@ -11,21 +11,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -62,21 +60,14 @@ class PharmacyScheduleIT {
         }
     }
 
-    @TempDir
-    static Path data;
-
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-bookworm")
             .withDatabaseName("pharmacies").withUsername("pharmacies_app").withPassword("integration-test-only")
             .withInitScript("pharmacies-schema.sql");
 
     @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) throws IOException {
-        var locations = data.resolve("locations.csv");
-        Files.writeString(locations, "district,registrationNumber,address,municipality,latitude,longitude,source\n"
-                + "nicosia,10,\"First Street 1, Shop 2\",Nicosia,35.1700,33.3600,reviewed\n");
+    static void configure(DynamicPropertyRegistry registry) {
         registry.add("pharmacies.catalog-metadata-url", () -> origin() + "/metadata");
-        registry.add("pharmacies.locations-file", locations::toString);
         registry.add("spring.datasource.url", () -> postgres.getJdbcUrl()
                 + (postgres.getJdbcUrl().contains("?") ? "&" : "?") + "currentSchema=pharmacies");
         registry.add("spring.datasource.username", postgres::getUsername);
@@ -101,6 +92,9 @@ class PharmacyScheduleIT {
     @Autowired
     private PharmacyScheduleRefresh refresh;
 
+    @Autowired
+    private JdbcClient jdbc;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
@@ -113,6 +107,10 @@ class PharmacyScheduleIT {
         assertThat(empty.get("checkedAt").isNull()).isTrue();
 
         assertThat(refresh.refresh()).isEqualTo(RefreshResult.UPDATED);
+        jdbc.sql("""
+                INSERT INTO pharmacy_location (registration_number, latitude, longitude, precision, source)
+                VALUES ('10', 35.17, 33.36, 'street', 'manual review')
+                """).update();
         var current = schedule("");
         assertThat(current.get("date").asText()).isEqualTo("2026-11-01");
         assertThat(current.get("onCall").asBoolean()).isTrue();
@@ -122,6 +120,8 @@ class PharmacyScheduleIT {
         var nicosia = item(current, "nicosia:10");
         assertThat(nicosia.get("address").asText()).isEqualTo("First Street 1, Shop 2");
         assertThat(nicosia.get("location").get("latitude").asDouble()).isEqualTo(35.17);
+        assertThat(nicosia.get("location").get("precision").asText()).isEqualTo("street");
+        assertThat(nicosia.get("location").get("source").asText()).isEqualTo("manual review");
         assertThat(item(current, "paphos:40").get("location").isNull()).isTrue();
 
         var selected = schedule("?date=2026-11-02");

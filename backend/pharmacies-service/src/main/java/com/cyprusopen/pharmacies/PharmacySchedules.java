@@ -19,10 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 class PharmacySchedules {
     private final JdbcClient jdbc;
 
-    List<DutyEntry> on(LocalDate date) {
+    List<ScheduledPharmacy> on(LocalDate date) {
         return jdbc.sql(PharmacySql.ENTRIES_ON).param("date", date)
-                .query((rs, row) -> new DutyEntry(rs.getObject(1, LocalDate.class), rs.getString(2), rs.getString(3),
-                        rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7)))
+                .query((rs, row) -> new ScheduledPharmacy(
+                        new DutyEntry(rs.getObject(1, LocalDate.class), rs.getString(2), rs.getString(3),
+                                rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7)),
+                        rs.getString(10) == null ? null : new PharmacyLocation(rs.getDouble(8), rs.getDouble(9),
+                                rs.getString(10), rs.getString(11))))
                 .list();
     }
 

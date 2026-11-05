@@ -17,25 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class PharmacyController {
     private final PharmacySchedules schedules;
-    private final PharmacyLocations locations;
     private final DutyPeriods periods;
 
     @GetMapping("/api/v1/pharmacies")
     ResponseEntity<Schedule> schedule(@RequestParam(required = false) LocalDate date) {
         var period = date == null ? periods.current() : periods.on(date);
-        var items = schedules.on(period.date()).stream().map(this::item).toList();
+        var items = schedules.on(period.date()).stream().map(PharmacyController::item).toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(new Schedule(period.date(), SOURCE, schedules.checkedAt(), period.onCall(), items));
     }
 
-    private Pharmacy item(DutyEntry entry) {
+    private static Pharmacy item(ScheduledPharmacy scheduled) {
+        var entry = scheduled.entry();
         return new Pharmacy(entry.district() + ":" + entry.registrationNumber(), entry.district(),
                 entry.registrationNumber(), entry.name(), entry.address(), entry.municipality(), entry.phone(),
-                locations.find(entry));
+                scheduled.location());
     }
 
     record Schedule(LocalDate date, String source, Instant checkedAt, boolean onCall, List<Pharmacy> items) {}
 
     record Pharmacy(String id, String district, String registrationNumber, String name, String address,
-                    String municipality, String phone, PharmacyLocations.Position location) {}
+                    String municipality, String phone, PharmacyLocation location) {}
 }

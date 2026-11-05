@@ -33,9 +33,6 @@ services:
       PHARMACIES_DB_USER: pharmacies_app
       PHARMACIES_DB_PASSWORD: ${PHARMACIES_DB_PASSWORD:?Set PHARMACIES_DB_PASSWORD in .env}
       PHARMACY_SYNC_ENABLED: ${PHARMACY_SYNC_ENABLED:-false}
-      PHARMACY_LOCATIONS_FILE: ${PHARMACY_LOCATIONS_FILE:-}
-    volumes:
-      - ./data/pharmacies:/locations:ro
     depends_on:
       postgres:
         condition: service_healthy

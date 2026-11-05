@@ -24,3 +24,14 @@ Table pharmacies.schedule_refresh {
   id integer [pk, note: 'Singleton: id=1']
   last_checked_at timestamptz [note: 'Last successful refresh of all five districts']
 }
+
+Table pharmacies.pharmacy_location {
+  registration_number text [pk, note: 'Official registration number; unique across Cyprus']
+  latitude double
+  longitude double
+  precision text [note: 'exact, street or locality']
+  source text [note: 'Origin of the point; must permit storage and display on OpenStreetMap']
+  updated_at timestamptz
+}
+
+Ref: pharmacies.duty_entry.registration_number > pharmacies.pharmacy_location.registration_number
