@@ -5,3 +5,20 @@ Table parking.parking_directory {
   etag text
   last_modified text
 }
+
+Table statistics.dataset {
+  code text [pk, note: 'Stable API code of one CYSTAT table']
+  source_updated_at timestamptz [note: 'CYSTAT update time of the stored table']
+  checked_at timestamptz [note: 'Last successful check']
+}
+
+Table statistics.observation {
+  dataset_code text [ref: > statistics.dataset.code]
+  series text [note: 'Series key, e.g. ISO country code or group']
+  period text [note: 'YYYY or YYYY-MM']
+  value double precision
+  low_reliability boolean [note: 'Source status u']
+  indexes {
+    (dataset_code, series, period) [pk]
+  }
+}

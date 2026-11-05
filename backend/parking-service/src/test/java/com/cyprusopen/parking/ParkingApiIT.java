@@ -2,6 +2,7 @@ package com.cyprusopen.parking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cyprusopen.common.refresh.RefreshResult;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;

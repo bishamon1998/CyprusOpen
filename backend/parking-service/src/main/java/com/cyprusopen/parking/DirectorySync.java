@@ -1,5 +1,6 @@
 package com.cyprusopen.parking;
 
+import com.cyprusopen.common.refresh.RefreshResult;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

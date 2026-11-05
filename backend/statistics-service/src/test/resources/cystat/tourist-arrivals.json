@@ -1,0 +1,42 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Arrivals of Tourists by Country of Usual Residence, Monthly",
+  "source": "Statistical Service of Cyprus",
+  "updated": "2026-10-19T05:00:00Z",
+  "role": {"time": ["MONTH"]},
+  "id": ["COUNTRY OF USUAL RESIDENCE", "MONTH"],
+  "size": [6, 3],
+  "dimension": {
+    "COUNTRY OF USUAL RESIDENCE": {
+      "label": "COUNTRY OF USUAL RESIDENCE",
+      "category": {
+        "index": {"0": 0, "1": 1, "25": 2, "30": 3, "36": 4, "53": 5},
+        "label": {
+          "0": "TOTAL",
+          "1": "EUROPE",
+          "25": "United Kingdom (As of February 2020 the United Kingdom is not included in the E.U. countries)",
+          "30": "Georgia (Until 2010 it was included in Europe)",
+          "36": "Russia",
+          "53": "Georgia (It is included in Asia since 2011 ) (2011-2016) (2023)"
+        }
+      }
+    },
+    "MONTH": {
+      "label": "MONTH",
+      "category": {
+        "index": {"0": 0, "1": 1, "2": 2},
+        "label": {"0": "2025M12", "1": "2026M01", "2": "2026M02"}
+      }
+    }
+  },
+  "value": [
+    1000, 1100, 1200,
+    900, 950, 1000,
+    400, 420, null,
+    10, null, null,
+    50, 55, 60,
+    5, 7, 9
+  ],
+  "status": {"12": "u"}
+}

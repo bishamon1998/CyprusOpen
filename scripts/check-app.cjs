@@ -47,8 +47,13 @@ async function main() {
     ).json();
     assert.deepEqual(
       datasets.map((dataset) => dataset.code),
-      ["immigration", "tourism"],
+      ["immigrant-groups", "migration-movements", "tourist-arrivals"],
     );
+    assert.ok(datasets.every((dataset) => dataset.updatedAt !== null));
+    const tourism = await (
+      await fetch(`${baseUrl}/api/v1/statistics/datasets/tourist-arrivals`)
+    ).json();
+    assert.ok(tourism.series.some((series) => series.key === "GB"));
     const report = await (await fetch(`${baseUrl}/api/v1/parking`)).json();
     assert.equal(report.freshness, "unavailable");
     assert.ok(report.items.length > 0);
@@ -265,6 +270,17 @@ async function main() {
     }
     await page.locator("#language").selectOption("en");
     await page.getByRole("link", { name: "Statistics", exact: true }).click();
+    for (const chart of [
+      "Long-term immigrants to Cyprus by year",
+      "Tourist arrivals by country of usual residence",
+    ]) {
+      await page.getByRole("img", { name: chart, exact: true }).waitFor();
+    }
+    await page.getByRole("radio", { name: "Since 1981" }).click();
+    await page.getByRole("radio", { name: "Summer" }).click();
+    await page
+      .getByRole("img", { name: "Tourist arrivals by country of usual residence" })
+      .waitFor();
     assert.equal(await page.locator("footer").count(), 0);
     assert.equal(
       await page.getByText("People & travel", { exact: true }).count(),

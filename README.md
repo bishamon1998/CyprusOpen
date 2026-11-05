@@ -4,7 +4,7 @@ Public statistics and everyday tools for people living in Cyprus.
 
 [Live preview](https://cyprus-open.up.railway.app) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics imports, live parking occupancy and on-duty pharmacy data are not connected yet.
+React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
@@ -51,6 +51,14 @@ A valid, non-empty publication replaces the previous directory atomically. Inval
 
 The owner's [Nicosia availability dataset](https://www.data.gov.cy/el/dataset/trehoysa-diathesimotita-horon-stathmeysis-dimoy-leykosias) points to [RSS XML](https://www.nicosia.org.cy/el-GR/rss/parkingspaces/). On 4 November 2026 all four observations were dated 5 December 2022, with negative counts also present. Those are not live readings: the API keeps occupancy freshness unavailable and counts/timestamp null. Research into usable live sources is tracked in issue #13; implementation remains in #6.
 
+## Statistics data and refresh
+
+Charts read official [CYSTAT](https://www.cystat.gov.cy) tables, linked from data.gov.cy under CC BY 4.0: [tourist arrivals by country of usual residence, monthly](https://www.data.gov.cy/en/dataset/2285), [immigrants by citizenship, country of birth and previous residence, annual](https://www.data.gov.cy/en/dataset/2174) and [migration movements, annual](https://www.data.gov.cy/en/dataset/2172). The immigrant table publishes only Cyprus / EU / non-EU groups, not individual countries; the UI says so instead of substituting another measure.
+
+`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). Each dataset class only maps table categories to series keys; fetching, parsing, storage and refresh are shared, so a new chart needs one small class. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed or invalid table keeps its last stored values. Country series use ISO codes so the browser localizes names.
+
+Automatic refresh is **disabled by default**. `STATISTICS_SYNC_ENABLED=true` imports missing tables on startup and checks every **Monday at 04:30 Cyprus time**. User requests never call CYSTAT. Integration tests and browser CI use local JSON-stat fixtures.
+
 ## Maps and privacy
 
 Leaflet with clustered markers uses standard OSM tiles, visible attribution and ordinary browser caching, without prefetch. Runtime `MAP_TILE_URL`, `MAP_ATTRIBUTION` and `MAP_ATTRIBUTION_URL` can change the provider without rebuilding. Use HTTPS and respect provider terms; this public client configuration must not contain secrets. The list and Google Maps directions remain usable if tiles fail.
@@ -66,6 +74,8 @@ Keep repository root as the build context. Service settings are managed directly
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
 | Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
 | Parking | `backend/parking-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
+
+Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
 
 Before deploying the new Parking service, provision its restricted database role and schema and configure `PARKING_JDBC_URL`, `PARKING_DB_USER`, `PARKING_DB_PASSWORD` and optionally `PARKING_DB_SCHEMA` (default `parking`). Database secrets stay outside Git. Production database provisioning/deployment is not performed by this PR. Set `PARKING_DIRECTORY_SYNC_ENABLED=true` on the Railway Parking service for the release. On startup, Liquibase prepares the database and Parking imports the official directory if it is empty. Verify that `/api/v1/parking` returns items and a directory check timestamp. If the initial import fails, inspect the Parking logs before restarting the service to retry.
 
