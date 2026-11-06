@@ -147,8 +147,14 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
         ...(view.kind === "stacked" ? { stack: "total" } : {}),
         // Years a table does not publish are null. Without connectNulls a value between two gaps has no
         // segment and, with symbols hidden, stays invisible until hovered; a lone value still needs its symbol.
+        // Lines appear through an animated SVG clipPath; iOS Safari does not repaint when that clipPath grows,
+        // so the line stayed hidden until a tap. Without the animation the clip is drawn at full width at once.
         ...(view.kind === "line"
-          ? { connectNulls: true, showSymbol: values.filter((amount) => amount !== null).length < 2 }
+          ? {
+              animation: false,
+              connectNulls: true,
+              showSymbol: values.filter((amount) => amount !== null).length < 2,
+            }
           : { barMaxWidth: 34 }),
         data: values,
       };
