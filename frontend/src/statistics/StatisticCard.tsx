@@ -139,13 +139,20 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
         },
       };
     }
-    const lines = view.series.map((item) => ({
-      name: t(item.label),
-      type: view.kind === "line" ? "line" : "bar",
-      ...(view.kind === "stacked" ? { stack: "total" } : {}),
-      ...(view.kind === "line" ? { showSymbol: false } : { barMaxWidth: 34 }),
-      data: valuesByPeriod(data, item.key),
-    }));
+    const lines = view.series.map((item) => {
+      const values = valuesByPeriod(data, item.key);
+      return {
+        name: t(item.label),
+        type: view.kind === "line" ? "line" : "bar",
+        ...(view.kind === "stacked" ? { stack: "total" } : {}),
+        // Years a table does not publish are null. Without connectNulls a value between two gaps has no
+        // segment and, with symbols hidden, stays invisible until hovered; a lone value still needs its symbol.
+        ...(view.kind === "line"
+          ? { connectNulls: true, showSymbol: values.filter((amount) => amount !== null).length < 2 }
+          : { barMaxWidth: 34 }),
+        data: values,
+      };
+    });
     return {
       status: "ready",
       height: 320,
