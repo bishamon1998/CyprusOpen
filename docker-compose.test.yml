@@ -25,6 +25,7 @@ services:
     environment:
       STATISTICS_SYNC_ENABLED: "true"
       STATISTICS_CYSTAT_API_URL: http://statistics-fixture:9091/api/
+      STATISTICS_CYSTAT_REQUEST_INTERVAL: 0s
     depends_on:
       statistics-fixture:
         condition: service_started

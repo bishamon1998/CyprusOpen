@@ -7,6 +7,8 @@ final class StatisticsConstants {
     static final int MAX_RESPONSE_BYTES = 4 * 1024 * 1024;
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
     static final Duration READ_TIMEOUT = Duration.ofSeconds(30);
+    /** Requests per table, including retries after CYSTAT answers 429 Too Many Requests. */
+    static final int RATE_LIMIT_ATTEMPTS = 3;
     /** PxWeb query selecting every cell of a table, returned as JSON-stat 2.0. */
     static final String FULL_TABLE_QUERY = "{\"query\":[],\"response\":{\"format\":\"json-stat2\"}}";
 

@@ -1,0 +1,39 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Inflation, Annual by YEAR",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-01-08T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR"
+ ],
+ "size": [
+  3
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "63": 0,
+     "64": 1,
+     "65": 2
+    },
+    "label": {
+     "63": "2023",
+     "64": "2024",
+     "65": "2025"
+    }
+   }
+  }
+ },
+ "value": [
+  3.5,
+  1.8,
+  0.1
+ ]
+}

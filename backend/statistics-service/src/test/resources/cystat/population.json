@@ -1,0 +1,100 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "De Jure Population by Sex, Annual by YEAR, PERIOD and POPULATION/PERCENTAGE CHANGE",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-07-09T05:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "PERIOD",
+  "POPULATION/PERCENTAGE CHANGE"
+ ],
+ "size": [
+  3,
+  2,
+  4
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "49": 0,
+     "50": 1,
+     "51": 2
+    },
+    "label": {
+     "49": "2023",
+     "50": "2024",
+     "51": "2025"
+    }
+   }
+  },
+  "PERIOD": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Mid year",
+     "1": "End of the year"
+    }
+   }
+  },
+  "POPULATION/PERCENTAGE CHANGE": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3
+    },
+    "label": {
+     "0": "Total (000's)",
+     "1": "Males (000's)",
+     "2": "Females (000's)",
+     "3": "Total annual percentage change  (%)"
+    }
+   }
+  }
+ },
+ "value": [
+  957.6,
+  470.3,
+  487.2,
+  2.1,
+  966.4,
+  475.6,
+  490.8,
+  1.8,
+  975.1,
+  480.2,
+  494.9,
+  1.8,
+  983,
+  484.2,
+  498.8,
+  1.7,
+  null,
+  null,
+  null,
+  null,
+  996.6,
+  null,
+  null,
+  1.4
+ ],
+ "status": {
+  "16": "...",
+  "17": "...",
+  "18": "...",
+  "19": "...",
+  "21": "...",
+  "22": "..."
+ }
+}

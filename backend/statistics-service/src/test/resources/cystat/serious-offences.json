@@ -1,0 +1,101 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "True Cases of Serious Offences Reported to the Police by Offence Group, Annual by YEAR and OFFENCE GROUP AND VOLUME OF CRIME",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-18T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "OFFENCE GROUP AND VOLUME OF CRIME"
+ ],
+ "size": [
+  3,
+  11
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "17": 0,
+     "18": 1,
+     "19": 2
+    },
+    "label": {
+     "17": "2022",
+     "18": "2023",
+     "19": "2024"
+    }
+   }
+  },
+  "OFFENCE GROUP AND VOLUME OF CRIME": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9,
+     "10": 10
+    },
+    "label": {
+     "0": "Volume of crime",
+     "1": "Total number of true cases of serious offences reported",
+     "2": "Against public order",
+     "3": "Against lawful authority",
+     "4": "Injurious to the public in general",
+     "5": "Sexual offences",
+     "6": "Against the person (b)",
+     "7": "Against property",
+     "8": "Malicious damages to property",
+     "9": "Forgery, coining, counterfeiting, criminal impersonation etc.",
+     "10": "Miscellaneous offences"
+    }
+   }
+  }
+ },
+ "value": [
+  568,
+  5332,
+  129,
+  103,
+  1037,
+  91,
+  498,
+  2121,
+  280,
+  616,
+  457,
+  588,
+  5630,
+  149,
+  51,
+  1090,
+  70,
+  908,
+  1957,
+  279,
+  414,
+  712,
+  605,
+  5900,
+  136,
+  68,
+  1042,
+  78,
+  1582,
+  1875,
+  251,
+  272,
+  596
+ ]
+}

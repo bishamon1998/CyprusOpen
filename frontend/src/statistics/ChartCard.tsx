@@ -49,7 +49,7 @@ export function ChartCard({
         <h2>{title}</h2>
       </div>
       <p className="card-description">{description}</p>
-      {state.status === "ready" && controls && (
+      {state.status !== "error" && controls && (
         <div className="chart-controls">{controls}</div>
       )}
       {state.status === "ready" ? (

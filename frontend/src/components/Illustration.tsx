@@ -1,8 +1,26 @@
-import { Globe2, MapPin, Users } from "lucide-react";
+import {
+  Briefcase,
+  Car,
+  Coins,
+  Fuel,
+  Globe2,
+  Heart,
+  MapPin,
+  Scale,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
 
 const icons = {
   people: [Users, Globe2],
   travel: [Globe2, MapPin],
+  prices: [TrendingUp, Coins],
+  family: [Heart, Users],
+  safety: [ShieldCheck, Scale],
+  earnings: [Wallet, Briefcase],
+  fuel: [Fuel, Car],
 } as const;
 
 export type IllustrationKind = keyof typeof icons;

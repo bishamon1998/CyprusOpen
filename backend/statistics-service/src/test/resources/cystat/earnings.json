@@ -1,0 +1,84 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Average Monthly Earnings, Annual by YEAR, MEASURE and SEX",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-10-19T05:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "MEASURE",
+  "SEX"
+ ],
+ "size": [
+  3,
+  2,
+  3
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "13": 0,
+     "14": 1,
+     "15": 2
+    },
+    "label": {
+     "13": "2023",
+     "14": "2024",
+     "15": "2025"
+    }
+   }
+  },
+  "MEASURE": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Mean",
+     "1": "Median"
+    }
+   }
+  },
+  "SEX": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Total",
+     "1": "Males",
+     "2": "Females"
+    }
+   }
+  }
+ },
+ "value": [
+  2363,
+  2539,
+  2143,
+  1792,
+  1883,
+  1677,
+  2483,
+  2658,
+  2265,
+  1881,
+  1969,
+  1781,
+  2591,
+  2764,
+  2373,
+  1953,
+  2034,
+  1855
+ ]
+}

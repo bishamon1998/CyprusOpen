@@ -45,10 +45,10 @@ async function main() {
     const datasets = await (
       await fetch(`${baseUrl}/api/v1/statistics/datasets`)
     ).json();
-    assert.deepEqual(
-      datasets.map((dataset) => dataset.code),
-      ["immigrant-groups", "migration-movements", "tourist-arrivals"],
-    );
+    assert.equal(datasets.length, 13);
+    for (const code of ["immigrant-groups", "tourist-arrivals", "inflation", "fuel-sales"]) {
+      assert.ok(datasets.some((dataset) => dataset.code === code), code);
+    }
     assert.ok(datasets.every((dataset) => dataset.updatedAt !== null));
     const tourism = await (
       await fetch(`${baseUrl}/api/v1/statistics/datasets/tourist-arrivals`)
@@ -279,16 +279,25 @@ async function main() {
     await page.locator("#language").selectOption("en");
     await page.getByRole("link", { name: "Statistics", exact: true }).click();
     for (const chart of [
-      "Long-term immigrants to Cyprus by year",
-      "Tourist arrivals by country of usual residence",
+      "Immigration · Citizenship",
+      "Tourist arrivals · Tourist arrivals",
+      "Inflation · By year",
+      "Population · Population",
+      "Marriages · Marriages",
+      "Crime · By type",
+      "Earnings · Median and average",
+      "Fuel sales · Road fuels",
     ]) {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }
     await page.getByRole("radio", { name: "Since 1981" }).click();
+    await page.getByRole("img", { name: "Immigration · Since 1981" }).waitFor();
     await page.getByRole("radio", { name: "Winter" }).click();
     await page
-      .getByRole("img", { name: "Tourist arrivals by country of usual residence" })
+      .getByRole("img", { name: "Tourist arrivals · Tourist arrivals" })
       .waitFor();
+    await page.getByRole("radio", { name: "By category" }).click();
+    await page.getByRole("img", { name: "Inflation · By category" }).waitFor();
     assert.equal(await page.locator("footer").count(), 0);
     assert.equal(
       await page.getByText("People & travel", { exact: true }).count(),

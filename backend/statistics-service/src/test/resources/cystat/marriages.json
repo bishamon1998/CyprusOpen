@@ -1,0 +1,106 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Marriages by Type and Marriage Rates, Annual by YEAR and TYPE OF MARRIAGE, MARRIAGE RATES",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "TYPE OF MARRIAGE, MARRIAGE RATES"
+ ],
+ "size": [
+  3,
+  12
+ ],
+ "dimension": {
+  "YEAR": {
+   "category": {
+    "index": {
+     "48": 0,
+     "49": 1,
+     "50": 2
+    },
+    "label": {
+     "48": "2022",
+     "49": "2023",
+     "50": "2024"
+    }
+   }
+  },
+  "TYPE OF MARRIAGE, MARRIAGE RATES": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9,
+     "10": 10,
+     "11": 11
+    },
+    "label": {
+     "0": "Total Marriages",
+     "1": "Ecclesiastical Marriages",
+     "2": "Civil Marriages",
+     "3": "Total Marriages - Residents",
+     "4": "Ecclesiastical Marriages - Residents",
+     "5": "Civil Marriages - Residents",
+     "6": "Marriage Rate - Crude (%)",
+     "7": "Total Marriage Rate - Males (1st Marriage)",
+     "8": "Total Marriage Rate - Females (1st Marriage)",
+     "9": "Marriage Rate, Residents - Crude (%)",
+     "10": "Total Marriage Rate, Residents - Males (1st Marriage)",
+     "11": "Total Marriage Rates, Residents - Females (1st Marriage)"
+    }
+   }
+  }
+ },
+ "value": [
+  13350,
+  4486,
+  8864,
+  6645,
+  4486,
+  2159,
+  14.2,
+  1487,
+  1563,
+  7.1,
+  779,
+  819,
+  11766,
+  4355,
+  7411,
+  6431,
+  4355,
+  2076,
+  12.3,
+  1267,
+  1398,
+  6.7,
+  719,
+  797,
+  10334,
+  3801,
+  6533,
+  5709,
+  3801,
+  1908,
+  10.6,
+  1257,
+  1407,
+  5.9,
+  714,
+  802
+ ]
+}

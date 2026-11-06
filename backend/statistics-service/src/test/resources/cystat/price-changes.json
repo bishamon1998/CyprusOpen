@@ -1,0 +1,142 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Consumer Price Index by Main Categories (Base Year 2025=100), Annual by COICOP18, INDICATOR and YEAR",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-02-13T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "COICOP18",
+  "INDICATOR",
+  "YEAR"
+ ],
+ "size": [
+  14,
+  2,
+  2
+ ],
+ "dimension": {
+  "COICOP18": {
+   "category": {
+    "index": {
+     "Total": 0,
+     "CP01": 1,
+     "CP02": 2,
+     "CP03": 3,
+     "CP04": 4,
+     "CP05": 5,
+     "CP06": 6,
+     "CP07": 7,
+     "CP08": 8,
+     "CP09": 9,
+     "CP10": 10,
+     "CP11": 11,
+     "CP12": 12,
+     "CP13": 13
+    },
+    "label": {
+     "Total": "General Consumer Price Index",
+     "CP01": "Food and non-alcoholic beverages",
+     "CP02": "Alcoholic beverages and tobacco",
+     "CP03": "Clothing and footwear",
+     "CP04": "Housing, water, electricity, gas and other fuels",
+     "CP05": "Furnishings, household equipment and routine household maintenance",
+     "CP06": "Health",
+     "CP07": "Transport",
+     "CP08": "Information and communication",
+     "CP09": "Recreation, sport and culture",
+     "CP10": "Education services",
+     "CP11": "Restaurants and accommodation services",
+     "CP12": "Insurance and financial services",
+     "CP13": "Personal care, social protection and miscellaneous goods and services"
+    }
+   }
+  },
+  "INDICATOR": {
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Index-Annual",
+     "1": "% change - previous year"
+    }
+   }
+  },
+  "YEAR": {
+   "category": {
+    "index": {
+     "6": 0,
+     "7": 1
+    },
+    "label": {
+     "6": "2024",
+     "7": "2025"
+    }
+   }
+  }
+ },
+ "value": [
+  99.87,
+  100,
+  1.8,
+  0.13,
+  100.41,
+  100,
+  3.34,
+  -0.41,
+  99.1,
+  100,
+  2.05,
+  0.91,
+  106.94,
+  100,
+  -0.27,
+  -6.49,
+  100.66,
+  100,
+  1.2,
+  -0.66,
+  100.69,
+  100,
+  -0.49,
+  -0.69,
+  98.48,
+  100,
+  1.24,
+  1.54,
+  101.39,
+  100,
+  -0.49,
+  -1.37,
+  99.23,
+  100,
+  -0.01,
+  0.77,
+  96.73,
+  100,
+  3.26,
+  3.38,
+  96.48,
+  100,
+  2.8,
+  3.65,
+  95.5,
+  100,
+  5.43,
+  4.72,
+  99.69,
+  100,
+  3.36,
+  0.31,
+  98.44,
+  100,
+  2.67,
+  1.59
+ ]
+}

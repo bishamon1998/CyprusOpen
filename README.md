@@ -4,7 +4,7 @@ Public statistics and everyday tools for people living in Cyprus.
 
 [cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts use official CYSTAT tables; live parking occupancy is not connected yet.
+React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
@@ -53,9 +53,11 @@ The owner's [Nicosia availability dataset](https://www.data.gov.cy/el/dataset/tr
 
 ## Statistics data and refresh
 
-Charts read official [CYSTAT](https://www.cystat.gov.cy) tables, linked from data.gov.cy under CC BY 4.0: [tourist arrivals by country of usual residence, monthly](https://www.data.gov.cy/en/dataset/2285), [immigrants by citizenship, country of birth and previous residence, annual](https://www.data.gov.cy/en/dataset/2174) and [migration movements, annual](https://www.data.gov.cy/en/dataset/2172). The immigrant table publishes only Cyprus / EU / non-EU groups, not individual countries; the UI says so instead of substituting another measure.
+Charts read official [CYSTAT](https://www.cystat.gov.cy) tables, linked from data.gov.cy under CC BY 4.0: immigration ([2174](https://www.data.gov.cy/en/dataset/2174), [2172](https://www.data.gov.cy/en/dataset/2172)), tourist arrivals ([2285](https://www.data.gov.cy/en/dataset/2285)), inflation ([2201](https://www.data.gov.cy/en/dataset/2201), [2314](https://www.data.gov.cy/en/dataset/2314)), population ([2176](https://www.data.gov.cy/en/dataset/2176), [2177](https://www.data.gov.cy/en/dataset/2177), [2142](https://www.data.gov.cy/en/dataset/2142)), marriages and civil unions ([2157](https://www.data.gov.cy/en/dataset/2157), [2352](https://www.data.gov.cy/en/dataset/2352)), serious offences ([1933](https://www.data.gov.cy/en/dataset/1933)), earnings ([1773](https://www.data.gov.cy/en/dataset/1773)) and fuel sales ([1535](https://www.data.gov.cy/en/dataset/1535)). The immigrant table publishes only Cyprus / EU / non-EU groups, not individual countries; the UI says so instead of substituting another measure.
 
-`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). Jackson binds the JSON-stat document; each dataset class only maps table categories to series keys, and fetching, storage and refresh are shared, so a new chart needs one small class. Country names become ISO codes through the JDK's locale data. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed or invalid table keeps its last stored values. Country series use ISO codes so the browser localizes names.
+`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). CYSTAT answers bursts with HTTP 429, so tables are fetched `STATISTICS_CYSTAT_REQUEST_INTERVAL` apart (3 s by default) and a rejected request is retried later. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed or invalid table keeps its last stored values.
+
+Adding a chart: declare the table in `StatisticsDatasets` (code, table path, data.gov.cy page, category-to-series mapping), add a fixture line to `src/test/resources/cystat/tables.properties`, then add a card or view to `frontend/src/statistics/cards.ts` with its labels in `locales.ts`. Fetching, storage, refresh, the API, chart drawing, controls and source labels are shared. Country series use ISO codes so the browser localizes names.
 
 Automatic refresh is **disabled by default**. `STATISTICS_SYNC_ENABLED=true` imports missing tables on startup and checks every **Monday at 04:30 Cyprus time** (see [Refresh schedule](#refresh-schedule)). User requests never call CYSTAT. Integration tests and browser CI use local JSON-stat fixtures.
 
