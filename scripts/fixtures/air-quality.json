@@ -1,0 +1,235 @@
+{
+ "data": {
+  "station_1": {
+   "name_en": "Nicosia - Traffic Station",
+   "name_el": "Λευκωσία - Κυκλοφοριακός Σταθμός",
+   "type_en": "Traffic",
+   "type_el": "Κυκλοφοριακός",
+   "latitude": "35.15192246950294",
+   "longitude": "33.347919957077806",
+   "pollutants": {
+    "date_time": "2026-11-07 19:00:00",
+    "pollutant_1": {
+     "code": "1",
+     "notation": "SO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/1",
+     "value": "4.02310500"
+    },
+    "pollutant_5": {
+     "code": "5",
+     "notation": "PM₁₀",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/5",
+     "value": "39.18748000"
+    },
+    "pollutant_7": {
+     "code": "7",
+     "notation": "O₃",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/7",
+     "value": "15.02466000"
+    },
+    "pollutant_8": {
+     "code": "8",
+     "notation": "NO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/8",
+     "value": "55.00293000"
+    },
+    "pollutant_9": {
+     "code": "9",
+     "notation": "NOx",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/9",
+     "value": "80.74661000"
+    },
+    "pollutant_10": {
+     "code": "10",
+     "notation": "CO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/10",
+     "value": "426.72560000"
+    },
+    "pollutant_20": {
+     "code": "20",
+     "notation": "C₆H₆",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/20",
+     "value": "1.33551800"
+    },
+    "pollutant_38": {
+     "code": "38",
+     "notation": "NO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/38",
+     "value": "16.78117000"
+    },
+    "pollutant_6001": {
+     "code": "6001",
+     "notation": "PM₂.₅",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/6001",
+     "value": "12.16108000"
+    }
+   }
+  },
+  "station_9": {
+   "name_en": "Mari - Industrial Station",
+   "name_el": "Μαρί - Βιομηχανικός Σταθμός",
+   "type_en": "Industrial",
+   "type_el": "Βιομηχανικός",
+   "latitude": "34.74015413889849",
+   "longitude": "33.30027554245612",
+   "pollutants": {
+    "date_time": "2026-11-07 19:00:00",
+    "pollutant_1": {
+     "code": "1",
+     "notation": "SO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/1",
+     "value": "0.30987460"
+    },
+    "pollutant_7": {
+     "code": "7",
+     "notation": "O₃",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/7",
+     "value": "31.61157000"
+    },
+    "pollutant_8": {
+     "code": "8",
+     "notation": "NO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/8",
+     "value": "9.15229300"
+    },
+    "pollutant_9": {
+     "code": "9",
+     "notation": "NOx",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/9",
+     "value": "9.76009700"
+    },
+    "pollutant_10": {
+     "code": "10",
+     "notation": "CO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/10",
+     "value": "393.52230000"
+    },
+    "pollutant_20": {
+     "code": "20",
+     "notation": "C₆H₆",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/20",
+     "value": "0.41296430"
+    },
+    "pollutant_38": {
+     "code": "38",
+     "notation": "NO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/38",
+     "value": "0.39619990"
+    }
+   }
+  },
+  "station_10": {
+   "name_en": "Ayia Marina Xyliatou - Background Station",
+   "name_el": "Αγία Μαρίνα Ξυλιάτου - Σταθμός Υποβάθρου",
+   "type_en": "Rural",
+   "type_el": "Αγροτικός",
+   "latitude": "35.0380556",
+   "longitude": "33.05777779999994",
+   "pollutants": {
+    "date_time": "2026-11-07 19:00:00",
+    "pollutant_1": {
+     "code": "1",
+     "notation": "SO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/1",
+     "value": "0.60178560"
+    },
+    "pollutant_5": {
+     "code": "5",
+     "notation": "PM₁₀",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/5",
+     "value": "8.04179200"
+    },
+    "pollutant_7": {
+     "code": "7",
+     "notation": "O₃",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/7",
+     "value": "79.92651000"
+    },
+    "pollutant_8": {
+     "code": "8",
+     "notation": "NO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/8",
+     "value": "2.74083900"
+    },
+    "pollutant_9": {
+     "code": "9",
+     "notation": "NOx",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/9",
+     "value": "3.79671000"
+    },
+    "pollutant_10": {
+     "code": "10",
+     "notation": "CO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/10",
+     "value": "167.59280000"
+    },
+    "pollutant_20": {
+     "code": "20",
+     "notation": "C₆H₆",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/20",
+     "value": "0.19482000"
+    },
+    "pollutant_38": {
+     "code": "38",
+     "notation": "NO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/38",
+     "value": "0.68945630"
+    },
+    "pollutant_6001": {
+     "code": "6001",
+     "notation": "PM₂.₅",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/6001",
+     "value": "5.26519300"
+    }
+   }
+  },
+  "station_99": {
+   "name_en": "Misplaced station",
+   "name_el": "Λευκωσία - Οικιστικός Σταθμός ",
+   "type_en": "Urban",
+   "type_el": "Οικιστικός",
+   "latitude": "51.5",
+   "longitude": "33.33166670000003",
+   "pollutants": {
+    "date_time": "2026-11-07 19:00:00",
+    "pollutant_1": {
+     "code": "1",
+     "notation": "SO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/1",
+     "value": "6.36416400"
+    },
+    "pollutant_7": {
+     "code": "7",
+     "notation": "O₃",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/7",
+     "value": "21.84692000"
+    },
+    "pollutant_8": {
+     "code": "8",
+     "notation": "NO₂",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/8",
+     "value": "56.63229000"
+    },
+    "pollutant_9": {
+     "code": "9",
+     "notation": "NOx",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/9",
+     "value": "78.57547000"
+    },
+    "pollutant_10": {
+     "code": "10",
+     "notation": "CO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/10",
+     "value": "456.89150000"
+    },
+    "pollutant_38": {
+     "code": "38",
+     "notation": "NO",
+     "description": "http://dd.eionet.europa.eu/vocabularyconcept/aq/pollutant/38",
+     "value": "14.30379000"
+    }
+   }
+  }
+ },
+ "method": "GET"
+}

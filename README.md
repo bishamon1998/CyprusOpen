@@ -4,14 +4,14 @@ Public statistics and everyday tools for people living in Cyprus.
 
 [cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics and Parking services, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
+React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics, Places (parking, beaches, air quality) and Pharmacies services, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
 Use Docker Desktop. Preserve the existing `.env`; for a new checkout copy `.env.example` and set three distinct database passwords. Run:
 
 ```sh
-docker compose up -d --build frontend statistics-service parking-service pharmacies-service
+docker compose up -d --build frontend statistics-service places-service pharmacies-service
 ```
 
 Open http://localhost:3000. Parking now requires PostgreSQL; Compose starts it automatically and preserves the existing volume. The Parking role owns its database/schema, separately from Statistics. Liquibase owns schema migrations. Never remove the database volume to update the app.
@@ -19,7 +19,7 @@ Open http://localhost:3000. Parking now requires PostgreSQL; Compose starts it a
 Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and pnpm 11.25.0. Build/test independently:
 
 ```sh
-./mvnw -B -ntp -pl backend/parking-service -am verify
+./mvnw -B -ntp -pl backend/places-service -am verify
 ./mvnw -B -ntp -pl backend/statistics-service -am verify
 ./mvnw -B -ntp -pl backend/pharmacies-service -am verify
 cd frontend
@@ -44,7 +44,7 @@ The UI distinguishes the source publication timestamp, successful retrieval and 
 Automatic checking is **disabled by default**. When enabled, the job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **05:00 Cyprus time on the first day of each month** (see [Refresh schedule](#refresh-schedule)). This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
 
 ```sh
-docker compose run --rm --no-deps parking-service --spring.profiles.active=directory-refresh
+docker compose run --rm --no-deps places-service --spring.profiles.active=directory-refresh
 ```
 
 The job uses Spring `RestClient`, conditional ETag/Last-Modified headers, server-configured endpoint (the verified official HTTPS resource by default), no redirects, 5-second connection / 15-second read timeout, and a 2 MiB response limit. The job makes one request per run. If the source is unavailable or returns invalid data, the job logs the outcome and keeps the last successful snapshot. Only server configuration supplies the endpoint; user API input cannot change it. Tests replace that configuration with their HTTP server, without test flags or hostnames in production code. There is no public refresh endpoint. User API requests never call upstream. The browser polls our API every 10 seconds while the directory is empty and every 5 minutes after initialization.
@@ -69,11 +69,29 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 
 | Job | Service | When | Enabled by |
 | --- | --- | --- | --- |
-| `parking-directory` | parking | 1st of each month, 05:00 | `PARKING_DIRECTORY_SYNC_ENABLED` |
+| `parking-directory` | places | 1st of each month, 05:00 | `PARKING_DIRECTORY_SYNC_ENABLED` |
 | `pharmacy-schedule` | pharmacies | daily, 06:15 | `PHARMACY_SYNC_ENABLED` |
 | `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
+| `air-quality` | places | hourly, at :20 | `AIR_QUALITY_SYNC_ENABLED` |
+| `beaches` | places | Tuesdays, 05:40 | `BEACHES_SYNC_ENABLED` |
 
 Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). `Upstream.fetch` reads a body only for 200 OK and within the size limit, and the read timeout also bounds a slowly sent body. Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
+
+## Air quality
+
+The Air quality page shows the latest hourly readings of the Department of Labour Inspection monitoring stations ([data.gov.cy](https://www.data.gov.cy/el/dataset/i/5dc97c12-735d-4cc7-9030-101c735ce1a3), CC BY-SA 4.0). places-service serves it at `/api/v1/air-quality`, so the map tools share one machine; the frontend proxies that path to `PARKING_UPSTREAM`.
+
+The hourly `air-quality` job reads `AIR_QUALITY_RESOURCE_URL` (default `https://www.airquality.dli.mlsi.gov.cy/all_stations_data_PM`), keeps PM2.5, PM10, O3, NO2, SO2 and CO, drops stations outside Cyprus, and stores the snapshot in `parking.air_quality` (JSONB, Liquibase changeset `4-air-quality`). A failed or invalid response keeps the previous snapshot. Measurement times are Cyprus local time in the source and are stored as instants.
+
+Each pollutant and station gets a level of the [European Air Quality Index](https://airindex.eea.europa.eu/AQI/index.html) from its hourly concentration, using the EEA bands (µg/m³, upper bounds of Good … Very poor): PM2.5 5/15/50/90/140, PM10 15/45/120/195/270, O3 60/100/120/160/180, NO2 10/25/60/100/150, SO2 20/40/125/190/275. A station's level is its worst pollutant; CO has no index level. The page shows the EEA health advice for the selected station and warns when the newest reading is more than three hours old.
+
+## Beaches
+
+The Beaches page lists the bathing waters designated under the Bathing Water Directive with their water quality class. places-service serves them at `/api/v1/beaches`.
+
+The weekly `beaches` job reads three tables for Cyprus from the [EEA Discodata](https://discodata.eea.europa.eu/) SQL endpoint (`BEACHES_DISCODATA_URL`, default `https://discodata.eea.europa.eu/sql`, database `WISE_BWD`, schema `latest`): `spatial_ProtectedArea` (names, coordinates, profile document), `assessment_BathingWaterStatus` (class per season) and `assessment_BathingWaterQuality` (E. coli and intestinal enterococci 95th percentiles and sample counts). Queries are fixed `SELECT * … WHERE countryCode='CY'` statements because the endpoint's firewall rejects some statements that list columns or aggregate. Only bathing waters of the latest reporting year with coordinates in Cyprus are kept; the snapshot is stored in `parking.beaches` (JSONB, changeset `5-beaches`), and failures keep it. EEA data is reused under its legal notice (CC BY 4.0); Cyprus reports it through the Department of Environment.
+
+The page shows the latest season's class (EEA publishes one season a year, in spring), up to ten seasons of history, the bacteria results against the limits for "excellent" coastal water (E. coli 250, enterococci 100 cfu/100 ml, 95th percentile) and the official bathing water profile.
 
 ## Maps and privacy
 
@@ -89,7 +107,7 @@ Keep repository root as the build context. Service settings are managed directly
 | --- | --- | --- | --- |
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
 | Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
-| Parking | `backend/parking-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
+| Places (parking, beaches, air quality) | `backend/places-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
 | Pharmacies | `backend/pharmacies-service/Dockerfile` | 8083 | `/actuator/health/readiness` |
 
 Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
@@ -99,6 +117,8 @@ Before deploying the new Parking service, provision its restricted database role
 Deploy the updated Parking backend together with the frontend release after review. The frontend currently follows GitHub main; Parking currently uses a manual source. The new frontend handles the old placeholder API as a retryable error. Only the frontend needs a public domain; set its upstreams to the actual Railway private service origins with their ports.
 
 Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.
+
+places-service (formerly parking-service) serves parking, beaches and air quality on one machine. On Railway, point the service's Dockerfile path to `backend/places-service/Dockerfile` and set `AIR_QUALITY_SYNC_ENABLED=true` and `BEACHES_SYNC_ENABLED=true`. Environment variables keep their `PARKING_` prefix and the database stays `parking`, so no secrets or data move; if renaming the Railway service changes its private domain, update `PARKING_UPSTREAM` on the frontend.
 
 ## Shared map and parsing components
 

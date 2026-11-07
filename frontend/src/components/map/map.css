@@ -91,3 +91,10 @@
     font-size: 10px;
   }
 }
+/* Air quality levels: colours of the European Air Quality Index. */
+.map-pin.tone-good span { background: #50f0e6; }
+.map-pin.tone-fair span { background: #50ccaa; }
+.map-pin.tone-moderate span { background: #f0e641; }
+.map-pin.tone-poor span { background: #ff5050; color: #fff; }
+.map-pin.tone-very-poor span { background: #960032; color: #fff; }
+.map-pin.tone-extremely-poor span { background: #7d2181; color: #fff; }
