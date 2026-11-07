@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { MapView } from "../components/map/MapView";
+import { useMapLabels } from "../components/map/useMapLabels";
 import { type Position } from "../geo/coordinates";
 import { type Area } from "../geo/cyprusAreas";
-import { useI18n } from "../i18n";
 import { type ParkingPlace } from "./api";
 import { useParkingName } from "./useParkingName";
 
@@ -19,7 +19,6 @@ export function ParkingMap({
   position: Position | null;
   onSelect: (id: string) => void;
 }) {
-  const { t } = useI18n();
   const name = useParkingName();
   const points = useMemo(
     () =>
@@ -31,16 +30,7 @@ export function ParkingMap({
       })),
     [places, name],
   );
-  const labels = useMemo(
-    () => ({
-      region: t("mapLabel"),
-      unavailable: t("tilesUnavailable"),
-      hint: t("mapHint"),
-      location: t("yourLocation"),
-      cluster: (count: number) => t("carParkCount", { count }),
-    }),
-    [t],
-  );
+  const labels = useMapLabels("mapLabel", "carParkCount");
   return (
     <MapView
       points={points}

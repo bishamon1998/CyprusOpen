@@ -24,6 +24,7 @@ Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and 
 cd frontend
 pnpm install --frozen-lockfile
 pnpm build
+pnpm test
 pnpm test:e2e
 ```
 
