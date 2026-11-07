@@ -206,7 +206,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             valueFormatter: (amount: number) => decimal.format(amount),
           },
           xAxis: { type: "category", data: months.values.map((item) => monthNames[item.month - 1]), ...axisStyle },
-          yAxis: { type: "value", scale: true, ...axisStyle },
+          yAxis: { type: "value", ...axisStyle },
           series: [
             {
               type: "bar",
@@ -236,16 +236,12 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
           tooltip: {
             ...tooltipStyle,
             trigger: "item",
-            formatter: ({ data: [column, row, count] }: { data: [number, number, number] }) =>
+            formatter: ({ value: [column, row, count] }: { value: [number, number, number] }) =>
               t(view.rowsLabel) + ": " + country(matrix.rows[row]) + "<br/>" +
               t(view.columnsLabel) + ": " + country(matrix.columns[column]) + "<br/><b>" + value(count, "count") + "</b>",
           },
           xAxis: {
             type: "category",
-            name: t(view.columnsLabel),
-            nameLocation: "middle",
-            nameGap: 0,
-            nameTextStyle: { color: "#727784", fontSize: 11, padding: [0, 0, 0, 0] },
             position: "top",
             data: matrix.columns.map(country),
             ...axisStyle,
@@ -278,12 +274,17 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
           series: [
             {
               type: "heatmap",
-              data: matrix.cells.map(([column, row, count]) => [column, row, count]),
+              // Counts on the darkest cells are drawn in white to stay readable.
+              data: matrix.cells.map(([column, row, count]) => ({
+                value: [column, row, count],
+                label: { color: count >= max * 0.6 ? "#fff" : "#191c24" },
+              })),
               label: {
-                show: true,
+                // Phone-width cells are too small for numbers; the tooltip shows them on tap.
+                show: window.innerWidth >= 600,
                 fontSize: 9,
                 color: "#191c24",
-                formatter: ({ data: [, , count] }: { data: [number, number, number] }) => (count > 0 ? String(count) : ""),
+                formatter: ({ value: [, , count] }: { value: [number, number, number] }) => (count > 0 ? axis(count, "count") : ""),
               },
               itemStyle: { borderColor: "#fff", borderWidth: 1, borderRadius: 2 },
               emphasis: { itemStyle: { borderColor: "#191c24", borderWidth: 1 } },

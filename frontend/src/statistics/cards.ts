@@ -169,7 +169,6 @@ const cards: StatisticCardConfig[] = [
           rent: "incomeRent",
           investments: "incomeInvestments",
           benefits: "incomeBenefits",
-          transfers: "incomeTransfers",
         },
         totalLabel: "cyprusAverage",
       },
