@@ -70,8 +70,17 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 | `parking-directory` | parking | 1st of each month, 05:00 | `PARKING_DIRECTORY_SYNC_ENABLED` |
 | `pharmacy-schedule` | pharmacies | daily, 06:15 | `PHARMACY_SYNC_ENABLED` |
 | `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
+| `air-quality` | parking | hourly, at :20 | `AIR_QUALITY_SYNC_ENABLED` |
 
 Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
+
+## Air quality
+
+The Air quality page shows the latest hourly readings of the Department of Labour Inspection monitoring stations ([data.gov.cy](https://www.data.gov.cy/el/dataset/i/5dc97c12-735d-4cc7-9030-101c735ce1a3), CC BY-SA 4.0). parking-service serves it at `/api/v1/air-quality`, so the map tools share one machine; the frontend proxies that path to `PARKING_UPSTREAM`.
+
+The hourly `air-quality` job reads `AIR_QUALITY_RESOURCE_URL` (default `https://www.airquality.dli.mlsi.gov.cy/all_stations_data_PM`), keeps PM2.5, PM10, O3, NO2, SO2 and CO, drops stations outside Cyprus, and stores the snapshot in `parking.air_quality` (JSONB, Liquibase changeset `4-air-quality`). A failed or invalid response keeps the previous snapshot. Measurement times are Cyprus local time in the source and are stored as instants.
+
+Each pollutant and station gets a level of the [European Air Quality Index](https://airindex.eea.europa.eu/AQI/index.html) from its hourly concentration, using the EEA bands (µg/m³, upper bounds of Good … Very poor): PM2.5 5/15/50/90/140, PM10 15/45/120/195/270, O3 60/100/120/160/180, NO2 10/25/60/100/150, SO2 20/40/125/190/275. A station's level is its worst pollutant; CO has no index level. The page shows the EEA health advice for the selected station and warns when the newest reading is more than three hours old.
 
 ## Maps and privacy
 
@@ -97,6 +106,8 @@ Before deploying the new Parking service, provision its restricted database role
 Deploy the updated Parking backend together with the frontend release after review. The frontend currently follows GitHub main; Parking currently uses a manual source. The new frontend handles the old placeholder API as a retryable error. Only the frontend needs a public domain; set its upstreams to the actual Railway private service origins with their ports.
 
 Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.
+
+Air quality runs inside the Parking service: set `AIR_QUALITY_SYNC_ENABLED=true` on the Railway Parking service; no new service, database or public domain is needed.
 
 ## Shared map and parsing components
 

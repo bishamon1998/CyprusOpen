@@ -105,6 +105,7 @@ export function ResultsMessage({
 
 export function ResultRow({
   icon,
+  tone,
   title,
   details,
   selected,
@@ -112,6 +113,8 @@ export function ResultRow({
   onSelect,
 }: {
   icon: string;
+  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level. */
+  tone?: string;
   title: string;
   details: ReactNode[];
   selected: boolean;
@@ -125,7 +128,7 @@ export function ResultRow({
         aria-pressed={selected}
         onClick={onSelect}
       >
-        <span className="result-row-icon" aria-hidden="true">
+        <span className={"result-row-icon" + (tone ? " tone-" + tone : "")} aria-hidden="true">
           {icon}
         </span>
         <span>

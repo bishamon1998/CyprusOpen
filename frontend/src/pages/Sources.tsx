@@ -1,10 +1,11 @@
 import { type ReactNode } from "react";
-import { ChartColumn, MapPin, ParkingCircle, Pill } from "lucide-react";
+import { ChartColumn, MapPin, ParkingCircle, Pill, Wind } from "lucide-react";
 import { PageTitle } from "../components/PageTitle";
 import { SourceLink } from "../components/SourceLink";
 import { useI18n } from "../i18n";
 import { type MessageKey } from "../locales";
 import {
+  airQualityUrl,
   catalogUrl,
   nicosiaParkingUrl,
   parkingDirectoryUrl,
@@ -40,6 +41,12 @@ const rows: {
     description: "pharmacySource",
     href: pharmacyScheduleUrl,
     icon: <Pill size={22} />,
+  },
+  {
+    title: "airQuality",
+    description: "airQualitySource",
+    href: airQualityUrl,
+    icon: <Wind size={22} />,
   },
 ];
 
