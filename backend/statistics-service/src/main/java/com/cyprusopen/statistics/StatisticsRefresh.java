@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-/** Refreshes each dataset independently: a failing table keeps its last stored values. */
+/**
+ * Refreshes each dataset independently: a failing table keeps its last stored values. A table is replaced only
+ * when CYSTAT reports a newer update time than the stored one.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -48,7 +51,17 @@ class StatisticsRefresh implements RefreshJob {
         return results;
     }
 
+    /** Never throws: a database error or a mapping bug in one table must not stop the remaining tables. */
     RefreshResult refresh(StatisticsDataset dataset) {
+        try {
+            return fetchAndStore(dataset);
+        } catch (RuntimeException unexpected) {
+            log.error("Statistics refresh failed unexpectedly for {}", dataset.code(), unexpected);
+            return RefreshResult.UNAVAILABLE;
+        }
+    }
+
+    private RefreshResult fetchAndStore(StatisticsDataset dataset) {
         byte[] body;
         try {
             body = client.table(dataset.table());
@@ -58,10 +71,14 @@ class StatisticsRefresh implements RefreshJob {
         }
         try {
             var table = parser.parse(body);
-            var stored = store.imported(dataset.code());
-            if (stored.isPresent() && stored.get().sourceUpdatedAt().equals(table.updated())) {
+            var stored = store.imported(dataset.code()).map(ObservationStore.Imported::sourceUpdatedAt);
+            if (stored.isPresent() && stored.get().equals(table.updated())) {
                 store.markChecked(dataset.code(), clock.instant());
                 return RefreshResult.UNCHANGED;
+            }
+            if (stored.isPresent() && table.updated().isBefore(stored.get())) {
+                throw new IllegalArgumentException("Table update time " + table.updated()
+                        + " is older than the stored " + stored.get());
             }
             var observations = dataset.observations(table);
             if (observations.isEmpty()) throw new IllegalArgumentException("No observations");

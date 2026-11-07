@@ -131,6 +131,10 @@ class PharmacyScheduleIT {
 
         mode.set("invalid");
         assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
+        mode.set("broken-metadata");
+        assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
+        mode.set("broken-csv");
+        assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
         mode.set("unavailable");
         assertThat(refresh.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
         mode.set("foreign");
@@ -175,6 +179,10 @@ class PharmacyScheduleIT {
             exchange.close();
             return;
         }
+        if (mode.get().equals("broken-metadata")) {
+            respond(exchange, "{\"dcat:Distribution\":[");
+            return;
+        }
         var host = mode.get().equals("foreign") ? "http://localhost:" + upstream.getAddress().getPort() : origin();
         var distributions = new StringBuilder();
         for (var district : DISTRICTS) {
@@ -200,6 +208,7 @@ class PharmacyScheduleIT {
         } else {
             body = switch (mode.get()) {
                 case "invalid" -> "Unexpected,Columns\n1,2\n";
+                case "broken-csv" -> HEADERS + "01/11/26,Sunday,10,Example,Alex,\"First Street 1,,Nicosia,22123456,\n";
                 case "replacement" -> HEADERS + "02/11/26,Monday,12,Example,Jo,Third Street 3,,Nicosia,22123458,\n";
                 default -> "﻿" + HEADERS
                         + "01/11/26,Sunday,10,Example,Alex,\"First Street 1, Shop 2\",,Nicosia,22123456,99123456\n"
