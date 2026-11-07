@@ -1,0 +1,181 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Trips by Destination and Purpose, Annual by YEAR, MEASURE, DESTINATION and PURPOSE",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-11-21T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "MEASURE",
+  "DESTINATION",
+  "PURPOSE"
+ ],
+ "size": [
+  3,
+  2,
+  3,
+  3
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Trips by Destination and Purpose, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number, Percentage",
+      "decimals": 1
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "6": 0,
+     "7": 1,
+     "8": 2
+    },
+    "label": {
+     "6": "2022",
+     "7": "2023",
+     "8": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "MEASURE": {
+   "label": "MEASURE",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Number",
+     "1": "% change - previous year"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "DESTINATION": {
+   "label": "DESTINATION",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "All Countries",
+     "1": "Domestic",
+     "2": "Outbound"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "PURPOSE": {
+   "label": "PURPOSE",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Total Trips",
+     "1": "Personal",
+     "2": "Professional, business"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  2923769,
+  2730615,
+  193154,
+  1689154,
+  1663520,
+  25634,
+  1234615,
+  1067094,
+  167521,
+  24.8,
+  21.4,
+  107.6,
+  -9.7,
+  -10.6,
+  null,
+  162.1,
+  174.3,
+  104,
+  3239084,
+  2969329,
+  269755,
+  1564359,
+  1534148,
+  30211,
+  1674725,
+  1435181,
+  239544,
+  10.8,
+  8.7,
+  39.7,
+  -7.4,
+  -7.8,
+  17.9,
+  35.6,
+  34.5,
+  43,
+  3366862,
+  3104196,
+  262666,
+  1619371,
+  1594579,
+  24792,
+  1747492,
+  1509617,
+  237874,
+  3.9,
+  4.5,
+  -2.6,
+  3.5,
+  3.9,
+  -17.9,
+  4.3,
+  5.2,
+  -0.7
+ ],
+ "status": {
+  "5": "U",
+  "14": "N.A.",
+  "41": "U"
+ }
+}

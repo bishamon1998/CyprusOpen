@@ -1,0 +1,101 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "House Price Index (Base Year 2025=100), Quarterly by QUARTER and INDICATOR",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-09-30T05:00:00Z",
+ "role": {
+  "time": [
+   "QUARTER"
+  ]
+ },
+ "id": [
+  "QUARTER",
+  "INDICATOR"
+ ],
+ "size": [
+  5,
+  3
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "House Price Index (Base Year 2025=100), Quarterly"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number, Percentage",
+      "decimals": 2
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "QUARTER": {
+   "label": "QUARTER",
+   "category": {
+    "index": {
+     "37": 0,
+     "38": 1,
+     "39": 2,
+     "40": 3,
+     "41": 4
+    },
+    "label": {
+     "37": "2025Q2",
+     "38": "2025Q3",
+     "39": "2025Q4",
+     "40": "2026Q1",
+     "41": "2026Q2"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "INDICATOR": {
+   "label": "INDICATOR",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Index-Quarterly",
+     "1": "% change - previous quarter",
+     "2": "% change - same quarter of previous year"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  97.74,
+  -1.8,
+  2.9,
+  101.35,
+  3.7,
+  4.2,
+  101.34,
+  0,
+  6,
+  102.95,
+  1.6,
+  3.4,
+  105.46,
+  2.4,
+  7.9
+ ]
+}

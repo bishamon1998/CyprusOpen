@@ -8,7 +8,7 @@ import java.util.Optional;
 /** ISO 3166-1 alpha-2 codes for English country names, from the JDK's locale data. */
 public final class Countries {
     /** Names some official sources still use that differ from the JDK's current English names. */
-    private static final Map<String, String> FORMER_NAMES = Map.of("Czech Republic", "CZ", "Turkey", "TR");
+    private static final Map<String, String> FORMER_NAMES = Map.of("Czech Republic", "CZ", "Turkey", "TR", "USA", "US");
     private static final Map<String, String> CODES = codes();
 
     private Countries() {}

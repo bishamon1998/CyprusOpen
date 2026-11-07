@@ -1,0 +1,136 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Mean Age of Groom and Bride by Order and Type of Marriage, Annual by YEAR and TYPE OF MARRIAGE",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "TYPE OF MARRIAGE"
+ ],
+ "size": [
+  3,
+  12
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Mean Age of Groom and Bride by Order and Type of Marriage, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number",
+      "decimals": 1
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "48": 0,
+     "49": 1,
+     "50": 2
+    },
+    "label": {
+     "48": "2022",
+     "49": "2023",
+     "50": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "TYPE OF MARRIAGE": {
+   "label": "TYPE OF MARRIAGE",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9,
+     "10": 10,
+     "11": 11
+    },
+    "label": {
+     "0": "Total Marriages - Groom",
+     "1": "Total Marriages - Bride",
+     "2": "Total 1st Marriage - Groom",
+     "3": "Total 1st Marriage - Bride",
+     "4": "Ecclesiastical Marriages - Groom",
+     "5": "Ecclesiastical Marriages - Bride",
+     "6": "Ecclesiastical Marriages 1st Marriage - Groom",
+     "7": "Ecclesiastical Marriages 1st Marriage - Bride",
+     "8": "Civil Marriages - Groom",
+     "9": "Civil Marriages - Bride",
+     "10": "Civil Marriages 1st Marriage - Groom",
+     "11": "Civil Marriages 1st Marriage - Bride"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  35.8,
+  33.3,
+  33.1,
+  31.2,
+  33.6,
+  31.5,
+  32.7,
+  30.7,
+  37,
+  34.2,
+  33.4,
+  31.4,
+  36,
+  33.4,
+  32.9,
+  30.9,
+  33.6,
+  31.5,
+  32.4,
+  30.5,
+  37.4,
+  34.5,
+  33.2,
+  31.2,
+  36,
+  33.6,
+  33.5,
+  31.7,
+  33.8,
+  31.7,
+  32.8,
+  31,
+  37.3,
+  34.7,
+  33.9,
+  32.2
+ ]
+}

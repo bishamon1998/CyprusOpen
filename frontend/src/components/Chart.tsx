@@ -1,19 +1,22 @@
 import { useEffect, useRef } from "react";
-import { BarChart, LineChart } from "echarts/charts";
+import { BarChart, HeatmapChart, LineChart } from "echarts/charts";
 import {
   GridComponent,
   LegendComponent,
   TooltipComponent,
+  VisualMapComponent,
 } from "echarts/components";
 import * as echarts from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
 
 echarts.use([
   BarChart,
+  HeatmapChart,
   LineChart,
   GridComponent,
   LegendComponent,
   TooltipComponent,
+  VisualMapComponent,
   SVGRenderer,
 ]);
 

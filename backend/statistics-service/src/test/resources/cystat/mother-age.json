@@ -1,0 +1,86 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Mean Age of Mother at Child Birth, Annual by YEAR and MEAN AGE OF MOTHER",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "MEAN AGE OF MOTHER"
+ ],
+ "size": [
+  3,
+  2
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Mean Age of Mother at Child Birth, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number",
+      "decimals": 1
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "48": 0,
+     "49": 1,
+     "50": 2
+    },
+    "label": {
+     "48": "2022",
+     "49": "2023",
+     "50": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "MEAN AGE OF MOTHER": {
+   "label": "MEAN AGE OF MOTHER",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Of first child",
+     "1": "Of any child"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  29.8,
+  31.3,
+  30,
+  31.5,
+  30.4,
+  31.6
+ ]
+}

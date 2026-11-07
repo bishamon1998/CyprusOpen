@@ -1,19 +1,65 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { PageTitle } from "../components/PageTitle";
 import { useI18n } from "../i18n";
-import { cards } from "./cards";
+import { categories } from "./cards";
 import { StatisticCard } from "./StatisticCard";
 import "./statistics.css";
 
+const COLLAPSED_KEY = "cyprus-open-statistics-collapsed";
+
+/** Category ids the viewer folded away; a convenience only, so unreadable storage means "all open". */
+function savedCollapsed(): Set<string> {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? "[]");
+    return new Set(Array.isArray(saved) ? saved.filter((id): id is string => typeof id === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
 export default function Statistics() {
   const { t } = useI18n();
+  const [collapsed, setCollapsed] = useState(savedCollapsed);
+
+  const toggle = (id: string) =>
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (!next.delete(id)) next.add(id);
+      try {
+        localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...next]));
+      } catch {
+        // Storage can be unavailable (private mode); the choice then lasts for this visit only.
+      }
+      return next;
+    });
+
   return (
     <>
       <PageTitle title={t("statistics")} />
-      <section className="dataset-grid" aria-label={t("datasets")}>
-        {cards.map((card) => (
-          <StatisticCard key={card.id} card={card} />
-        ))}
-      </section>
+      {categories.map((category) => {
+        const open = !collapsed.has(category.id);
+        const panel = "statistics-" + category.id;
+        return (
+          <section key={category.id} className="statistics-category" aria-labelledby={panel + "-title"}>
+            <h2 id={panel + "-title"} className="category-heading">
+              <button type="button" aria-expanded={open} aria-controls={open ? panel : undefined} onClick={() => toggle(category.id)}>
+                <span>{t(category.title)}</span>
+                <span className="category-count">{category.cards.length}</span>
+                <ChevronDown size={18} aria-hidden="true" className="category-chevron" />
+              </button>
+            </h2>
+            {/* Folded categories render nothing, so their datasets are not requested either. */}
+            {open && (
+              <div id={panel} className="dataset-grid">
+                {category.cards.map((card) => (
+                  <StatisticCard key={card.id} card={card} />
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
     </>
   );
 }

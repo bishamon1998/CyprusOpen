@@ -1,16 +1,22 @@
 import {
   Briefcase,
+  CalendarHeart,
   Car,
   Coins,
   Fuel,
   Globe2,
   Heart,
+  HeartPulse,
+  House,
+  KeyRound,
   MapPin,
   Scale,
   ShieldCheck,
+  Stethoscope,
   TrendingUp,
   Users,
   Wallet,
+  Zap,
 } from "lucide-react";
 
 const icons = {
@@ -18,9 +24,13 @@ const icons = {
   travel: [Globe2, MapPin],
   prices: [TrendingUp, Coins],
   family: [Heart, Users],
+  calendar: [CalendarHeart, Heart],
   safety: [ShieldCheck, Scale],
   earnings: [Wallet, Briefcase],
   fuel: [Fuel, Car],
+  health: [HeartPulse, Stethoscope],
+  home: [House, KeyRound],
+  car: [Car, Zap],
 } as const;
 
 export type IllustrationKind = keyof typeof icons;

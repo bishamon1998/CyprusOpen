@@ -6,3 +6,10 @@ databaseChangeLog:
         - sqlFile:
             path: observations.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 2-quarter-periods
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: quarter-periods.sql
+            relativeToChangelogFile: true

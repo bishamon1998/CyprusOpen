@@ -45,8 +45,16 @@ async function main() {
     const datasets = await (
       await fetch(`${baseUrl}/api/v1/statistics/datasets`)
     ).json();
-    assert.equal(datasets.length, 13);
-    for (const code of ["immigrant-groups", "tourist-arrivals", "inflation", "fuel-sales"]) {
+    // One dataset per CYSTAT fixture table served by the CI fixture server.
+    const fixtureTables = require("node:fs")
+      .readFileSync(
+        require("node:path").join(__dirname, "../backend/statistics-service/src/test/resources/cystat/tables.properties"),
+        "utf8",
+      )
+      .split(/\r?\n/)
+      .filter((line) => line && !line.startsWith("#")).length;
+    assert.equal(datasets.length, fixtureTables);
+    for (const code of ["immigrant-groups", "tourist-arrivals", "inflation", "fuel-sales", "birth-dates", "house-prices"]) {
       assert.ok(datasets.some((dataset) => dataset.code === code), code);
     }
     assert.ok(datasets.every((dataset) => dataset.updatedAt !== null));
@@ -287,9 +295,32 @@ async function main() {
       "Crime · By type",
       "Earnings · Median and average",
       "Fuel sales · Road fuels",
+      "Cyprus calendar · Birthdays",
+      "Seasons of life · Births",
+      "Causes of death · By cause",
+      "Family today · Wedding age",
+      "Who marries whom · Nationalities",
+      "Divorces · Years married",
+      "Where every 100 € goes · By category",
+      "Household income · By district",
+      "House prices · Index",
+      "New homes approved · Per month",
+      "Cars by fuel · New registrations",
+      "What tourists spend · Per day",
+      "Trips of residents · By year",
     ]) {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }
+    await page.getByRole("radio", { name: "Weddings" }).click();
+    await page.getByRole("img", { name: "Cyprus calendar · Weddings" }).waitFor();
+    // A folded category hides its charts and stays folded after a reload.
+    await page.getByRole("button", { name: /^Safety/ }).click();
+    await page.getByRole("img", { name: "Crime · By type" }).waitFor({ state: "detached" });
+    await page.reload();
+    await page.getByRole("img", { name: "Cyprus calendar · Birthdays" }).waitFor();
+    assert.equal(await page.getByRole("img", { name: "Crime · By type" }).count(), 0, "Safety stays folded");
+    await page.getByRole("button", { name: /^Safety/ }).click();
+    await page.getByRole("img", { name: "Crime · By type" }).waitFor();
     await page.getByRole("radio", { name: "Since 1981" }).click();
     await page.getByRole("img", { name: "Immigration · Since 1981" }).waitFor();
     await page.getByRole("radio", { name: "Winter" }).click();

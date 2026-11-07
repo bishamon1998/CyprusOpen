@@ -35,11 +35,26 @@ final class SeriesMapping {
      */
     static List<Observation> map(JsonStat table, String period, Map<String, String> pinned, List<String> series,
                                  Function<List<String>, Optional<String>> key) {
-        var periodIndex = table.dimension(period);
+        return collect(table, table.dimension(period), null, pinned, series, key);
+    }
+
+    /**
+     * A table without a time dimension, such as a survey published for one year: every value is stored under
+     * {@code period} (for example {@code 2023}).
+     */
+    static List<Observation> snapshot(JsonStat table, String period, Map<String, String> pinned, List<String> series,
+                                      Function<List<String>, Optional<String>> key) {
+        return collect(table, null, Observation.period(period), pinned, series, key);
+    }
+
+    /** Either {@code periodIndex} (a time dimension) or {@code fixedPeriod} is set. */
+    private static List<Observation> collect(JsonStat table, Integer periodIndex, String fixedPeriod,
+                                             Map<String, String> pinned, List<String> series,
+                                             Function<List<String>, Optional<String>> key) {
         var seriesIndexes = series.stream().map(table::dimension).toList();
         var pins = new LinkedHashMap<Integer, String>();
         pinned.forEach((dimension, label) -> pins.put(table.dimension(dimension), label));
-        if (pins.size() + seriesIndexes.size() + 1 != table.dimensions().size()) {
+        if (pins.size() + seriesIndexes.size() + (periodIndex == null ? 0 : 1) != table.dimensions().size()) {
             throw new IllegalArgumentException("Unpinned dimension");
         }
         pins.forEach((dimension, label) -> {
@@ -55,7 +70,8 @@ final class SeriesMapping {
             if (pins.entrySet().stream().anyMatch(pin -> !cell.label(pin.getKey()).equals(pin.getValue()))) continue;
             var seriesKey = key.apply(seriesIndexes.stream().map(cell::label).toList());
             if (seriesKey.isEmpty()) continue;
-            var observation = new Observation(seriesKey.get(), Observation.period(cell.label(periodIndex)),
+            var period = periodIndex == null ? fixedPeriod : Observation.period(cell.label(periodIndex));
+            var observation = new Observation(seriesKey.get(), period,
                     cell.value(), LOW_RELIABILITY_STATUS.equals(cell.status()));
             merged.merge(observation.series() + "|" + observation.period(), observation, (first, second) ->
                     new Observation(first.series(), first.period(), first.value() + second.value(),

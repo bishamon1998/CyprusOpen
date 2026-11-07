@@ -1,0 +1,143 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Licensed Vehicles and Registration of Motor Vehicles by Energy Type, Annual by LICENSED / REGISTRATIONS, ENERGY TYPE and YEAR",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2026-05-06T09:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "LICENSED / REGISTRATIONS",
+  "ENERGY TYPE",
+  "YEAR"
+ ],
+ "size": [
+  2,
+  6,
+  3
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Licensed Vehicles and Registration of Motor Vehicles by Energy Type, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number",
+      "decimals": 0
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "LICENSED / REGISTRATIONS": {
+   "label": "LICENSED / REGISTRATIONS",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1
+    },
+    "label": {
+     "0": "Licensed Vehicles",
+     "1": "Registration of Motor Vehicles"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "ENERGY TYPE": {
+   "label": "ENERGY TYPE",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5
+    },
+    "label": {
+     "0": "Total",
+     "1": "Petrol",
+     "2": "Diesel",
+     "3": "Electric",
+     "4": "Hybrid",
+     "5": "Other"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "28": 0,
+     "29": 1,
+     "30": 2
+    },
+    "label": {
+     "28": "2023",
+     "29": "2024",
+     "30": "2025"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  819081,
+  844642,
+  867552,
+  509436,
+  514277,
+  513195,
+  274773,
+  279201,
+  283219,
+  3125,
+  5334,
+  7539,
+  31120,
+  45195,
+  63015,
+  627,
+  635,
+  584,
+  45494,
+  49616,
+  52508,
+  24999,
+  23157,
+  22139,
+  8211,
+  9832,
+  9776,
+  1322,
+  2220,
+  2223,
+  10959,
+  14405,
+  18368,
+  3,
+  2,
+  2
+ ]
+}

@@ -1,0 +1,199 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Deaths by Month and Sex, Annual by YEAR, SEX and MONTH",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "SEX",
+  "MONTH"
+ ],
+ "size": [
+  2,
+  3,
+  13
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Deaths by Month and Sex, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number",
+      "decimals": 0
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "39": 0,
+     "40": 1
+    },
+    "label": {
+     "39": "2023",
+     "40": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "SEX": {
+   "label": "SEX",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Total",
+     "1": "Males",
+     "2": "Females"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "MONTH": {
+   "label": "MONTH",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9,
+     "10": 10,
+     "11": 11,
+     "12": 12
+    },
+    "label": {
+     "0": "Total",
+     "1": "January",
+     "2": "February",
+     "3": "March",
+     "4": "April",
+     "5": "May",
+     "6": "June",
+     "7": "July",
+     "8": "August",
+     "9": "September",
+     "10": "October",
+     "11": "November",
+     "12": "December"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  6742,
+  702,
+  666,
+  636,
+  522,
+  511,
+  504,
+  561,
+  497,
+  495,
+  526,
+  505,
+  617,
+  3562,
+  367,
+  339,
+  343,
+  284,
+  280,
+  246,
+  290,
+  257,
+  261,
+  296,
+  274,
+  325,
+  3180,
+  335,
+  327,
+  293,
+  238,
+  231,
+  258,
+  271,
+  240,
+  234,
+  230,
+  231,
+  292,
+  6753,
+  694,
+  592,
+  548,
+  478,
+  509,
+  532,
+  597,
+  551,
+  513,
+  504,
+  565,
+  670,
+  3666,
+  376,
+  320,
+  309,
+  256,
+  270,
+  289,
+  325,
+  303,
+  283,
+  265,
+  309,
+  361,
+  3087,
+  318,
+  272,
+  239,
+  222,
+  239,
+  243,
+  272,
+  248,
+  230,
+  239,
+  256,
+  309
+ ]
+}
