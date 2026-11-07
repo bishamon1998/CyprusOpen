@@ -31,7 +31,7 @@ class BeachSync implements RefreshJob {
 
     @Override
     public boolean needsInitialRun() {
-        return store.retrievedAt().map(retrieved -> retrieved.plus(REFRESH_AFTER).isBefore(clock.instant())).orElse(true);
+        return store.olderThan(REFRESH_AFTER, clock.instant());
     }
 
     @Override
@@ -48,7 +48,8 @@ class BeachSync implements RefreshJob {
             return RefreshResult.UNAVAILABLE;
         }
         try {
-            store.replace(parser.parse(spatial, status, quality, clock.instant()));
+            var snapshot = parser.parse(spatial, status, quality, clock.instant());
+            store.replace(snapshot, snapshot.retrievedAt());
             return RefreshResult.UPDATED;
         } catch (IllegalArgumentException invalid) {
             log.warn("Bathing water response rejected: {}", invalid.getMessage());

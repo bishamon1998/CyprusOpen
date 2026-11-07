@@ -26,6 +26,8 @@ services:
       PARKING_DB_USER: parking_app
       PARKING_DB_PASSWORD: ${PARKING_DB_PASSWORD:?Set PARKING_DB_PASSWORD in .env}
       PARKING_DIRECTORY_SYNC_ENABLED: ${PARKING_DIRECTORY_SYNC_ENABLED:-false}
+      AIR_QUALITY_SYNC_ENABLED: ${AIR_QUALITY_SYNC_ENABLED:-false}
+      BEACHES_SYNC_ENABLED: ${BEACHES_SYNC_ENABLED:-false}
     depends_on:
       postgres:
         condition: service_healthy

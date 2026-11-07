@@ -1,6 +1,7 @@
 package com.cyprusopen.places.air;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -30,7 +31,7 @@ enum Pollutant {
 
     /** API key: "pm25", "no2", … */
     String key() {
-        return name().toLowerCase();
+        return name().toLowerCase(Locale.ROOT);
     }
 
     /** Index level of an hourly concentration; the bands are whole µg/m³ ("6-15"), so the value is rounded. */

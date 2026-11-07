@@ -28,7 +28,7 @@ class AirQualitySync implements RefreshJob {
 
     @Override
     public boolean needsInitialRun() {
-        return store.retrievedAt().map(retrieved -> retrieved.plus(REFRESH_AFTER).isBefore(clock.instant())).orElse(true);
+        return store.olderThan(REFRESH_AFTER, clock.instant());
     }
 
     @Override
@@ -41,7 +41,8 @@ class AirQualitySync implements RefreshJob {
             return RefreshResult.UNAVAILABLE;
         }
         try {
-            store.replace(parser.parse(body, clock.instant()));
+            var snapshot = parser.parse(body, clock.instant());
+            store.replace(snapshot, snapshot.retrievedAt());
             return RefreshResult.UPDATED;
         } catch (IllegalArgumentException invalid) {
             log.warn("Air quality response rejected: {}", invalid.getMessage());
