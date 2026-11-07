@@ -40,7 +40,7 @@ for (const [prefix, target] of [
     process.env.STATISTICS_UPSTREAM || "http://localhost:8081",
   ],
   ["/api/v1/parking", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
-  // Air quality is served by parking-service too: one machine for the map tools.
+  // Beaches and air quality are served by places-service with parking: one machine for the map tools.
   ["/api/v1/air-quality", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
   ["/api/v1/beaches", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
   ["/api/v1/pharmacies", process.env.PHARMACIES_UPSTREAM || "http://localhost:8083"],
