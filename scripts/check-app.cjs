@@ -287,9 +287,20 @@ async function main() {
       "Crime · By type",
       "Earnings · Median and average",
       "Fuel sales · Road fuels",
+      "Cyprus calendar · Birthdays",
     ]) {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }
+    await page.getByRole("radio", { name: "Weddings" }).click();
+    await page.getByRole("img", { name: "Cyprus calendar · Weddings" }).waitFor();
+    // A folded category hides its charts and stays folded after a reload.
+    await page.getByRole("button", { name: /^Safety/ }).click();
+    await page.getByRole("img", { name: "Crime · By type" }).waitFor({ state: "detached" });
+    await page.reload();
+    await page.getByRole("img", { name: "Cyprus calendar · Birthdays" }).waitFor();
+    assert.equal(await page.getByRole("img", { name: "Crime · By type" }).count(), 0, "Safety stays folded");
+    await page.getByRole("button", { name: /^Safety/ }).click();
+    await page.getByRole("img", { name: "Crime · By type" }).waitFor();
     await page.getByRole("radio", { name: "Since 1981" }).click();
     await page.getByRole("img", { name: "Immigration · Since 1981" }).waitFor();
     await page.getByRole("radio", { name: "Winter" }).click();

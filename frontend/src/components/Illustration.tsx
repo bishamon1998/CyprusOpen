@@ -1,5 +1,6 @@
 import {
   Briefcase,
+  CalendarHeart,
   Car,
   Coins,
   Fuel,
@@ -18,6 +19,7 @@ const icons = {
   travel: [Globe2, MapPin],
   prices: [TrendingUp, Coins],
   family: [Heart, Users],
+  calendar: [CalendarHeart, Heart],
   safety: [ShieldCheck, Scale],
   earnings: [Wallet, Briefcase],
   fuel: [Fuel, Car],

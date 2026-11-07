@@ -137,7 +137,8 @@ h1 {
   gap: 16px;
   padding: 24px 24px 0;
 }
-h2 {
+h2,
+.card-heading h3 {
   font-size: 17px;
   font-weight: 550;
   letter-spacing: -0.3px;

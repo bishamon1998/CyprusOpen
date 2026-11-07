@@ -5,7 +5,9 @@ import static com.cyprusopen.statistics.StatisticsConstants.TOTAL_SERIES;
 import static java.util.Map.entry;
 
 import com.cyprusopen.common.geo.Countries;
+import java.time.Month;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.context.annotation.Bean;
@@ -149,6 +151,39 @@ class StatisticsDatasets {
                         "Total Civil Unions", TOTAL_SERIES, "Opposite sex", "opposite-sex",
                         "Same sex (Males)", "same-sex-men", "Same sex (Females)", "same-sex-women")),
                         YEAR, Map.of()));
+    }
+
+    // Calendar
+
+    /** Live births by calendar date of birth. */
+    @Bean
+    @Order(103)
+    StatisticsDataset birthDates() {
+        return calendar("birth-dates", "Population/Births and Deaths/1830018E.px", 2079);
+    }
+
+    /** Marriages of residents by calendar date of the wedding. */
+    @Bean
+    @Order(106)
+    StatisticsDataset weddingDates() {
+        return calendar("wedding-dates", "Population/Marriages/1850066E.px", 2171);
+    }
+
+    /** Counts by day of the year: one series per date ("08-15"), one period per year; totals are skipped. */
+    private static StatisticsDataset calendar(String code, String table, int catalogId) {
+        return CystatDataset.of(code, table, catalogId, json -> SeriesMapping.map(json, YEAR, Map.of(),
+                List.of(MONTH, "DAY"), labels -> calendarDate(labels.get(0), labels.get(1))));
+    }
+
+    /** "August" and "15" become "08-15"; "Total" and "Not stated" have no date. */
+    static Optional<String> calendarDate(String month, String day) {
+        if (!day.matches("\\d{1,2}")) return Optional.empty();
+        try {
+            return Optional.of("%02d-%02d".formatted(Month.valueOf(month.toUpperCase(Locale.ROOT)).getValue(),
+                    Integer.parseInt(day)));
+        } catch (IllegalArgumentException notAMonth) {
+            return Optional.empty();
+        }
     }
 
     // Crime

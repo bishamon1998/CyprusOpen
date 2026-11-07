@@ -46,7 +46,7 @@ export function ChartCard({
   return (
     <article className="dataset-card">
       <div className="card-heading">
-        <h2>{title}</h2>
+        <h3>{title}</h3>
       </div>
       <p className="card-description">{description}</p>
       {state.status !== "error" && controls && (

@@ -1,10 +1,22 @@
+import { type MessageKey } from "../locales";
 import { type StatisticCardConfig } from "./StatisticCard";
 
 /**
- * Every chart on the Statistics page, in display order. A view reads one dataset served by
- * statistics-service (`/api/v1/statistics/datasets/{code}`); series keys match the backend.
+ * Every chart on the Statistics page. A view reads one dataset served by statistics-service
+ * (`/api/v1/statistics/datasets/{code}`); series keys match the backend. Cards are placed on the page
+ * through `categories` below.
  */
-export const cards: StatisticCardConfig[] = [
+const cards: StatisticCardConfig[] = [
+  {
+    id: "calendar",
+    title: "calendar",
+    description: "calendarDescription",
+    illustration: "calendar",
+    views: [
+      { kind: "calendar", label: "birthdays", dataset: "birth-dates", measure: "birthsPerDay" },
+      { kind: "calendar", label: "weddings", dataset: "wedding-dates", measure: "weddingsPerDay" },
+    ],
+  },
   {
     id: "immigration",
     title: "immigration",
@@ -257,4 +269,21 @@ export const cards: StatisticCardConfig[] = [
       },
     ],
   },
+];
+
+export type StatisticCategory = { id: string; title: MessageKey; cards: StatisticCardConfig[] };
+
+const card = (id: string) => {
+  const found = cards.find((item) => item.id === id);
+  if (!found) throw new Error("Unknown statistics card " + id);
+  return found;
+};
+
+/** Collapsible sections of the Statistics page, in display order. */
+export const categories: StatisticCategory[] = [
+  { id: "population", title: "categoryPopulation", cards: [card("population"), card("immigration")] },
+  { id: "family", title: "categoryFamily", cards: [card("calendar"), card("marriages")] },
+  { id: "economy", title: "categoryEconomy", cards: [card("inflation"), card("earnings"), card("fuel")] },
+  { id: "tourism", title: "categoryTourism", cards: [card("tourism")] },
+  { id: "safety", title: "categorySafety", cards: [card("crime")] },
 ];

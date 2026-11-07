@@ -133,6 +133,17 @@ class StatisticsApiIT {
         assertThat(line(fuel, "lpg")).isNotNull();
         assertThat(get("/api/v1/statistics/datasets/price-changes", 200).get("periods").size()).isEqualTo(2);
 
+        // Calendar tables: one series per date; dates that do not exist (30 February) are null and left out.
+        var births = get("/api/v1/statistics/datasets/birth-dates", 200);
+        assertThat(mapper.convertValue(births.get("periods"), String[].class)).containsExactly("2023", "2024");
+        assertThat(births.get("series").size()).isEqualTo(366);
+        assertThat(line(births, "02-29").get("values").toString()).isEqualTo("[null,14.0]");
+        assertThat(line(births, "02-30")).isNull();
+        assertThat(line(births, "12-25").get("values").toString()).isEqualTo("[9.0,13.0]");
+        var weddings = get("/api/v1/statistics/datasets/wedding-dates", 200);
+        assertThat(line(weddings, "12-25").get("values").toString()).isEqualTo("[0.0,0.0]");
+        assertThat(line(weddings, "total")).isNull();
+
         assertThat(refresh.refreshAll()).containsValue(RefreshResult.UNCHANGED).doesNotContainValue(RefreshResult.UPDATED);
         mode.set("invalid");
         assertThat(refresh.refreshAll()).hasSize(datasets.size())

@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import { type MessageKey } from "../locales";
 import { type SeriesTable, useSeriesTable } from "./api";
 import { ChartCard, type ChartState } from "./ChartCard";
+import { ALL_YEARS, calendarDays, extremes } from "./calendar";
 import { axisStyle, chartState, tooltipStyle } from "./chartState";
 import { type Unit, useAxisFormat, useValueFormat } from "./format";
 import {
@@ -44,7 +45,19 @@ export type RankingView = {
   seasons?: boolean;
 };
 
-export type ChartView = TrendView | RankingView;
+/** Counts by day of the year (series keys "MM-DD"), drawn as a month × day heatmap. */
+export type CalendarView = {
+  kind: "calendar";
+  label: MessageKey;
+  dataset: string;
+  /** What one cell counts, e.g. "Births per day". */
+  measure: MessageKey;
+};
+
+export type ChartView = TrendView | RankingView | CalendarView;
+
+/** Heatmap colours from the quietest to the busiest day. */
+const calendarColors = ["#eef1fd", "#9aa9f5", "#4263eb", "#1d2b8f"];
 
 export type StatisticCardConfig = {
   id: string;
@@ -64,7 +77,7 @@ const seasonLabels: Record<Season, MessageKey> = {
 
 /**
  * One statistics card. Its views share the frame, source footer and summary; each view reads one
- * dataset and is drawn as a trend or a ranking. New charts are configured in `cards.ts`.
+ * dataset and is drawn as a trend, a ranking or a calendar heatmap. New charts are configured in `cards.ts`.
  */
 export function StatisticCard({ card }: { card: StatisticCardConfig }) {
   const { t, language } = useI18n();
@@ -76,6 +89,17 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
   const view = card.views[viewIndex];
   const query = useSeriesTable(view.dataset);
   const table = query.data;
+
+  const decimal = useMemo(() => new Intl.NumberFormat(language, { maximumFractionDigits: 1 }), [language]);
+  const date = useMemo(() => {
+    const format = new Intl.DateTimeFormat(language, { day: "numeric", month: "long" });
+    // 2024 is a leap year, so 29 February formats too.
+    return (month: number, day: number) => format.format(new Date(2024, month - 1, day));
+  }, [language]);
+  const monthNames = useMemo(() => {
+    const format = new Intl.DateTimeFormat(language, { month: "short" });
+    return Array.from({ length: 12 }, (_, month) => format.format(new Date(2024, month, 1)));
+  }, [language]);
 
   const label = (labels: Labels, key: string) =>
     labels === "countries" ? countryName(key, language) : t(labels[key] ?? "other");
@@ -98,7 +122,65 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
     };
   }, [view, table, chosenYear, season]);
 
+  const calendar = useMemo(() => {
+    if (view.kind !== "calendar" || !table || table.series.length === 0) return null;
+    const years = yearsOf(table);
+    const year = chosenYear === ALL_YEARS || (chosenYear && years.includes(chosenYear)) ? chosenYear : ALL_YEARS;
+    const days = calendarDays(table, year);
+    return { years, year, days, extremes: extremes(days) };
+  }, [view, table, chosenYear]);
+
   const state: ChartState = chartState([query], ([data]: SeriesTable[]) => {
+    if (view.kind === "calendar") {
+      if (!calendar || calendar.days.length === 0) return { status: "empty" };
+      const amounts = calendar.days.map((day) => day.value);
+      const amount = (count: number) => (calendar.year === ALL_YEARS ? decimal.format(count) : value(count, "count"));
+      return {
+        status: "ready",
+        height: 380,
+        label: t(card.title) + " · " + t(view.label),
+        option: {
+          grid: { left: 8, right: 8, top: 4, bottom: 44, containLabel: true },
+          tooltip: {
+            ...tooltipStyle,
+            trigger: "item",
+            formatter: ({ data: [day, month, count] }: { data: [number, number, number] }) =>
+              date(month + 1, day + 1) + "<br/>" + t(view.measure) + ": <b>" + amount(count) + "</b>",
+          },
+          xAxis: {
+            type: "category",
+            data: Array.from({ length: 31 }, (_, day) => String(day + 1)),
+            ...axisStyle,
+            splitLine: { show: false },
+            axisLabel: { ...axisStyle.axisLabel, interval: (index: number) => index === 0 || (index + 1) % 5 === 0 },
+          },
+          yAxis: { type: "category", data: monthNames, inverse: true, ...axisStyle, splitLine: { show: false } },
+          visualMap: {
+            min: Math.min(...amounts),
+            max: Math.max(...amounts),
+            text: [amount(Math.max(...amounts)), amount(Math.min(...amounts))],
+            textGap: 8,
+            orient: "horizontal",
+            left: "center",
+            bottom: 0,
+            itemWidth: 10,
+            itemHeight: 140,
+            calculable: false,
+            inRange: { color: calendarColors },
+            textStyle: { color: "#727784", fontSize: 11 },
+          },
+          series: [
+            {
+              type: "heatmap",
+              name: t(view.measure),
+              data: calendar.days.map((day) => [day.day - 1, day.month - 1, Math.round(day.value * 10) / 10]),
+              itemStyle: { borderColor: "#fff", borderWidth: 1, borderRadius: 2 },
+              emphasis: { itemStyle: { borderColor: "#191c24", borderWidth: 1 } },
+            },
+          ],
+        },
+      };
+    }
     if (view.kind === "ranking") {
       if (!ranking || ranking.items.length === 0) return { status: "empty" };
       const rows = [...ranking.items].reverse();
@@ -183,6 +265,17 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
 
   const summary = () => {
     if (!table) return undefined;
+    if (view.kind === "calendar") {
+      if (!calendar?.extremes) return undefined;
+      const { most, least } = calendar.extremes;
+      const amount = (count: number) => (calendar.year === ALL_YEARS ? decimal.format(count) : value(count, "count"));
+      return t("calendarExtremes", {
+        most: date(most.month, most.day),
+        mostValue: amount(most.value),
+        least: date(least.month, least.day),
+        leastValue: amount(least.value),
+      });
+    }
     if (view.kind === "ranking") {
       if (!ranking) return undefined;
       const notes = [
@@ -230,6 +323,26 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
           onChange={(event) => setYear(event.target.value)}
         >
           {ranking.years.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      )}
+      {calendar && (
+        <select
+          className="chart-select"
+          aria-label={t("year")}
+          value={calendar.year}
+          onChange={(event) => setYear(event.target.value)}
+        >
+          <option value={ALL_YEARS}>
+            {t("allYearsAverage", {
+              from: calendar.years[calendar.years.length - 1],
+              to: calendar.years[0],
+            })}
+          </option>
+          {calendar.years.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
