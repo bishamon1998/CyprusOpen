@@ -27,3 +27,10 @@ databaseChangeLog:
         - sqlFile:
             path: air-quality.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 5-beaches
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: beaches.sql
+            relativeToChangelogFile: true

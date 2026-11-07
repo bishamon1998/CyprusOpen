@@ -1,0 +1,80 @@
+/* Bathing water classes (Bathing Water Directive). */
+.quality-excellent,
+.tone-quality-excellent { --tone: #1f77d0; --tone-text: #fff; }
+.quality-good,
+.tone-quality-good { --tone: #2fa86b; --tone-text: #fff; }
+.quality-sufficient,
+.quality-good-or-sufficient,
+.tone-quality-sufficient,
+.tone-quality-good-or-sufficient { --tone: #f0c419; --tone-text: #3a3005; }
+.quality-poor,
+.tone-quality-poor { --tone: #e5484d; --tone-text: #fff; }
+.quality-not-classified,
+.quality-missing-data,
+.tone-quality-not-classified,
+.tone-quality-missing-data { --tone: #c9cedb; --tone-text: #2b3140; }
+.result-row-icon[class*="tone-quality-"],
+.map-pin[class*="tone-quality-"] span {
+  background: var(--tone);
+  color: var(--tone-text);
+}
+.beach-quality {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--tone, #f1f3f7);
+  color: var(--tone-text, #5c6a8d);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.beach-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+}
+.beach-history li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.beach-history .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tone, #c9cedb);
+}
+.beach-tests {
+  width: 100%;
+  margin: 4px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.beach-tests th,
+.beach-tests td {
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.beach-tests td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.beach-note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

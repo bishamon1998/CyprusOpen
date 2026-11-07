@@ -71,6 +71,7 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 | `pharmacy-schedule` | pharmacies | daily, 06:15 | `PHARMACY_SYNC_ENABLED` |
 | `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
 | `air-quality` | parking | hourly, at :20 | `AIR_QUALITY_SYNC_ENABLED` |
+| `beaches` | parking | Tuesdays, 05:40 | `BEACHES_SYNC_ENABLED` |
 
 Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
 
@@ -81,6 +82,14 @@ The Air quality page shows the latest hourly readings of the Department of Labou
 The hourly `air-quality` job reads `AIR_QUALITY_RESOURCE_URL` (default `https://www.airquality.dli.mlsi.gov.cy/all_stations_data_PM`), keeps PM2.5, PM10, O3, NO2, SO2 and CO, drops stations outside Cyprus, and stores the snapshot in `parking.air_quality` (JSONB, Liquibase changeset `4-air-quality`). A failed or invalid response keeps the previous snapshot. Measurement times are Cyprus local time in the source and are stored as instants.
 
 Each pollutant and station gets a level of the [European Air Quality Index](https://airindex.eea.europa.eu/AQI/index.html) from its hourly concentration, using the EEA bands (µg/m³, upper bounds of Good … Very poor): PM2.5 5/15/50/90/140, PM10 15/45/120/195/270, O3 60/100/120/160/180, NO2 10/25/60/100/150, SO2 20/40/125/190/275. A station's level is its worst pollutant; CO has no index level. The page shows the EEA health advice for the selected station and warns when the newest reading is more than three hours old.
+
+## Beaches
+
+The Beaches page lists the bathing waters designated under the Bathing Water Directive with their water quality class. parking-service serves them at `/api/v1/beaches`.
+
+The weekly `beaches` job reads three tables for Cyprus from the [EEA Discodata](https://discodata.eea.europa.eu/) SQL endpoint (`BEACHES_DISCODATA_URL`, default `https://discodata.eea.europa.eu/sql`, database `WISE_BWD`, schema `latest`): `spatial_ProtectedArea` (names, coordinates, profile document), `assessment_BathingWaterStatus` (class per season) and `assessment_BathingWaterQuality` (E. coli and intestinal enterococci 95th percentiles and sample counts). Queries are fixed `SELECT * … WHERE countryCode='CY'` statements because the endpoint's firewall rejects some statements that list columns or aggregate. Only bathing waters of the latest reporting year with coordinates in Cyprus are kept; the snapshot is stored in `parking.beaches` (JSONB, changeset `5-beaches`), and failures keep it. EEA data is reused under its legal notice (CC BY 4.0); Cyprus reports it through the Department of Environment.
+
+The page shows the latest season's class (EEA publishes one season a year, in spring), up to ten seasons of history, the bacteria results against the limits for "excellent" coastal water (E. coli 250, enterococci 100 cfu/100 ml, 95th percentile) and the official bathing water profile.
 
 ## Maps and privacy
 
@@ -107,7 +116,7 @@ Deploy the updated Parking backend together with the frontend release after revi
 
 Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.
 
-Air quality runs inside the Parking service: set `AIR_QUALITY_SYNC_ENABLED=true` on the Railway Parking service; no new service, database or public domain is needed.
+Air quality and Beaches run inside the Parking service: set `AIR_QUALITY_SYNC_ENABLED=true` and `BEACHES_SYNC_ENABLED=true` on the Railway Parking service; no new service, database or public domain is needed.
 
 ## Shared map and parsing components
 

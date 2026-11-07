@@ -42,6 +42,7 @@ for (const [prefix, target] of [
   ["/api/v1/parking", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
   // Air quality is served by parking-service too: one machine for the map tools.
   ["/api/v1/air-quality", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
+  ["/api/v1/beaches", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
   ["/api/v1/pharmacies", process.env.PHARMACIES_UPSTREAM || "http://localhost:8083"],
 ]) {
   const upstream = new URL(target);
@@ -85,7 +86,7 @@ app.use("/api", (_request, response) =>
 );
 const directory = fileURLToPath(new URL("./dist/", import.meta.url));
 app.use(express.static(directory, { index: false }));
-app.get(["/", "/parking", "/pharmacies", "/air", "/about"], (_request, response) => {
+app.get(["/", "/parking", "/pharmacies", "/beaches", "/air", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
 });
 app.use((_request, response) =>

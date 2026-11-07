@@ -14,6 +14,8 @@ services:
       PARKING_DIRECTORY_RESOURCE_URL: http://parking-fixture:9090/directory
       AIR_QUALITY_SYNC_ENABLED: "true"
       AIR_QUALITY_RESOURCE_URL: http://parking-fixture:9090/air
+      BEACHES_SYNC_ENABLED: "true"
+      BEACHES_DISCODATA_URL: http://parking-fixture:9090/sql
     depends_on:
       parking-fixture:
         condition: service_started

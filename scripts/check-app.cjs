@@ -70,6 +70,10 @@ async function main() {
     assert.equal(air.stations.length, 3, "air quality stations (the misplaced one is dropped)");
     assert.equal(air.stations.find((station) => station.id === "station_1").level, "moderate");
     assert.equal(air.source.license, "CC BY-SA 4.0");
+    const beaches = await (await fetch(`${baseUrl}/api/v1/beaches`)).json();
+    assert.equal(beaches.beaches.length, 3, "bathing waters (the one no longer designated is dropped)");
+    assert.equal(beaches.season, 2024);
+    assert.ok(beaches.beaches.every((beach) => beach.quality === "excellent"));
     const pharmacies = await (await fetch(`${baseUrl}/api/v1/pharmacies`)).json();
     assert.equal(pharmacies.items.length, 5);
     assert.ok(pharmacies.checkedAt);
@@ -91,6 +95,7 @@ async function main() {
         ["/", "Statistics"],
         ["/parking", "Parking"],
         ["/pharmacies", "Pharmacies"],
+        ["/beaches", "Beaches"],
         ["/air", "Air quality"],
         ["/about", "Sources"],
       ]) {
@@ -119,6 +124,12 @@ async function main() {
         assert.deepEqual(overflow, [], `${route} overflows at ${width}px`);
       }
     }
+    await page.goto(`${baseUrl}/beaches`);
+    await page.locator(".result-list li").nth(2).waitFor();
+    await page.getByRole("searchbox", { name: "Search beaches" }).fill("karafa");
+    assert.equal(await page.locator(".result-list li").count(), 1);
+    await page.locator(".result-row").first().click();
+    await page.locator(".beach-tests").waitFor();
     await page.goto(`${baseUrl}/air`);
     await page.locator(".result-list li").nth(2).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 3);
@@ -281,7 +292,7 @@ async function main() {
           `${language} overflows at ${width}px`,
         );
       }
-      for (const route of ["/", "/pharmacies", "/air", "/about"]) {
+      for (const route of ["/", "/pharmacies", "/beaches", "/air", "/about"]) {
         await page.goto(`${baseUrl}${route}`);
         await page.locator("main h1").waitFor();
         assert.equal(

@@ -4,7 +4,22 @@ import { readFileSync } from "node:fs";
 const xml = readFileSync(new URL("./parking-directory.xml", import.meta.url));
 // Trimmed copy of the real air quality response (three stations in Cyprus and one misplaced).
 const air = readFileSync(new URL("./air-quality.json", import.meta.url));
+// Trimmed copies of the real EEA Discodata tables, chosen by the table named in the SQL query.
+const beachTables = {
+  "[spatial_ProtectedArea]": "beach-spatial.json",
+  "[assessment_BathingWaterStatus]": "beach-status.json",
+  "[assessment_BathingWaterQuality]": "beach-quality.json",
+};
 http.createServer((request, response) => {
+  const url = new URL(request.url, "http://fixture");
+  if (url.pathname === "/sql") {
+    const query = url.searchParams.get("query") ?? "";
+    const table = Object.keys(beachTables).find((name) => query.includes(name));
+    if (!table) { response.writeHead(404).end(); return; }
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(readFileSync(new URL("./" + beachTables[table], import.meta.url)));
+    return;
+  }
   if (request.url === "/air") {
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(air);
