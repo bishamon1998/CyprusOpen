@@ -25,11 +25,15 @@ export type SeriesTable = {
   series: SeriesLine[];
 };
 
-/** Official tables change monthly at most, so a loaded table is reused for the session. */
+/**
+ * Official tables change monthly at most, so a loaded table is reused for the session. A table that
+ * is still empty (its first import runs right after a deploy) is checked again until it has data.
+ */
 export function useSeriesTable(code: string) {
   return useQuery({
     queryKey: ["statistics", code],
     staleTime: Infinity,
+    refetchInterval: (query) => (query.state.data && query.state.data.series.length === 0 ? 15_000 : false),
     queryFn: () =>
       get<SeriesTable>(
         "/api/v1/statistics/datasets/" + encodeURIComponent(code),
