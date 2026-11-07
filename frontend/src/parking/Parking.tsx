@@ -10,6 +10,7 @@ import { ParkingAttribution } from "./ParkingAttribution";
 import { ParkingFilters } from "./ParkingFilters";
 import { ParkingMap } from "./ParkingMap";
 import { ParkingResults } from "./ParkingResults";
+import { useParkingName } from "./useParkingName";
 
 const PAGE_SIZE = 30;
 
@@ -23,10 +24,12 @@ export default function Parking() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const { position, locating, locationError, locate, clearLocation } =
     useBrowserLocation();
+  const name = useParkingName();
   const area = areas.find((item) => item.id === areaId)!;
   const places = useMemo(() => {
     const query = search.trim().toLowerCase();
     const [[south, west], [north, east]] = area.bounds;
+    // Search the name as shown: unnamed car parks appear under the translated "Car park".
     const matches = (report.data?.items || []).filter(
       (place) =>
         (area.id === "cyprus" ||
@@ -34,7 +37,7 @@ export default function Parking() {
             place.latitude <= north &&
             place.longitude >= west &&
             place.longitude <= east)) &&
-        place.name.toLowerCase().includes(query),
+        name(place).toLowerCase().includes(query),
     );
     return matches.sort((a, b) =>
       position
@@ -44,7 +47,7 @@ export default function Parking() {
           a.name.localeCompare(b.name) ||
           a.id.localeCompare(b.id),
     );
-  }, [report.data, area, search, position]);
+  }, [report.data, area, search, position, name]);
   const selected = places.find((place) => place.id === selectedId);
 
   function resetSelection() {

@@ -82,6 +82,8 @@ app.use("/api", (_request, response) =>
   response.status(404).json({ title: "Not found", status: 404 }),
 );
 const directory = fileURLToPath(new URL("./dist/", import.meta.url));
+// Vite names built files by content hash, so browsers may keep them; index.html stays no-cache.
+app.use("/assets", express.static(`${directory}assets`, { index: false, immutable: true, maxAge: "1y" }));
 app.use(express.static(directory, { index: false }));
 app.get(["/", "/parking", "/pharmacies", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);

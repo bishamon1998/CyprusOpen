@@ -7,6 +7,7 @@ import {
   ResultsPanel,
   SelectedResult,
 } from "../components/tool/Tool";
+import { useDistanceLabel } from "../format";
 import { googleDirections } from "../geo/directions";
 import { useI18n } from "../i18n";
 import { type Pharmacy, usePharmacySchedule } from "./api";
@@ -46,7 +47,8 @@ export function PharmacyResults({
   onSelect: (id: string) => void;
   onClearLocation: () => void;
 }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
+  const distanceLabel = useDistanceLabel();
   const heading = schedule.isPending
     ? t("loading")
     : schedule.data
@@ -63,14 +65,7 @@ export function PharmacyResults({
       : null;
   const detail = (pharmacy: Pharmacy) => {
     const distance = distanceTo(pharmacy);
-    if (distance !== null) {
-      return t("distance", {
-        distance: distance.toLocaleString(language, {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1,
-        }),
-      });
-    }
+    if (distance !== null) return distanceLabel(distance);
     return pharmacy.location && pharmacy.location.precision !== "exact"
       ? t("approximateLocation")
       : null;

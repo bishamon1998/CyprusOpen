@@ -8,6 +8,7 @@ import {
   SelectedResult,
   ShowMore,
 } from "../components/tool/Tool";
+import { useDistanceLabel } from "../format";
 import { distance, type Position } from "../geo/coordinates";
 import { googleDirections } from "../geo/directions";
 import { useI18n } from "../i18n";
@@ -35,8 +36,9 @@ export function ParkingResults({
   onMore: () => void;
   onClearLocation: () => void;
 }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const name = useParkingName();
+  const distanceLabel = useDistanceLabel();
   const published = Boolean(report.data?.directory.publishedAt);
   const heading = report.isPending
     ? t("loading")
@@ -45,12 +47,7 @@ export function ParkingResults({
       : t("carParkCount", { count: places.length });
   const detail = (place: ParkingPlace) =>
     position
-      ? t("distance", {
-          distance: distance(position, place).toLocaleString(language, {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1,
-          }),
-        })
+      ? distanceLabel(distance(position, place))
       : `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`;
 
   return (

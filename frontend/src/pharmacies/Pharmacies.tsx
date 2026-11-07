@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Pill } from "lucide-react";
-import { MapView, type MapLabels } from "../components/map/MapView";
+import { MapView } from "../components/map/MapView";
+import { useMapLabels } from "../components/map/useMapLabels";
 import { PageTitle } from "../components/PageTitle";
 import {
   ExternalLink,
@@ -8,8 +9,8 @@ import {
   ToolFeedback,
   ToolLayout,
   ToolWorkspace,
-  useCyprusDate,
 } from "../components/tool/Tool";
+import { useCyprusDate } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
@@ -42,16 +43,7 @@ export default function Pharmacies() {
       ),
     [items],
   );
-  const labels = useMemo<MapLabels>(
-    () => ({
-      region: t("pharmacies"),
-      unavailable: t("tilesUnavailable"),
-      hint: t("mapHint"),
-      location: t("yourLocation"),
-      cluster: (count) => t("pharmacyCount", { count }),
-    }),
-    [t],
-  );
+  const labels = useMapLabels("pharmacies", "pharmacyCount");
 
   function choose(id: string) {
     setSelectedId(id);
