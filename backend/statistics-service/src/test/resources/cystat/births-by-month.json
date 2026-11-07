@@ -1,0 +1,199 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Live Births by Month and Sex, Annual by YEAR, SEX and MONTH",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "YEAR",
+  "SEX",
+  "MONTH"
+ ],
+ "size": [
+  2,
+  3,
+  13
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Live Births by Month and Sex, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number",
+      "decimals": 0
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "39": 0,
+     "40": 1
+    },
+    "label": {
+     "39": "2023",
+     "40": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "SEX": {
+   "label": "SEX",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2
+    },
+    "label": {
+     "0": "Total",
+     "1": "Males",
+     "2": "Females"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "MONTH": {
+   "label": "MONTH",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9,
+     "10": 10,
+     "11": 11,
+     "12": 12
+    },
+    "label": {
+     "0": "Total",
+     "1": "January",
+     "2": "February",
+     "3": "March",
+     "4": "April",
+     "5": "May",
+     "6": "June",
+     "7": "July",
+     "8": "August",
+     "9": "September",
+     "10": "October",
+     "11": "November",
+     "12": "December"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  10241,
+  924,
+  789,
+  848,
+  791,
+  850,
+  834,
+  901,
+  885,
+  900,
+  881,
+  836,
+  802,
+  5283,
+  455,
+  398,
+  440,
+  440,
+  412,
+  428,
+  497,
+  452,
+  473,
+  451,
+  403,
+  434,
+  4958,
+  469,
+  391,
+  408,
+  351,
+  438,
+  406,
+  404,
+  433,
+  427,
+  430,
+  433,
+  368,
+  9766,
+  813,
+  713,
+  785,
+  724,
+  785,
+  775,
+  868,
+  839,
+  838,
+  900,
+  853,
+  873,
+  5091,
+  409,
+  377,
+  413,
+  378,
+  421,
+  420,
+  452,
+  428,
+  423,
+  472,
+  428,
+  470,
+  4675,
+  404,
+  336,
+  372,
+  346,
+  364,
+  355,
+  416,
+  411,
+  415,
+  428,
+  425,
+  403
+ ]
+}

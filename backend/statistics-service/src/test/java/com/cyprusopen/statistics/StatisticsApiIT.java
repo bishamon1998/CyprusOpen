@@ -144,6 +144,41 @@ class StatisticsApiIT {
         assertThat(line(weddings, "12-25").get("values").toString()).isEqualTo("[0.0,0.0]");
         assertThat(line(weddings, "total")).isNull();
 
+        // Quarterly periods, revision markers ("2023 (r)") and tables without a time dimension.
+        var housePrices = get("/api/v1/statistics/datasets/house-prices", 200);
+        assertThat(mapper.convertValue(housePrices.get("periods"), String[].class))
+                .containsExactly("2025-Q2", "2025-Q3", "2025-Q4", "2026-Q1", "2026-Q2");
+        assertThat(line(housePrices, "index").get("values").toString()).isEqualTo("[97.74,101.35,101.34,102.95,105.46]");
+        var causes = get("/api/v1/statistics/datasets/death-causes", 200);
+        assertThat(mapper.convertValue(causes.get("periods"), String[].class)).containsExactly("2022", "2023", "2024");
+        assertThat(line(causes, "c2").get("values").toString()).isEqualTo("[1574.0,1606.0,1742.0]");
+        assertThat(line(causes, "c2.1")).isNull();
+        assertThat(causes.get("series").size()).isEqualTo(19);
+        var spending = get("/api/v1/statistics/datasets/household-spending", 200);
+        assertThat(mapper.convertValue(spending.get("periods"), String[].class)).containsExactly("2023");
+        assertThat(spending.get("series").size()).isEqualTo(14);
+        assertThat(line(spending, "food").get("values").toString()).isEqualTo("[1446.0]");
+        assertThat(line(spending, "education").get("values").toString()).isEqualTo("[369.0]");
+        var income = get("/api/v1/statistics/datasets/household-income", 200);
+        assertThat(line(income, "district-lemesos").get("values").toString()).isEqualTo("[56147.0]");
+        assertThat(line(income, "source-pensions").get("values").toString()).isEqualTo("[6911.0]");
+
+        // Two series dimensions: nationality pairs and per-country measures (CYSTAT's "USA" is US).
+        var pairs = get("/api/v1/statistics/datasets/marriage-pairs", 200);
+        assertThat(line(pairs, "CY|RO").get("values").toString()).isEqualTo("[68.0,59.0]");
+        assertThat(line(pairs, "other|other")).isNotNull();
+        var tourists = get("/api/v1/statistics/datasets/tourist-spending", 200);
+        assertThat(line(tourists, "day-US").get("values").get(1).asDouble()).isEqualTo(89.53);
+        assertThat(line(tourists, "day-total").get("values").get(1).asDouble()).isEqualTo(98.21);
+        assertThat(line(get("/api/v1/statistics/datasets/divorce-duration", 200), "10–14").get("values").toString())
+                .isEqualTo("[394.0,359.0]");
+        assertThat(line(get("/api/v1/statistics/datasets/vehicles", 200), "new-electric").get("values").toString())
+                .isEqualTo("[1322.0,2220.0,2223.0]");
+        assertThat(line(get("/api/v1/statistics/datasets/building-permits", 200), "total").get("values").get(13).asDouble())
+                .isEqualTo(2122.0);
+        assertThat(line(get("/api/v1/statistics/datasets/births-by-month", 200), "08").get("values").get(1).asDouble())
+                .isEqualTo(839.0);
+
         assertThat(refresh.refreshAll()).containsValue(RefreshResult.UNCHANGED).doesNotContainValue(RefreshResult.UPDATED);
         mode.set("invalid");
         assertThat(refresh.refreshAll()).hasSize(datasets.size())

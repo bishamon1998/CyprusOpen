@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -22,6 +23,35 @@ import org.springframework.core.annotation.Order;
 class StatisticsDatasets {
     private static final String YEAR = "YEAR";
     private static final String MONTH = "MONTH";
+    /** Main groups of the causes-of-death shortlist ("2  Neoplasms"); subgroups have a dot ("2.1  …"). */
+    private static final Pattern CAUSE_GROUP = Pattern.compile("(\\d+) {2}\\D.*");
+    private static final Map<String, String> SPENDING = Map.ofEntries(
+            entry("TOTAL CONSUMPTION EXPENDITURE", TOTAL_SERIES),
+            entry("FOOD AND NON-ALCOHOLIC BEVERAGES", "food"),
+            entry("ALCOHOLIC BEVERAGES AND TOBACCO", "alcohol-tobacco"),
+            entry("CLOTHING AND FOOTWEAR", "clothing"),
+            entry("HOUSING, WATER, ELECTRICITY, GAS AND OTHER FUELS", "housing"),
+            entry("FURNISHINGS, HOUSEHOLD EQUIPMENT AND ROUTINE HOUSEHOLD MAINTENANCE", "furnishings"),
+            entry("HEALTH", "health"),
+            entry("TRANSPORT", "transport"),
+            entry("INFORMATION AND COMMUNICATION", "communication"),
+            entry("RECREATION, SPORT AND CULTURE", "recreation"),
+            entry("EDUCATION SERVICES (covers educational services only)", "education"),
+            entry("RESTAURANTS AND ACCOMMODATION SERVICES", "restaurants"),
+            entry("INSURANCE AND FINANCIAL SERVICES", "insurance"),
+            entry("PERSONAL CARE, SOCIAL PROTECTION AND MISCELLANEOUS GOODS AND SERVICES", "personal-care"));
+    private static final Map<String, String> INCOME_SOURCES = Map.of(
+            "Net income from employment", "employment",
+            "Net income from self-employment", "self-employment",
+            "Net income from interest, dividents and other investments", "investments",
+            "Net income from rent - Total", "rent",
+            "Net income from pensions", "pensions",
+            "Other benefits", "benefits",
+            "Current transfers (from/to other households)", "transfers");
+    private static final Map<String, String> SPENDING_MEASURES = Map.of(
+            "Total Expenditure - Per Day (€)", "day",
+            "Total Expenditure - Per Person (€)", "trip",
+            "Average Duration of Stay (Nights)", "nights");
 
     // Migration
 
@@ -239,6 +269,200 @@ class StatisticsDatasets {
                         entry("Heavy fuel oil", "heavy-fuel-oil"),
                         entry("Liquefied petroleum gases", "lpg"))),
                 MONTH, Map.of("REFERENCE PERIOD", "Month", "SALES/STOCKS", "Total sales")));
+    }
+
+    // Life events
+
+    /** Deaths by main group of the European shortlist of causes ("c2" = neoplasms), both sexes. */
+    @Bean
+    @Order(140)
+    StatisticsDataset deathCauses() {
+        return CystatDataset.of("death-causes", "Health/Deaths by Cause of Death/2170010E.px", 1596,
+                table -> SeriesMapping.map(table, "SHORTLIST ON CAUSES OF DEATH", label -> {
+                    if (label.equals("Total Deaths")) return Optional.of(TOTAL_SERIES);
+                    var group = CAUSE_GROUP.matcher(label);
+                    return group.matches() ? Optional.of("c" + group.group(1)) : Optional.empty();
+                }, YEAR, Map.of("SEX", "Total")));
+    }
+
+    /** Live births by month of the year ("01"–"12"), both sexes. */
+    @Bean
+    @Order(150)
+    StatisticsDataset birthsByMonth() {
+        return CystatDataset.of("births-by-month", "Population/Births and Deaths/1830016E.px", 2078,
+                table -> SeriesMapping.map(table, MONTH, StatisticsDatasets::monthOfYear, YEAR, Map.of("SEX", "Total")));
+    }
+
+    /** Deaths by month of the year ("01"–"12"), both sexes. */
+    @Bean
+    @Order(160)
+    StatisticsDataset deathsByMonth() {
+        return CystatDataset.of("deaths-by-month", "Population/Deaths/1830222E.px", 2141,
+                table -> SeriesMapping.map(table, MONTH, StatisticsDatasets::monthOfYear, YEAR, Map.of("SEX", "Total")));
+    }
+
+    // Family
+
+    /** Divorces by years of marriage: "<1", "1" … "9", "10–14", "15–19", "20+". */
+    @Bean
+    @Order(170)
+    StatisticsDataset divorceDuration() {
+        return CystatDataset.of("divorce-duration", "Population/Divorces/1850234E.px", 2151,
+                table -> SeriesMapping.map(table, "DURATION OF MARRIAGE (YEARS)", label -> switch (label) {
+                    case "Total" -> Optional.of(TOTAL_SERIES);
+                    case "Less than 1" -> Optional.of("<1");
+                    default -> Optional.of(label.replace(" - ", "–"));
+                }, YEAR, Map.of()));
+    }
+
+    /** Marriages of residents by nationality pair, keyed "groom|bride" with ISO codes or "other". */
+    @Bean
+    @Order(180)
+    StatisticsDataset marriagePairs() {
+        return CystatDataset.of("marriage-pairs", "Population/Marriages/1850034E.px", 2163,
+                table -> SeriesMapping.map(table, YEAR, Map.of(), List.of("NATIONALITY OF GROOM", "NATIONALITY OF BRIDE"),
+                        labels -> nationality(labels.get(0)).flatMap(groom ->
+                                nationality(labels.get(1)).map(bride -> groom + "|" + bride))));
+    }
+
+    /** Mean age of groom and bride, all marriages and first marriages. */
+    @Bean
+    @Order(190)
+    StatisticsDataset marriageAge() {
+        return CystatDataset.of("marriage-age", "Population/Marriages/1850022E.px", 2160,
+                table -> SeriesMapping.map(table, "TYPE OF MARRIAGE", labels(Map.of(
+                        "Total Marriages - Groom", "groom", "Total Marriages - Bride", "bride",
+                        "Total 1st Marriage - Groom", "groom-first", "Total 1st Marriage - Bride", "bride-first")),
+                        YEAR, Map.of()));
+    }
+
+    /** Mean age of the mother at the birth of her first child and of any child. */
+    @Bean
+    @Order(200)
+    StatisticsDataset motherAge() {
+        return CystatDataset.of("mother-age", "Population/Births and Deaths/1830058E.px", 2089,
+                table -> SeriesMapping.map(table, "MEAN AGE OF MOTHER", labels(Map.of(
+                        "Of first child", "first-child", "Of any child", "any-child")), YEAR, Map.of()));
+    }
+
+    /** Births outside marriage: count and share of all births (%). */
+    @Bean
+    @Order(210)
+    StatisticsDataset extramaritalBirths() {
+        return CystatDataset.of("extramarital-births", "Population/Births and Deaths/1830022E.px", 2080,
+                table -> SeriesMapping.map(table, "MARITAL AND EXTRA-MARITAL BIRTHS BY SEX", labels(Map.of(
+                        "TOTAL", TOTAL_SERIES, "Total - Extra-marital", "extra-marital", "Extra-marital ratio", "ratio")),
+                        YEAR, Map.of()));
+    }
+
+    // Household budgets
+
+    /** How each 10,000 € of household spending is divided between the 13 main COICOP groups, 2023 survey. */
+    @Bean
+    @Order(220)
+    StatisticsDataset householdSpending() {
+        return CystatDataset.of("household-spending", "Living Conditions, Social Protection/Household Budget Survey/"
+                        + "Distribution of Consumption Expenditure per 10000 euro/1914240E.px", 1961,
+                table -> SeriesMapping.snapshot(table, "2023", Map.of("URBAN/RURAL RESIDENCE", "Total"),
+                        List.of("CATEGORIES OF GOODS AND SERVICES"), labels -> Optional.ofNullable(SPENDING.get(labels.getFirst()))));
+    }
+
+    /**
+     * Mean annual net household income, 2023 survey: "district-…" by district (all sources) and "source-…" by
+     * source of income (all districts).
+     */
+    @Bean
+    @Order(230)
+    StatisticsDataset householdIncome() {
+        return CystatDataset.of("household-income", "Living Conditions, Social Protection/Household Budget Survey/"
+                        + "Mean Annual Income/Mean Annual Household Income/1918240E.px", 1990,
+                table -> SeriesMapping.snapshot(table, "2023", Map.of("URBAN/RURAL RESIDENCE", "Total"),
+                        List.of("SOURCE OF INCOME", "DISTRICT"), labels -> {
+                            var allSources = labels.get(0).equals("NET INCOME");
+                            var allDistricts = labels.get(1).equals("Total");
+                            if (allSources && allDistricts) return Optional.of(TOTAL_SERIES);
+                            if (allSources) return Optional.of("district-" + labels.get(1).toLowerCase(Locale.ROOT));
+                            if (allDistricts) return Optional.ofNullable(INCOME_SOURCES.get(labels.get(0))).map(key -> "source-" + key);
+                            return Optional.empty();
+                        }));
+    }
+
+    // Housing
+
+    /** House price index (2025=100) and its change on the previous quarter and year (%). */
+    @Bean
+    @Order(240)
+    StatisticsDataset housePrices() {
+        return CystatDataset.of("house-prices", "Price Indices/House Price Index/0430008E.px", 2368,
+                table -> SeriesMapping.map(table, "INDICATOR", labels(Map.of(
+                        "Index-Quarterly", "index", "% change - previous quarter", "quarterly-change",
+                        "% change - same quarter of previous year", "annual-change")), "QUARTER", Map.of()));
+    }
+
+    /** Dwelling units in approved building permits by district, monthly. */
+    @Bean
+    @Order(250)
+    StatisticsDataset buildingPermits() {
+        return CystatDataset.of("building-permits", "Construction/Building Permits/1440010E.px", 1467,
+                table -> SeriesMapping.map(table, "DISTRICT",
+                        label -> Optional.of(label.equals("District Total") ? TOTAL_SERIES : label.toLowerCase(Locale.ROOT)),
+                        MONTH, Map.of("URBAN/RURAL", "Total", "MEASUREMENT", "Number", "REFERENCE PERIOD", "Monthly data",
+                                "NUMBER/AREA/VALUE/DWELLING UNITS", "Dwelling units")));
+    }
+
+    // Transport
+
+    /** New registrations ("new-…") and licensed vehicles ("fleet-…") by energy type. */
+    @Bean
+    @Order(260)
+    StatisticsDataset vehicles() {
+        return CystatDataset.of("vehicles", "Services/Road Transport, Motor Vehicles and Road Accidents/2230223E.px", 2241,
+                table -> SeriesMapping.map(table, YEAR, Map.of(), List.of("LICENSED / REGISTRATIONS", "ENERGY TYPE"),
+                        labels -> Optional.of((labels.get(0).equals("Licensed Vehicles") ? "fleet-" : "new-")
+                                + labels.get(1).toLowerCase(Locale.ROOT))));
+    }
+
+    // Tourist spending and residents' trips
+
+    /** Tourist spending per day ("day-…") and per trip ("trip-…") in €, and nights ("nights-…"), by country. */
+    @Bean
+    @Order(270)
+    StatisticsDataset touristSpending() {
+        return CystatDataset.of("tourist-spending", "Tourism/Revenue from Tourism/Annual/2032023E.px", 2262,
+                table -> SeriesMapping.map(table, YEAR, Map.of("TYPE OF TRAVEL", "Total trips"),
+                        List.of("EXPENDITURE, DURATION", "COUNTRY OF USUAL RESIDENCE"), labels -> {
+                            var measure = SPENDING_MEASURES.get(labels.get(0));
+                            if (measure == null) return Optional.empty();
+                            var country = labels.get(1).equals("Total")
+                                    ? Optional.of(TOTAL_SERIES) : Countries.isoCode(withoutNotes(labels.get(1)));
+                            return country.map(code -> measure + "-" + code);
+                        }));
+    }
+
+    /** Trips made by residents of Cyprus, within Cyprus and abroad. */
+    @Bean
+    @Order(280)
+    StatisticsDataset residentTrips() {
+        return CystatDataset.of("resident-trips", "Tourism/Survey on the Trips of Residents/2070020E.px", 2268,
+                table -> SeriesMapping.map(table, "DESTINATION", labels(Map.of(
+                        "All Countries", TOTAL_SERIES, "Domestic", "domestic", "Outbound", "abroad")),
+                        YEAR, Map.of("MEASURE", "Number", "PURPOSE", "Total Trips")));
+    }
+
+    /** "January" becomes "01"; the yearly total is kept as the total series. */
+    private static Optional<String> monthOfYear(String label) {
+        if (label.equals("Total")) return Optional.of(TOTAL_SERIES);
+        try {
+            return Optional.of("%02d".formatted(Month.valueOf(label.toUpperCase(Locale.ROOT)).getValue()));
+        } catch (IllegalArgumentException notAMonth) {
+            return Optional.empty();
+        }
+    }
+
+    /** ISO code, "other" for the remaining nationalities; totals and "Not stated" are skipped. */
+    private static Optional<String> nationality(String label) {
+        if (label.startsWith("Total") || label.equals("Not stated")) return Optional.empty();
+        return label.equals("Other") ? Optional.of("other") : Countries.isoCode(label);
     }
 
     /** CYSTAT appends notes in parentheses: "Bulgaria (It is included in the E.U. since 2007 )". */

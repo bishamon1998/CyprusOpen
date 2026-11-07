@@ -288,6 +288,18 @@ async function main() {
       "Earnings · Median and average",
       "Fuel sales · Road fuels",
       "Cyprus calendar · Birthdays",
+      "Seasons of life · Births",
+      "Causes of death · By cause",
+      "Family today · Wedding age",
+      "Who marries whom · Nationalities",
+      "Divorces · Years married",
+      "Where every 100 € goes · By category",
+      "Household income · By district",
+      "House prices · Index",
+      "New homes approved · Per month",
+      "Cars by fuel · New registrations",
+      "What tourists spend · Per day",
+      "Trips of residents · By year",
     ]) {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }

@@ -1,0 +1,126 @@
+{
+ "version": "2.0",
+ "class": "dataset",
+ "label": "Marital and Extra-Marital Births by Sex, Annual by MARITAL AND EXTRA-MARITAL BIRTHS BY SEX and YEAR",
+ "source": "Statistical Service of Cyprus",
+ "updated": "2025-12-19T06:00:00Z",
+ "role": {
+  "time": [
+   "YEAR"
+  ]
+ },
+ "id": [
+  "MARITAL AND EXTRA-MARITAL BIRTHS BY SEX",
+  "YEAR"
+ ],
+ "size": [
+  10,
+  3
+ ],
+ "dimension": {
+  "ContentsCode": {
+   "label": "EliminatedContents",
+   "category": {
+    "index": {
+     "EliminatedValue": 0
+    },
+    "label": {
+     "EliminatedValue": "Marital and Extra-Marital Births by Sex, Annual"
+    },
+    "unit": {
+     "EliminatedValue": {
+      "base": "Number, Rate",
+      "decimals": 1
+     }
+    }
+   },
+   "extension": {
+    "elimination": true
+   }
+  },
+  "MARITAL AND EXTRA-MARITAL BIRTHS BY SEX": {
+   "label": "MARITAL AND EXTRA-MARITAL BIRTHS BY SEX",
+   "category": {
+    "index": {
+     "0": 0,
+     "1": 1,
+     "2": 2,
+     "3": 3,
+     "4": 4,
+     "5": 5,
+     "6": 6,
+     "7": 7,
+     "8": 8,
+     "9": 9
+    },
+    "label": {
+     "0": "TOTAL",
+     "1": "Total - Marital",
+     "2": "Total - Extra-marital",
+     "3": "Males - Total",
+     "4": "Males - Marital",
+     "5": "Males - Extra-marital",
+     "6": "Females - Total",
+     "7": "Females - Marital",
+     "8": "Females - Extra marital",
+     "9": "Extra-marital ratio"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  },
+  "YEAR": {
+   "label": "YEAR",
+   "category": {
+    "index": {
+     "12": 0,
+     "13": 1,
+     "14": 2
+    },
+    "label": {
+     "12": "2022",
+     "13": "2023",
+     "14": "2024"
+    }
+   },
+   "extension": {
+    "elimination": false,
+    "show": "value"
+   }
+  }
+ },
+ "value": [
+  10187,
+  10241,
+  9766,
+  8042,
+  8120,
+  7751,
+  2145,
+  2121,
+  2015,
+  5289,
+  5283,
+  5091,
+  4168,
+  4196,
+  4053,
+  1121,
+  1087,
+  1038,
+  4898,
+  4958,
+  4675,
+  3874,
+  3924,
+  3698,
+  1024,
+  1034,
+  977,
+  210.6,
+  207.1,
+  206.3
+ ]
+}

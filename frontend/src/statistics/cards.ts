@@ -6,7 +6,300 @@ import { type StatisticCardConfig } from "./StatisticCard";
  * (`/api/v1/statistics/datasets/{code}`); series keys match the backend. Cards are placed on the page
  * through `categories` below.
  */
+/** District keys as statistics-service stores them (CYSTAT spelling). */
+const DISTRICTS: Record<string, MessageKey> = {
+  lefkosia: "districtNicosia",
+  ammochostos: "districtFamagusta",
+  larnaka: "districtLarnaca",
+  lemesos: "districtLimassol",
+  pafos: "districtPaphos",
+};
+
 const cards: StatisticCardConfig[] = [
+  {
+    id: "seasons",
+    title: "seasonsOfLife",
+    description: "seasonsOfLifeDescription",
+    illustration: "calendar",
+    views: [
+      { kind: "months", label: "births", dataset: "births-by-month", measure: "birthsPerDay" },
+      { kind: "months", label: "deaths", dataset: "deaths-by-month", measure: "deathsPerDay" },
+    ],
+  },
+  {
+    id: "causes",
+    title: "causesOfDeath",
+    description: "causesOfDeathDescription",
+    illustration: "health",
+    views: [
+      {
+        kind: "ranking",
+        label: "byCause",
+        dataset: "death-causes",
+        unit: "count",
+        top: 18,
+        labels: Object.fromEntries(
+          Array.from({ length: 18 }, (_, index) => ["c" + (index + 1), ("cause" + (index + 1)) as MessageKey]),
+        ),
+      },
+    ],
+  },
+  {
+    id: "family-today",
+    title: "familyToday",
+    description: "familyTodayDescription",
+    illustration: "family",
+    views: [
+      {
+        kind: "line",
+        label: "weddingAge",
+        dataset: "marriage-age",
+        unit: "years",
+        series: [
+          { key: "groom-first", label: "groom" },
+          { key: "bride-first", label: "bride" },
+        ],
+      },
+      {
+        kind: "line",
+        label: "motherAge",
+        dataset: "mother-age",
+        unit: "years",
+        series: [
+          { key: "first-child", label: "firstChild" },
+          { key: "any-child", label: "anyChild" },
+        ],
+      },
+      {
+        kind: "line",
+        label: "outsideMarriage",
+        dataset: "extramarital-births",
+        unit: "permille",
+        series: [{ key: "ratio", label: "birthsOutsideMarriage" }],
+      },
+    ],
+  },
+  {
+    id: "pairs",
+    title: "whoMarriesWhom",
+    description: "whoMarriesWhomDescription",
+    illustration: "family",
+    views: [{ kind: "matrix", label: "nationalities", dataset: "marriage-pairs", rowsLabel: "groom", columnsLabel: "bride" }],
+  },
+  {
+    id: "divorces",
+    title: "divorces",
+    description: "divorcesDescription",
+    illustration: "family",
+    views: [
+      {
+        kind: "ranking",
+        label: "byYearsMarried",
+        dataset: "divorce-duration",
+        unit: "count",
+        labels: "keys",
+        top: 13,
+        order: ["<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10–14", "15–19", "20+"],
+      },
+      {
+        kind: "bar",
+        label: "byYear",
+        dataset: "divorce-duration",
+        unit: "count",
+        series: [{ key: "total", label: "divorces" }],
+      },
+    ],
+  },
+  {
+    id: "spending",
+    title: "householdSpending",
+    description: "householdSpendingDescription",
+    illustration: "earnings",
+    views: [
+      {
+        kind: "ranking",
+        label: "byCategory",
+        dataset: "household-spending",
+        unit: "per10k",
+        top: 13,
+        labels: {
+          food: "priceFood",
+          "alcohol-tobacco": "priceAlcohol",
+          clothing: "priceClothing",
+          housing: "priceHousing",
+          furnishings: "priceFurnishings",
+          health: "priceHealth",
+          transport: "priceTransport",
+          communication: "priceCommunication",
+          recreation: "priceRecreation",
+          education: "priceEducation",
+          restaurants: "priceRestaurants",
+          insurance: "priceInsurance",
+          "personal-care": "pricePersonalCare",
+        },
+        totalLabel: "spendingTotal",
+      },
+    ],
+  },
+  {
+    id: "income",
+    title: "householdIncome",
+    description: "householdIncomeDescription",
+    illustration: "earnings",
+    views: [
+      {
+        kind: "ranking",
+        label: "byDistrict",
+        dataset: "household-income",
+        unit: "euro",
+        prefix: "district-",
+        labels: DISTRICTS,
+        totalLabel: "cyprusAverage",
+      },
+      {
+        kind: "ranking",
+        label: "bySource",
+        dataset: "household-income",
+        unit: "euro",
+        prefix: "source-",
+        labels: {
+          employment: "incomeEmployment",
+          "self-employment": "incomeSelfEmployment",
+          pensions: "incomePensions",
+          rent: "incomeRent",
+          investments: "incomeInvestments",
+          benefits: "incomeBenefits",
+          transfers: "incomeTransfers",
+        },
+        totalLabel: "cyprusAverage",
+      },
+    ],
+  },
+  {
+    id: "house-prices",
+    title: "housePrices",
+    description: "housePricesDescription",
+    illustration: "home",
+    views: [
+      {
+        kind: "line",
+        label: "priceIndex",
+        dataset: "house-prices",
+        unit: "index",
+        series: [{ key: "index", label: "housePriceIndex" }],
+      },
+      {
+        kind: "bar",
+        label: "annualChange",
+        dataset: "house-prices",
+        unit: "percent",
+        series: [{ key: "annual-change", label: "annualChange" }],
+      },
+    ],
+  },
+  {
+    id: "permits",
+    title: "newHomes",
+    description: "newHomesDescription",
+    illustration: "home",
+    views: [
+      {
+        kind: "line",
+        label: "perMonth",
+        dataset: "building-permits",
+        unit: "count",
+        series: [{ key: "total", label: "dwellings" }],
+      },
+      { kind: "ranking", label: "byDistrict", dataset: "building-permits", unit: "count", labels: DISTRICTS },
+    ],
+  },
+  {
+    id: "vehicles",
+    title: "carsByFuel",
+    description: "carsByFuelDescription",
+    illustration: "car",
+    views: [
+      {
+        kind: "stacked",
+        label: "newRegistrations",
+        dataset: "vehicles",
+        unit: "count",
+        series: [
+          { key: "new-petrol", label: "petrol" },
+          { key: "new-diesel", label: "diesel" },
+          { key: "new-hybrid", label: "hybrid" },
+          { key: "new-electric", label: "electric" },
+          { key: "new-other", label: "other" },
+        ],
+      },
+      {
+        kind: "stacked",
+        label: "onTheRoad",
+        dataset: "vehicles",
+        unit: "count",
+        series: [
+          { key: "fleet-petrol", label: "petrol" },
+          { key: "fleet-diesel", label: "diesel" },
+          { key: "fleet-hybrid", label: "hybrid" },
+          { key: "fleet-electric", label: "electric" },
+          { key: "fleet-other", label: "other" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "tourist-spending",
+    title: "touristSpending",
+    description: "touristSpendingDescription",
+    illustration: "travel",
+    views: [
+      {
+        kind: "ranking",
+        label: "perDay",
+        dataset: "tourist-spending",
+        unit: "euro",
+        labels: "countries",
+        prefix: "day-",
+        totalLabel: "allTourists",
+      },
+      {
+        kind: "ranking",
+        label: "perTrip",
+        dataset: "tourist-spending",
+        unit: "euro",
+        labels: "countries",
+        prefix: "trip-",
+        totalLabel: "allTourists",
+      },
+      {
+        kind: "ranking",
+        label: "nightsStayed",
+        dataset: "tourist-spending",
+        unit: "nights",
+        labels: "countries",
+        prefix: "nights-",
+        totalLabel: "allTourists",
+      },
+    ],
+  },
+  {
+    id: "trips",
+    title: "residentTrips",
+    description: "residentTripsDescription",
+    illustration: "travel",
+    views: [
+      {
+        kind: "stacked",
+        label: "tripsByYear",
+        dataset: "resident-trips",
+        unit: "count",
+        series: [
+          { key: "abroad", label: "tripsAbroad" },
+          { key: "domestic", label: "tripsInCyprus" },
+        ],
+      },
+    ],
+  },
   {
     id: "calendar",
     title: "calendar",
@@ -281,9 +574,23 @@ const card = (id: string) => {
 
 /** Collapsible sections of the Statistics page, in display order. */
 export const categories: StatisticCategory[] = [
-  { id: "population", title: "categoryPopulation", cards: [card("population"), card("immigration")] },
-  { id: "family", title: "categoryFamily", cards: [card("calendar"), card("marriages")] },
-  { id: "economy", title: "categoryEconomy", cards: [card("inflation"), card("earnings"), card("fuel")] },
-  { id: "tourism", title: "categoryTourism", cards: [card("tourism")] },
+  {
+    id: "population",
+    title: "categoryPopulation",
+    cards: [card("population"), card("immigration"), card("seasons"), card("causes")],
+  },
+  {
+    id: "family",
+    title: "categoryFamily",
+    cards: [card("calendar"), card("family-today"), card("pairs"), card("marriages"), card("divorces")],
+  },
+  {
+    id: "economy",
+    title: "categoryEconomy",
+    cards: [card("inflation"), card("earnings"), card("spending"), card("income")],
+  },
+  { id: "housing", title: "categoryHousing", cards: [card("house-prices"), card("permits")] },
+  { id: "transport", title: "categoryTransport", cards: [card("vehicles"), card("fuel")] },
+  { id: "tourism", title: "categoryTourism", cards: [card("tourism"), card("tourist-spending"), card("trips")] },
   { id: "safety", title: "categorySafety", cards: [card("crime")] },
 ];
