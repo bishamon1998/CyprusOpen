@@ -92,6 +92,8 @@ class StatisticsApiIT {
         assertThat(sources.get(0).get("code").asString()).isEqualTo("immigrant-groups");
         assertThat(sources.get(0).get("updatedAt").isNull()).isTrue();
         assertThat(get("/api/v1/statistics/datasets/tourist-arrivals", 200).get("series").size()).isZero();
+        // A table that is not imported yet must not be cached, or the page keeps showing it empty.
+        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("no-store");
 
         var imported = refresh.refreshAll();
         assertThat(imported).hasSize(datasets.size())
@@ -101,6 +103,8 @@ class StatisticsApiIT {
                     .as(dataset.code()).isPositive();
         }
 
+        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("max-age=3600, public");
+        assertThat(cacheControl("/api/v1/statistics/datasets")).isEqualTo("no-store");
         var tourism = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(tourism.get("source").get("updatedAt").asString()).isEqualTo("2026-10-19T05:00:00Z");
         assertThat(tourism.get("source").get("url").asString()).isEqualTo("https://www.data.gov.cy/en/dataset/2285");
@@ -183,6 +187,10 @@ class StatisticsApiIT {
         mode.set("invalid");
         assertThat(refresh.refreshAll()).hasSize(datasets.size())
                 .allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.INVALID));
+        // Malformed JSON-stat (null size and label) is rejected per table instead of aborting the whole run.
+        mode.set("malformed");
+        assertThat(refresh.refreshAll()).hasSize(datasets.size())
+                .allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.INVALID));
         mode.set("unavailable");
         assertThat(refresh.refreshAll()).allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.UNAVAILABLE));
         assertThat(line(get("/api/v1/statistics/datasets/tourist-arrivals", 200), "GB")).isNotNull();
@@ -194,6 +202,13 @@ class StatisticsApiIT {
         var revised = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(revised.get("source").get("updatedAt").asString()).isEqualTo("2026-11-19T05:00:00Z");
         assertThat(line(revised, "total").get("values").toString()).isEqualTo("[1000.0,1100.0,1250.0]");
+
+        // A table with an older update time than the stored one (a stale copy) never replaces newer data.
+        mode.set("older");
+        assertThat(refresh.refresh(tourist)).isEqualTo(RefreshResult.INVALID);
+        var kept = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
+        assertThat(kept.get("source").get("updatedAt").asString()).isEqualTo("2026-11-19T05:00:00Z");
+        assertThat(line(kept, "total").get("values").toString()).isEqualTo("[1000.0,1100.0,1250.0]");
     }
 
     private static Map<String, String> fixtures() {
@@ -211,11 +226,19 @@ class StatisticsApiIT {
     }
 
     private JsonNode get(String path, int status) throws Exception {
+        var response = send(path);
+        assertThat(response.statusCode()).isEqualTo(status);
+        return mapper.readTree(response.body());
+    }
+
+    private String cacheControl(String path) throws Exception {
+        return send(path).headers().firstValue("Cache-Control").orElse(null);
+    }
+
+    private HttpResponse<String> send(String path) throws Exception {
         try (var client = HttpClient.newHttpClient()) {
-            var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).build(),
+            return client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).build(),
                     HttpResponse.BodyHandlers.ofString());
-            assertThat(response.statusCode()).isEqualTo(status);
-            return mapper.readTree(response.body());
         }
     }
 
@@ -246,7 +269,11 @@ class StatisticsApiIT {
         }
         body = switch (mode.get()) {
             case "invalid" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\"}";
+            case "malformed" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\","
+                    + "\"id\":[\"A\"],\"size\":[null],\"value\":[1],"
+                    + "\"dimension\":{\"A\":{\"category\":{\"index\":{\"a\":0},\"label\":{\"a\":null}}}}}";
             case "revised" -> body.replace("2026-10-19T05:00:00Z", "2026-11-19T05:00:00Z").replace("1000, 1100, 1200,", "1000, 1100, 1250,");
+            case "older" -> body.replace("1000, 1100, 1200,", "1000, 1100, 1300,");
             default -> body;
         };
         var bytes = body.getBytes(StandardCharsets.UTF_8);

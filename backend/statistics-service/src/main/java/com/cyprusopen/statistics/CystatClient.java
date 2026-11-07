@@ -28,7 +28,8 @@ class CystatClient {
     private final RestClient client;
     private final URI api;
     private final Duration interval;
-    private long nextRequestAt;
+    /** {@link System#nanoTime()} has an arbitrary origin, so the first turn starts from construction time. */
+    private long nextRequestAt = System.nanoTime();
 
     @Autowired
     CystatClient(RestClient.Builder builder, @Value("${statistics.cystat-api-url}") URI api,
@@ -46,11 +47,9 @@ class CystatClient {
         }
         for (var attempt = 1; ; attempt++) {
             waitForTurn(attempt);
-            var response = client.post().uri(table).contentType(MediaType.APPLICATION_JSON).body(FULL_TABLE_QUERY)
-                    .exchange((request, reply) -> new Reply(reply.getStatusCode().value(),
-                            reply.getStatusCode().value() == HttpStatus.OK.value()
-                                    ? Upstream.readLimited(reply.getBody(), MAX_RESPONSE_BYTES) : null));
-            if (response.status() == HttpStatus.OK.value()) return response.body();
+            var response = Upstream.fetch(client.post().uri(table).contentType(MediaType.APPLICATION_JSON)
+                    .body(FULL_TABLE_QUERY), MAX_RESPONSE_BYTES);
+            if (response.ok()) return response.body();
             if (response.status() != HttpStatus.TOO_MANY_REQUESTS.value() || attempt == RATE_LIMIT_ATTEMPTS) {
                 throw new RestClientException("CYSTAT returned " + response.status());
             }
@@ -71,6 +70,4 @@ class CystatClient {
         }
         nextRequestAt = System.nanoTime() + interval.toNanos();
     }
-
-    private record Reply(int status, byte[] body) {}
 }

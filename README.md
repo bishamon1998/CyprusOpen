@@ -11,7 +11,7 @@ React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics an
 Use Docker Desktop. Preserve the existing `.env`; for a new checkout copy `.env.example` and set three distinct database passwords. Run:
 
 ```sh
-docker compose up -d --build frontend statistics-service parking-service
+docker compose up -d --build frontend statistics-service parking-service pharmacies-service
 ```
 
 Open http://localhost:3000. Parking now requires PostgreSQL; Compose starts it automatically and preserves the existing volume. The Parking role owns its database/schema, separately from Statistics. Liquibase owns schema migrations. Never remove the database volume to update the app.
@@ -21,13 +21,14 @@ Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and 
 ```sh
 ./mvnw -B -ntp -pl backend/parking-service -am verify
 ./mvnw -B -ntp -pl backend/statistics-service -am verify
+./mvnw -B -ntp -pl backend/pharmacies-service -am verify
 cd frontend
 pnpm install --frozen-lockfile
 pnpm build
 pnpm test:e2e
 ```
 
-Parking integration tests use an isolated PostgreSQL Testcontainer and a local HTTP server. Browser CI uses `docker-compose.test.yml` with a private XML fixture server; the real refresh job fills the database from that server. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
+Each service has unit tests for its parsers that need no Docker, and integration tests (`*IT`) with an isolated PostgreSQL Testcontainer and a local HTTP server. Browser CI uses `docker-compose.test.yml` with a private XML fixture server; the real refresh job fills the database from that server. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
 
 For Vite development, run the backends locally and `pnpm start` alongside `pnpm dev` for runtime map configuration. The production frontend listens on `PORT` (3000 by default), proxies `STATISTICS_UPSTREAM` and `PARKING_UPSTREAM`, and exposes `/healthz`. Backend readiness is `/actuator/health/readiness`.
 
@@ -37,7 +38,7 @@ The [CYNAP / Public Works Department directory](https://www.traffic4cyprus.org.c
 
 PostgreSQL holds the latest normalized directory document (JSONB) and sync metadata in `parking.parking_directory`. One atomic document matches the upstream publication and current whole-directory API; no per-location joins or occupancy history are needed. `JdbcClient` serves persisted data. There is no bundled JSON or seed data. A new database stays empty until the shared HTTP refresh job loads its first successful publication. The same job handles every later update; no source-file edits or rebuild are needed.
 
-The UI distinguishes the source publication timestamp, successful retrieval and last successful check. Displayed dates use Cyprus time (Asia/Nicosia). Publication time is the timestamp on the source's XML package, not a verified modification time for every parking location. On HTTP 304 only the successful-check time changes. Failed requests change attempt/status metadata and preserve the previous document and successful-check date.
+The UI distinguishes the source publication timestamp, successful retrieval and last successful check. Displayed dates use Cyprus time (Asia/Nicosia). Publication time is the timestamp on the source's XML package, not a verified modification time for every parking location. On HTTP 304 only the successful-check time changes. Failed requests change nothing in the database: the previous document and successful-check date are kept and the job logs the reason. Attribution (source name, links, license) always comes from the service code, so a correction does not wait for a new publication.
 
 Automatic checking is **disabled by default**. When enabled, the job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **05:00 Cyprus time on the first day of each month** (see [Refresh schedule](#refresh-schedule)). This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
 
@@ -55,7 +56,7 @@ The owner's [Nicosia availability dataset](https://www.data.gov.cy/el/dataset/tr
 
 Charts read official [CYSTAT](https://www.cystat.gov.cy) tables, linked from data.gov.cy under CC BY 4.0: immigration ([2174](https://www.data.gov.cy/en/dataset/2174), [2172](https://www.data.gov.cy/en/dataset/2172)), tourist arrivals ([2285](https://www.data.gov.cy/en/dataset/2285)), inflation ([2201](https://www.data.gov.cy/en/dataset/2201), [2314](https://www.data.gov.cy/en/dataset/2314)), population ([2176](https://www.data.gov.cy/en/dataset/2176), [2177](https://www.data.gov.cy/en/dataset/2177), [2142](https://www.data.gov.cy/en/dataset/2142)), marriages and civil unions ([2157](https://www.data.gov.cy/en/dataset/2157), [2352](https://www.data.gov.cy/en/dataset/2352)), serious offences ([1933](https://www.data.gov.cy/en/dataset/1933)), earnings ([1773](https://www.data.gov.cy/en/dataset/1773)), fuel sales ([1535](https://www.data.gov.cy/en/dataset/1535)), births and weddings by calendar date ([2079](https://www.data.gov.cy/en/dataset/2079), [2171](https://www.data.gov.cy/en/dataset/2171)), births and deaths by month ([2078](https://www.data.gov.cy/en/dataset/2078), [2141](https://www.data.gov.cy/en/dataset/2141)), causes of death ([1596](https://www.data.gov.cy/en/dataset/1596)), divorces by years of marriage ([2151](https://www.data.gov.cy/en/dataset/2151)), marriages by nationality of groom and bride ([2163](https://www.data.gov.cy/en/dataset/2163)), age at marriage and at childbirth and births outside marriage ([2160](https://www.data.gov.cy/en/dataset/2160), [2089](https://www.data.gov.cy/en/dataset/2089), [2080](https://www.data.gov.cy/en/dataset/2080)), household spending and income from the 2023 budget survey ([1961](https://www.data.gov.cy/en/dataset/1961), [1990](https://www.data.gov.cy/en/dataset/1990)), the house price index ([2368](https://www.data.gov.cy/en/dataset/2368)), dwellings in building permits ([1467](https://www.data.gov.cy/en/dataset/1467)), vehicles by energy type ([2241](https://www.data.gov.cy/en/dataset/2241)), tourist spending by country ([2262](https://www.data.gov.cy/en/dataset/2262)) and residents' trips ([2268](https://www.data.gov.cy/en/dataset/2268)). The immigrant table publishes only Cyprus / EU / non-EU groups, not individual countries; the UI says so instead of substituting another measure.
 
-`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). CYSTAT answers bursts with HTTP 429, so tables are fetched `STATISTICS_CYSTAT_REQUEST_INTERVAL` apart (3 s by default) and a rejected request is retried later. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed or invalid table keeps its last stored values.
+`statistics-service` downloads each whole table as JSON-stat 2.0 from the PxWeb API (`STATISTICS_CYSTAT_API_URL`, default `https://cystatdb.cystat.gov.cy/api/v1/en/8.CYSTAT-DB/`). CYSTAT answers bursts with HTTP 429, so tables are fetched `STATISTICS_CYSTAT_REQUEST_INTERVAL` apart (3 s by default) and a rejected request is retried later. Observations live in `statistics.dataset` and `statistics.observation`; a table is replaced atomically and only when CYSTAT reports a newer update time. A failed, invalid or older table keeps its last stored values, and one failing table never stops the others. A table that is not imported yet is served with `Cache-Control: no-store`; imported tables may be cached for an hour.
 
 Adding a chart: declare the table in `StatisticsDatasets` (code, table path, data.gov.cy page, category-to-series mapping), add a fixture line to `src/test/resources/cystat/tables.properties`, then add a card or view to `frontend/src/statistics/cards.ts` with its labels in `locales.ts`. Fetching, storage, refresh, the API, chart drawing, controls and source labels are shared. Country series use ISO codes so the browser localizes names. Periods are years, months (`2024-07`) or quarters (`2024-Q3`); revision markers such as `2023 (r)` are dropped, and survey tables without a time dimension are stored under their survey year. Calendar tables use one series per date (`08-15`) and one period per year; the page draws them as a month × day heatmap. Cards are grouped into collapsible categories in `cards.ts`; a folded category requests no data, and the viewer's choice is kept in browser storage.
 
@@ -71,7 +72,7 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 | `pharmacy-schedule` | pharmacies | daily, 06:15 | `PHARMACY_SYNC_ENABLED` |
 | `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
 
-Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
+Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). `Upstream.fetch` reads a body only for 200 OK and within the size limit, and the read timeout also bounds a slowly sent body. Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
 
 ## Maps and privacy
 

@@ -36,12 +36,18 @@ class StatisticsController {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(sources);
     }
 
+    /**
+     * Imported tables may be cached for an hour. A table that is not imported yet is never cached, so the page
+     * shows it as soon as the first import (right after a deploy) has stored it.
+     */
     @GetMapping("/api/v1/statistics/datasets/{code}")
     ResponseEntity<Series> dataset(@PathVariable String code) {
         var dataset = datasets.stream().filter(candidate -> candidate.code().equals(code)).findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         var source = source(dataset, store.imported(code).orElse(null));
-        return ResponseEntity.ok().cacheControl(DATA_CACHE).body(series(source, store.observations(code)));
+        var observations = store.observations(code);
+        return ResponseEntity.ok().cacheControl(observations.isEmpty() ? CacheControl.noStore() : DATA_CACHE)
+                .body(series(source, observations));
     }
 
     private static Source source(StatisticsDataset dataset, ObservationStore.Imported imported) {
