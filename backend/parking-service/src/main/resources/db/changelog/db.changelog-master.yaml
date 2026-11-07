@@ -20,3 +20,10 @@ databaseChangeLog:
         - sqlFile:
             path: simplify-refresh.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 4-air-quality
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: air-quality.sql
+            relativeToChangelogFile: true

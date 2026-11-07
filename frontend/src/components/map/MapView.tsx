@@ -7,19 +7,20 @@ import { type Bounds, type Position } from "../../geo/coordinates";
 import { useMapConfig } from "./useMapConfig";
 import "./map.css";
 
-const pin = (symbol: string, selected: boolean) => {
+const pin = (symbol: string, selected: boolean, tone?: string) => {
   const content = document.createElement("span");
   content.textContent = symbol;
   content.setAttribute("aria-hidden", "true");
   return L.divIcon({
-    className: "map-pin" + (selected ? " is-selected" : ""),
+    className: "map-pin" + (selected ? " is-selected" : "") + (tone ? " tone-" + tone : ""),
     html: content,
     iconSize: [30, 34],
     iconAnchor: [15, 34],
   });
 };
 
-export type MapPoint = Position & { id: string; label: string };
+/** `tone` colours the pin (a CSS class "tone-…"), e.g. an air quality level. */
+export type MapPoint = Position & { id: string; label: string; tone?: string };
 export type MapLabels = {
   region: string;
   unavailable: string;
@@ -121,7 +122,7 @@ export function MapView({
     for (const place of points) {
       const name = place.label;
       const marker = L.marker([place.latitude, place.longitude], {
-        icon: pin(markerSymbol, false),
+        icon: pin(markerSymbol, false, place.tone),
         title: name,
         alt: name,
         keyboard: true,
@@ -140,7 +141,7 @@ export function MapView({
 
   useEffect(() => {
     for (const [id, marker] of markers.current)
-      marker.setIcon(pin(markerSymbol, id === selected?.id));
+      marker.setIcon(pin(markerSymbol, id === selected?.id, points.find((point) => point.id === id)?.tone));
     if (selected && map.current) {
       map.current.setView(
         [selected.latitude, selected.longitude],

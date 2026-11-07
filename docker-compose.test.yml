@@ -12,6 +12,8 @@ services:
     environment:
       PARKING_DIRECTORY_SYNC_ENABLED: "true"
       PARKING_DIRECTORY_RESOURCE_URL: http://parking-fixture:9090/directory
+      AIR_QUALITY_SYNC_ENABLED: "true"
+      AIR_QUALITY_RESOURCE_URL: http://parking-fixture:9090/air
     depends_on:
       parking-fixture:
         condition: service_started

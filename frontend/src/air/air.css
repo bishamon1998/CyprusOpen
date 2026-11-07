@@ -1,0 +1,54 @@
+/* European Air Quality Index colours, shared by list icons, chips and the legend. */
+.tone-good { --tone: #50f0e6; --tone-text: #10343a; }
+.tone-fair { --tone: #50ccaa; --tone-text: #0f3529; }
+.tone-moderate { --tone: #f0e641; --tone-text: #3a3505; }
+.tone-poor { --tone: #ff5050; --tone-text: #fff; }
+.tone-very-poor { --tone: #960032; --tone-text: #fff; }
+.tone-extremely-poor { --tone: #7d2181; --tone-text: #fff; }
+.result-row-icon[class*="tone-"] {
+  background: var(--tone);
+  color: var(--tone-text);
+}
+.air-level {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--tone, #f1f3f7);
+  color: var(--tone-text, #5c6a8d);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.air-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.air-readings {
+  width: 100%;
+  margin: 10px 0 4px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.air-readings th,
+.air-readings td {
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.air-readings td:nth-child(2) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.air-advice {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.air-advice strong {
+  color: #191c24;
+}

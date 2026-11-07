@@ -66,6 +66,10 @@ async function main() {
     assert.equal(report.freshness, "unavailable");
     assert.ok(report.items.length > 0);
     assert.ok(report.items.every((item) => item.availableSpaces === null));
+    const air = await (await fetch(`${baseUrl}/api/v1/air-quality`)).json();
+    assert.equal(air.stations.length, 3, "air quality stations (the misplaced one is dropped)");
+    assert.equal(air.stations.find((station) => station.id === "station_1").level, "moderate");
+    assert.equal(air.source.license, "CC BY-SA 4.0");
     const pharmacies = await (await fetch(`${baseUrl}/api/v1/pharmacies`)).json();
     assert.equal(pharmacies.items.length, 5);
     assert.ok(pharmacies.checkedAt);
@@ -87,6 +91,7 @@ async function main() {
         ["/", "Statistics"],
         ["/parking", "Parking"],
         ["/pharmacies", "Pharmacies"],
+        ["/air", "Air quality"],
         ["/about", "Sources"],
       ]) {
         const response = await page.goto(`${baseUrl}${route}`);
@@ -114,6 +119,11 @@ async function main() {
         assert.deepEqual(overflow, [], `${route} overflows at ${width}px`);
       }
     }
+    await page.goto(`${baseUrl}/air`);
+    await page.locator(".result-list li").nth(2).waitFor();
+    assert.equal(await page.locator(".result-list li").count(), 3);
+    await page.locator(".result-row").first().click();
+    await page.getByRole("table").getByText("NO₂").waitFor();
     await page.goto(`${baseUrl}/pharmacies`);
     await page.locator(".result-list li").nth(4).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 5);
@@ -271,7 +281,7 @@ async function main() {
           `${language} overflows at ${width}px`,
         );
       }
-      for (const route of ["/", "/pharmacies", "/about"]) {
+      for (const route of ["/", "/pharmacies", "/air", "/about"]) {
         await page.goto(`${baseUrl}${route}`);
         await page.locator("main h1").waitFor();
         assert.equal(
