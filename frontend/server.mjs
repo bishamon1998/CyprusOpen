@@ -85,7 +85,7 @@ app.use("/api", (_request, response) =>
 );
 const directory = fileURLToPath(new URL("./dist/", import.meta.url));
 app.use(express.static(directory, { index: false }));
-app.get(["/", "/parking", "/pharmacies", "/about"], (_request, response) => {
+app.get(["/", "/parking", "/pharmacies", "/air", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
 });
 app.use((_request, response) =>
