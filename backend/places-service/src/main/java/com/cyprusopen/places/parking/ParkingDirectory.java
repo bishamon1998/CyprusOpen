@@ -34,8 +34,10 @@ class ParkingDirectory {
         return statement(DirectorySql.READ).query((rs, row) -> {
             var document = rs.getString(1);
             var checked = rs.getTimestamp(2);
-            return new Read(document == null ? empty() : mapper.readValue(document, Snapshot.class),
-                    checked == null ? null : checked.toInstant());
+            var stored = document == null ? null : mapper.readValue(document, Snapshot.class);
+            var snapshot = stored == null ? Snapshot.of(null, null, List.of())
+                    : Snapshot.of(stored.publishedAt(), stored.retrievedAt(), stored.items());
+            return new Read(snapshot, checked == null ? null : checked.toInstant());
         }).single();
     }
 
@@ -46,27 +48,33 @@ class ParkingDirectory {
                 .param("etag", etag).param("modified", modified).update();
     }
 
+    /** Validators of the stored directory; none while it is empty, so the next request fetches it in full. */
     Validators validators() {
         return statement(DirectorySql.VALIDATORS)
-                .query((rs, row) -> new Validators(rs.getString(1), rs.getString(2))).single();
+                .query((rs, row) -> new Validators(rs.getString(1), rs.getString(2))).optional()
+                .orElse(new Validators(null, null));
     }
 
-    void markUnchanged() {
-        statement(DirectorySql.MARK_UNCHANGED).update();
+    void markUnchanged(Instant checked) {
+        statement(DirectorySql.MARK_UNCHANGED).param("checked", Timestamp.from(checked)).update();
     }
 
     private JdbcClient.StatementSpec statement(String sql) {
         return jdbc.sql(sql).param("id", DIRECTORY_ID);
     }
 
-    private static Snapshot empty() {
-        return new Snapshot(SOURCE_NAME, CATALOG_URL, RESOURCE_URL, LICENSE, LICENSE_URL,
-                null, null, TRANSFORMATIONS, List.of());
-    }
-
     record Snapshot(String source, String catalogUrl, String resourceUrl, String license,
                     String licenseUrl, Instant publishedAt, Instant retrievedAt,
-                    String transformations, List<Location> items) {}
+                    String transformations, List<Location> items) {
+        /**
+         * A snapshot with the current attribution. The stored document keeps a copy, but attribution always
+         * comes from {@link DirectoryConstants}, so a correction does not wait for the next source publication.
+         */
+        static Snapshot of(Instant publishedAt, Instant retrievedAt, List<Location> items) {
+            return new Snapshot(SOURCE_NAME, CATALOG_URL, RESOURCE_URL, LICENSE, LICENSE_URL,
+                    publishedAt, retrievedAt, TRANSFORMATIONS, items);
+        }
+    }
     record Location(String id, String name, double latitude, double longitude) {}
     record Read(Snapshot snapshot, Instant checkedAt) {}
     record Validators(String etag, String modified) {}

@@ -11,11 +11,15 @@ final class DirectorySql {
                 etag = :etag, last_modified = :modified
             WHERE id = :id
             """;
-    static final String VALIDATORS = "SELECT etag, last_modified FROM parking_directory WHERE id = :id";
+    static final String VALIDATORS = """
+            SELECT etag, last_modified FROM parking_directory
+            WHERE id = :id AND document IS NOT NULL
+            """;
     static final String MARK_UNCHANGED = """
             UPDATE parking_directory
-            SET last_checked_at = current_timestamp
+            SET last_checked_at = :checked
             WHERE id = :id
             """;
+
     private DirectorySql() {}
 }

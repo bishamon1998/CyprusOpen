@@ -98,6 +98,10 @@ class ParkingApiIT {
             }
             assertThat(requests.get()).isEqualTo(before + 1);
             assertThat(directory.snapshot().publishedAt()).isEqualTo(Instant.parse("2026-11-04T00:00:00Z"));
+            // Attribution comes from the current code, not from the copy in a document stored by an older release.
+            jdbc.sql("UPDATE parking_directory SET document = jsonb_set(document, '{license}', '\"outdated\"')")
+                    .update();
+            assertThat(directory.snapshot().license()).isEqualTo("CC BY 4.0");
             var retrieved = directory.snapshot().retrievedAt();
             mode.set(304);
             assertThat(sync.refresh()).isEqualTo(RefreshResult.UNCHANGED);
@@ -109,6 +113,10 @@ class ParkingApiIT {
             assertThat(sync.refresh()).isEqualTo(RefreshResult.INVALID);
             assertThat(directory.snapshot().items()).hasSize(1);
             assertThat(directory.snapshot().retrievedAt()).isEqualTo(retrieved);
+
+            // Validators belong to the stored document: without one, the next request fetches the full directory.
+            jdbc.sql("UPDATE parking_directory SET document = NULL").update();
+            assertThat(directory.validators()).isEqualTo(new ParkingDirectory.Validators(null, null));
         } finally {
             jdbc.sql(DirectoryTestSql.RESET).update();
             mode.set(200);

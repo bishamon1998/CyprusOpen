@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,15 +38,19 @@ class JsonStatParser {
             throw new IllegalArgumentException("Not a JSON-stat 2.0 dataset");
         }
         var dimensions = new ArrayList<JsonStat.Dimension>();
-        var cells = 1;
+        // A long cannot overflow here: the product is checked against the value count after every dimension.
+        var cells = 1L;
         for (var index = 0; index < document.id().size(); index++) {
             var id = document.id().get(index);
-            var dimension = document.dimension() == null ? null : document.dimension().get(id);
+            var dimension = document.dimension() == null || id == null ? null : document.dimension().get(id);
             if (dimension == null || dimension.category() == null) throw new IllegalArgumentException("Missing " + id);
             var labels = dimension.category().labels();
-            if (labels.size() != document.size().get(index)) throw new IllegalArgumentException("Size mismatch: " + id);
+            if (!Objects.equals(labels.size(), document.size().get(index))) {
+                throw new IllegalArgumentException("Size mismatch: " + id);
+            }
             dimensions.add(new JsonStat.Dimension(id, labels));
-            cells = Math.multiplyExact(cells, labels.size());
+            cells *= labels.size();
+            if (cells > document.value().size()) throw new IllegalArgumentException("Value count mismatch");
         }
         if (document.value().size() != cells) throw new IllegalArgumentException("Value count mismatch");
         var status = document.status() == null ? Map.<Integer, String>of() : document.status();
@@ -70,7 +75,8 @@ class JsonStatParser {
                 if (position == null || position < 0 || position >= ordered.length || ordered[position] != null) {
                     throw new IllegalArgumentException("Invalid category index");
                 }
-                ordered[position] = label == null ? code : label.getOrDefault(code, code).strip();
+                var text = label == null ? null : label.get(code);
+                ordered[position] = text == null ? code : text.strip();
             });
             return List.of(ordered);
         }

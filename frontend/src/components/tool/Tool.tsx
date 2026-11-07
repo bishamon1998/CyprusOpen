@@ -212,17 +212,3 @@ export function ExternalLink({ href, children }: { href: string; children: React
     </a>
   );
 }
-
-/** Formats a timestamp as a Cyprus calendar date, e.g. "6 Nov 2026"; "—" when missing. */
-export function useCyprusDate() {
-  const { language } = useI18n();
-  return (value: string | null | undefined) =>
-    value
-      ? new Date(value).toLocaleDateString(language === "en" ? "en-GB" : language, {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          timeZone: "Asia/Nicosia",
-        })
-      : "—";
-}

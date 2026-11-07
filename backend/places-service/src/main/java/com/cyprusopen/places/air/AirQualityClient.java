@@ -8,7 +8,6 @@ import com.cyprusopen.common.http.Upstream;
 import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -26,11 +25,8 @@ class AirQualityClient {
     }
 
     byte[] fetch() {
-        return client.get().uri(resource).exchange((request, response) -> {
-            if (response.getStatusCode().value() != HttpStatus.OK.value()) {
-                throw new RestClientException("Air quality source returned " + response.getStatusCode().value());
-            }
-            return Upstream.readLimited(response.getBody(), MAX_RESPONSE_BYTES);
-        });
+        var response = Upstream.fetch(client.get().uri(resource), MAX_RESPONSE_BYTES);
+        if (!response.ok()) throw new RestClientException("Air quality source returned " + response.status());
+        return response.body();
     }
 }

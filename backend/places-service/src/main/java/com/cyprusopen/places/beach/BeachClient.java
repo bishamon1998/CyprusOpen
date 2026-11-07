@@ -10,7 +10,6 @@ import java.net.URI;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -36,11 +35,8 @@ class BeachClient {
         var uri = UriComponentsBuilder.fromUri(endpoint)
                 .queryParam("query", "{query}").queryParam("p", 1).queryParam("nrOfHits", 100_000)
                 .encode().buildAndExpand(Map.of("query", query)).toUri();
-        return client.get().uri(uri).exchange((request, response) -> {
-            if (response.getStatusCode().value() != HttpStatus.OK.value()) {
-                throw new RestClientException("EEA Discodata returned " + response.getStatusCode().value());
-            }
-            return Upstream.readLimited(response.getBody(), MAX_RESPONSE_BYTES);
-        });
+        var response = Upstream.fetch(client.get().uri(uri), MAX_RESPONSE_BYTES);
+        if (!response.ok()) throw new RestClientException("EEA Discodata returned " + response.status());
+        return response.body();
     }
 }

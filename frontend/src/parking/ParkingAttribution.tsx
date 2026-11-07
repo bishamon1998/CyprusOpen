@@ -1,4 +1,5 @@
-import { ExternalLink, SourceAttribution, useCyprusDate } from "../components/tool/Tool";
+import { ExternalLink, SourceAttribution } from "../components/tool/Tool";
+import { useCyprusDate } from "../format";
 import { useI18n } from "../i18n";
 import { ccByLicenseUrl, osmCopyrightUrl, parkingDirectoryUrl } from "../sources";
 import { type ParkingReport } from "./api";

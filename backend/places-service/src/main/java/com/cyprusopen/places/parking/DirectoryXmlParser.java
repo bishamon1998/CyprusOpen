@@ -55,9 +55,7 @@ class DirectoryXmlParser {
                 }
                 locations.add(location);
             }
-            return new ParkingDirectory.Snapshot(previous.source(), previous.catalogUrl(), previous.resourceUrl(),
-                    previous.license(), previous.licenseUrl(), published, retrievedAt, previous.transformations(),
-                    locations);
+            return ParkingDirectory.Snapshot.of(published, retrievedAt, locations);
         } catch (DateTimeException invalidXml) {
             throw new IllegalArgumentException("Invalid directory XML", invalidXml);
         }

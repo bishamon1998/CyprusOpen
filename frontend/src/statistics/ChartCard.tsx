@@ -3,6 +3,7 @@ import { RefreshCw } from "lucide-react";
 import { type ChartOption } from "../components/Chart";
 import { Illustration, type IllustrationKind } from "../components/Illustration";
 import { SourceLink } from "../components/SourceLink";
+import { useCyprusDate } from "../format";
 import { useI18n } from "../i18n";
 import { type DatasetSource } from "./api";
 
@@ -35,14 +36,10 @@ export function ChartCard({
   summary?: ReactNode;
   source?: DatasetSource;
 }) {
-  const { t, language } = useI18n();
-  const updated = source?.updatedAt
-    ? new Date(source.updatedAt).toLocaleDateString(language, {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const { t } = useI18n();
+  const date = useCyprusDate();
+  // Same Cyprus-time date as the map tools; the browser's own zone could show another day.
+  const updated = source?.updatedAt ? date(source.updatedAt) : null;
   return (
     <article className="dataset-card">
       <div className="card-heading">

@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Set;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
@@ -17,7 +18,10 @@ public final class Upstream {
 
     private Upstream() {}
 
-    /** A client with connect/read timeouts, no redirects and the project user agent. */
+    /**
+     * A client with connect/read timeouts, no redirects and the project user agent. The read timeout covers the
+     * whole exchange, including reading the body.
+     */
     public static RestClient restClient(RestClient.Builder builder, Duration connectTimeout, Duration readTimeout) {
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
                 .connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build());
@@ -39,5 +43,27 @@ public final class Upstream {
         var bytes = body.readNBytes(maxBytes + 1);
         if (bytes.length > maxBytes) throw new IllegalArgumentException("Upstream response exceeds size limit");
         return bytes;
+    }
+
+    /**
+     * Sends the request and reads the body only for 200 OK, within {@code maxBytes}. Other statuses (including
+     * redirects and 304 Not Modified) return an empty body. Network failures surface as
+     * {@link org.springframework.web.client.RestClientException}; an oversized body as
+     * {@link IllegalArgumentException}.
+     */
+    public static Response fetch(RestClient.RequestHeadersSpec<?> request, int maxBytes) {
+        return request.exchange((sent, response) -> {
+            var status = response.getStatusCode().value();
+            var body = status == HttpStatus.OK.value() ? readLimited(response.getBody(), maxBytes) : new byte[0];
+            var headers = response.getHeaders();
+            return new Response(status, body, headers.getETag(), headers.getFirst(HttpHeaders.LAST_MODIFIED));
+        });
+    }
+
+    /** An upstream reply with the validators needed for the next conditional request. */
+    public record Response(int status, byte[] body, String etag, String lastModified) {
+        public boolean ok() {
+            return status == HttpStatus.OK.value();
+        }
     }
 }

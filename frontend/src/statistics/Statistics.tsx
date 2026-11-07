@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { PageTitle } from "../components/PageTitle";
 import { useI18n } from "../i18n";
 import { categories } from "./cards";
+import { ChartCard } from "./ChartCard";
 import { StatisticCard } from "./StatisticCard";
 import "./statistics.css";
 
@@ -53,7 +55,19 @@ export default function Statistics() {
             {open && (
               <div id={panel} className="dataset-grid">
                 {category.cards.map((card) => (
-                  <StatisticCard key={card.id} card={card} />
+                  <ErrorBoundary
+                    key={card.id}
+                    fallback={(reset) => (
+                      <ChartCard
+                        title={t(card.title)}
+                        description={t(card.description)}
+                        illustration={card.illustration}
+                        state={{ status: "error", retry: reset, retrying: false }}
+                      />
+                    )}
+                  >
+                    <StatisticCard card={card} />
+                  </ErrorBoundary>
                 ))}
               </div>
             )}

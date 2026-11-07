@@ -79,12 +79,19 @@ export function totals(table: SeriesTable, indexes: number[]): Total[] {
 
 const regionNames = new Map<string, Intl.DisplayNames>();
 
-/** Localized country name for an ISO 3166-1 alpha-2 code. */
+/**
+ * Localized country name for an ISO 3166-1 alpha-2 code. A key that is not a region code ("non-eu", "total")
+ * is shown as it is: `Intl.DisplayNames` throws for it, which would break the whole card.
+ */
 export function countryName(code: string, language: string) {
   let names = regionNames.get(language);
   if (!names) {
     names = new Intl.DisplayNames([language], { type: "region" });
     regionNames.set(language, names);
   }
-  return names.of(code) ?? code;
+  try {
+    return names.of(code) ?? code;
+  } catch {
+    return code;
+  }
 }
