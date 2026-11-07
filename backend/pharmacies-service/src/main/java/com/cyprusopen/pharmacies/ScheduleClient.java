@@ -9,7 +9,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -35,11 +34,8 @@ class ScheduleClient {
                 || metadata.getPort() != resource.getPort() || resource.getUserInfo() != null) {
             throw new RestClientException("Unexpected pharmacy schedule origin");
         }
-        return client.get().uri(resource).exchange((request, response) -> {
-            if (response.getStatusCode().value() != HttpStatus.OK.value()) {
-                throw new RestClientException("Source returned " + response.getStatusCode().value());
-            }
-            return new String(Upstream.readLimited(response.getBody(), MAX_RESPONSE_BYTES), StandardCharsets.UTF_8);
-        });
+        var response = Upstream.fetch(client.get().uri(resource), MAX_RESPONSE_BYTES);
+        if (!response.ok()) throw new RestClientException("Source returned " + response.status());
+        return new String(response.body(), StandardCharsets.UTF_8);
     }
 }

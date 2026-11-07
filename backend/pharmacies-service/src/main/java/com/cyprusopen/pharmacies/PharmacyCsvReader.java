@@ -16,6 +16,7 @@ import static com.cyprusopen.pharmacies.PharmacyConstants.SURNAME_COLUMN;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,7 +32,17 @@ class PharmacyCsvReader {
     private static final CSVFormat FORMAT = CSVFormat.DEFAULT.builder()
             .setHeader().setSkipHeaderRecord(true).setTrim(true).get();
 
+    /** Throws {@link IllegalArgumentException} for any file that does not match the published layout. */
     List<DutyEntry> read(Reader reader, District district) throws IOException {
+        try {
+            return entries(reader, district);
+        } catch (UncheckedIOException malformed) {
+            // Commons CSV reports syntax errors found while iterating (such as an unclosed quote) this way.
+            throw new IllegalArgumentException("Malformed duty schedule CSV", malformed);
+        }
+    }
+
+    private List<DutyEntry> entries(Reader reader, District district) throws IOException {
         var entries = new ArrayList<DutyEntry>();
         var keys = new HashSet<String>();
         try (var csv = FORMAT.parse(reader)) {
