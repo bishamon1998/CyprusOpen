@@ -33,7 +33,8 @@ export type TrendView = {
   label: MessageKey;
   dataset: string;
   unit: Unit;
-  series: { key: string; label: MessageKey }[];
+  /** `color` overrides the shared palette, e.g. to keep a category recognisable across views. */
+  series: { key: string; label: MessageKey; color?: string }[];
 };
 
 /** Categories compared for one year (and season, for monthly tables), largest first. */
@@ -388,6 +389,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
       return {
         name: t(item.label),
         type: view.kind === "line" ? "line" : "bar",
+        ...(item.color ? { itemStyle: { color: item.color }, lineStyle: { color: item.color } } : {}),
         ...(view.kind === "stacked" ? { stack: "total" } : {}),
         // Years a table does not publish are null. Without connectNulls a value between two gaps has no
         // segment and, with symbols hidden, stays invisible until hovered; a lone value still needs its symbol.
