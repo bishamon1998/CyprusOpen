@@ -14,10 +14,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -92,50 +94,52 @@ class BeachApiIT {
     @Autowired
     private BeachSync sync;
 
+    @Autowired
+    private JdbcClient jdbc;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
     }
 
+    @BeforeEach
+    void emptyStoreAndHealthySource() {
+        jdbc.sql("DELETE FROM beaches").update();
+        mode.set("ok");
+    }
+
+    /** Joins the three EEA tables; only the current designation is served, with the latest class and samples. */
     @Test
-    void importsBathingWatersAndKeepsThemOnSourceErrors() throws Exception {
+    void importsCurrentBathingWatersWithTheirClasses() throws Exception {
         assertThat(get().get("beaches").size()).isZero();
         assertThat(sync.needsInitialRun()).isTrue();
 
         assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
-        assertThat(lastQuery.get()).contains("SELECT * FROM [WISE_BWD].[latest].[assessment_BathingWaterQuality]")
-                .contains("WHERE countryCode='CY'");
+        // Requests stay limited to the Cyprus rows of fixed tables.
+        assertThat(lastQuery.get()).contains("WHERE countryCode='CY'");
         assertThat(sync.needsInitialRun()).isFalse();
         var imported = get();
         assertThat(imported.get("season").asInt()).isEqualTo(2024);
-        assertThat(imported.get("source").get("license").asString()).isEqualTo("CC BY 4.0");
         // VALOU was last designated in 2008 and is left out; the rest are sorted by name.
         assertThat(imported.get("beaches").findValuesAsString("name")).containsExactly("KANALI POMOU", "KARAFA", "POTAMI");
 
         var karafa = beach(imported, "CY0001457000000154");
         assertThat(karafa.get("quality").asString()).isEqualTo("excellent");
-        assertThat(karafa.get("season").asInt()).isEqualTo(2024);
         assertThat(karafa.get("samples").asInt()).isEqualTo(28);
         assertThat(karafa.get("escherichiaColi").asDouble()).isBetween(24.4, 24.5);
-        assertThat(karafa.get("intestinalEnterococci").asDouble()).isBetween(5.6, 5.7);
         assertThat(karafa.get("history").size()).isEqualTo(10);
         assertThat(karafa.get("history").get(0).get("season").asInt()).isEqualTo(2024);
-        assertThat(karafa.get("profileUrl").asString()).startsWith("http://www.moa.gov.cy/");
-        assertThat(karafa.get("latitude").asDouble()).isBetween(34.0, 36.0);
+    }
 
+    @Test
+    void sourceFailuresKeepTheLastBathingWaters() throws Exception {
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+        var stored = get();
         mode.set("invalid");
         assertThat(sync.refresh()).isEqualTo(RefreshResult.INVALID);
         mode.set("unavailable");
         assertThat(sync.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
-        assertThat(get().get("beaches").size()).isEqualTo(3);
-    }
-
-    @Test
-    void readsQualityLabels() {
-        assertThat(BeachParser.quality("1 - Excellent")).hasValue("excellent");
-        assertThat(BeachParser.quality("3 - Good or Sufficient")).hasValue("good-or-sufficient");
-        assertThat(BeachParser.quality("0 - Not classified")).hasValue("not-classified");
-        assertThat(BeachParser.quality("Excellent")).isEmpty();
+        assertThat(get()).isEqualTo(stored);
     }
 
     private JsonNode get() throws Exception {

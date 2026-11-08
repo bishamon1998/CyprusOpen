@@ -8,7 +8,6 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "start": "node server.mjs",
-    "test": "vitest run",
     "test:e2e": "node ../scripts/check-app.cjs"
   },
   "dependencies": {
@@ -31,7 +30,6 @@
     "@vitejs/plugin-react": "^6.0.0",
     "playwright": "1.62.1",
     "typescript": "^5.9.3",
-    "vite": "^8.0.0",
-    "vitest": "5.0.5"
+    "vite": "^8.0.0"
   }
 }

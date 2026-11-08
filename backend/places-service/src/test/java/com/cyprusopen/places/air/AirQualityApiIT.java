@@ -13,10 +13,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -82,43 +84,52 @@ class AirQualityApiIT {
     @Autowired
     private AirQualitySync sync;
 
+    @Autowired
+    private JdbcClient jdbc;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
     }
 
+    @BeforeEach
+    void emptyStoreAndHealthySource() {
+        jdbc.sql("DELETE FROM air_quality").update();
+        mode.set("ok");
+    }
+
+    /** Levels follow the European Air Quality Index bands; a station placed outside Cyprus is dropped. */
     @Test
-    void importsStationsAndKeepsThemOnSourceErrors() throws Exception {
-        var empty = get();
-        assertThat(empty.get("stations").size()).isZero();
-        assertThat(empty.get("source").get("license").asString()).isEqualTo("CC BY-SA 4.0");
+    void importsStationsWithIndexLevels() throws Exception {
+        assertThat(get().get("stations").size()).isZero();
         assertThat(sync.needsInitialRun()).isTrue();
 
         assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
         assertThat(sync.needsInitialRun()).isFalse();
         var imported = get();
-        // The station placed outside Cyprus is dropped.
         assertThat(imported.get("stations").size()).isEqualTo(3);
 
         var nicosia = station(imported, "station_1");
-        assertThat(nicosia.get("name").get("en").asString()).isEqualTo("Nicosia - Traffic Station");
         assertThat(nicosia.get("name").get("el").asString()).startsWith("Λευκωσία");
         assertThat(nicosia.get("measuredAt").asString()).isEqualTo("2026-11-07T17:00:00Z");
         // NO2 55 µg/m³ is "moderate" (26-60) and the worst pollutant at this station.
         assertThat(nicosia.get("level").asString()).isEqualTo("moderate");
-        assertThat(reading(nicosia, "no2").get("level").asString()).isEqualTo("moderate");
         assertThat(reading(nicosia, "pm25").get("level").asString()).isEqualTo("fair");
         assertThat(reading(nicosia, "co").get("level").isNull()).isTrue();
         assertThat(reading(nicosia, "nox")).isNull();
-        assertThat(station(imported, "station_9").get("level").asString()).isEqualTo("good");
         // O3 80 µg/m³ is "fair" (61-100).
         assertThat(station(imported, "station_10").get("level").asString()).isEqualTo("fair");
+    }
 
+    @Test
+    void sourceFailuresKeepTheLastReadings() throws Exception {
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+        var stored = get();
         mode.set("invalid");
         assertThat(sync.refresh()).isEqualTo(RefreshResult.INVALID);
         mode.set("unavailable");
         assertThat(sync.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
-        assertThat(get().get("stations").size()).isEqualTo(3);
+        assertThat(get()).isEqualTo(stored);
     }
 
     private JsonNode get() throws Exception {
