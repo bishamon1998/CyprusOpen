@@ -75,10 +75,10 @@ class StatisticsApiIT {
         registry.add("statistics.cystat-api-url",
                 () -> "http://127.0.0.1:" + upstream.getAddress().getPort() + "/api/");
         registry.add("statistics.cystat-request-interval", () -> "0s");
-        registry.add("spring.datasource.url", () -> postgres.getJdbcUrl()
+        registry.add("statistics.datasource.url", () -> postgres.getJdbcUrl()
                 + (postgres.getJdbcUrl().contains("?") ? "&" : "?") + "currentSchema=statistics");
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("statistics.datasource.username", postgres::getUsername);
+        registry.add("statistics.datasource.password", postgres::getPassword);
     }
 
     @LocalServerPort

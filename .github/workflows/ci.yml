@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [statistics-service, places-service, pharmacies-service]
+        service: [statistics-service, places-service, pharmacies-service, app]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
       - run: pnpm exec playwright install --with-deps chromium
         working-directory: frontend
-      - run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build frontend statistics-service places-service pharmacies-service
+      - run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build frontend backend
       - name: Wait for services
         run: |
           for attempt in $(seq 1 40); do

@@ -7,17 +7,23 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Stores the official duty roster. Past days stay available for date lookups. */
 @Repository
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DependsOn(PharmaciesDatabase.LIQUIBASE)
 class PharmacySchedules {
     private final JdbcClient jdbc;
+
+    @Autowired
+    PharmacySchedules(@Qualifier(PharmaciesDatabase.JDBC) JdbcClient jdbc) {
+        this.jdbc = jdbc;
+    }
 
     List<ScheduledPharmacy> on(LocalDate date) {
         return jdbc.sql(PharmacySql.ENTRIES_ON).param("date", date)
@@ -35,7 +41,7 @@ class PharmacySchedules {
     }
 
     /** Replaces each district's schedule from the first day its new file covers; earlier days are kept. */
-    @Transactional
+    @Transactional(PharmaciesDatabase.TRANSACTIONS)
     void replace(Map<District, List<DutyEntry>> schedules, Instant checkedAt) {
         for (var schedule : schedules.entrySet()) {
             var entries = schedule.getValue();

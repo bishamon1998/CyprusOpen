@@ -6,11 +6,11 @@ export default defineConfig({
   server: {
     proxy: {
       "/map-config.json": "http://localhost:3000",
-      "/api/v1/statistics": "http://localhost:8081",
-      "/api/v1/parking": "http://localhost:8082",
-      "/api/v1/air-quality": "http://localhost:8082",
-      "/api/v1/beaches": "http://localhost:8082",
-      "/api/v1/pharmacies": "http://localhost:8083",
+      "/api/v1/statistics": "http://localhost:8080",
+      "/api/v1/parking": "http://localhost:8080",
+      "/api/v1/air-quality": "http://localhost:8080",
+      "/api/v1/beaches": "http://localhost:8080",
+      "/api/v1/pharmacies": "http://localhost:8080",
     },
   },
 });
