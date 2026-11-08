@@ -88,6 +88,10 @@ const directory = fileURLToPath(new URL("./dist/", import.meta.url));
 // Vite names built files by content hash, so browsers may keep them; index.html stays no-cache.
 app.use("/assets", express.static(`${directory}assets`, { index: false, immutable: true, maxAge: "1y" }));
 app.use(express.static(directory, { index: false }));
+// Browsers and crawlers ask for /favicon.ico regardless of the <link rel="icon">; answer with the same PNG.
+app.get("/favicon.ico", (_request, response) => {
+  response.type("png").sendFile(`${directory}mouflon-friendly.png`);
+});
 app.get(["/", "/parking", "/pharmacies", "/beaches", "/air", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
 });

@@ -15,6 +15,9 @@ const DISTRICTS: Record<string, MessageKey> = {
   pafos: "districtPaphos",
 };
 
+/** Electric green, so it is not mistaken for the grey of other fuels; petrol and diesel keep the palette. */
+const FUEL_COLORS = { hybrid: "#191c24", electric: "#2fa86b", other: "#c9cedb" };
+
 const cards: StatisticCardConfig[] = [
   {
     id: "seasons",
@@ -226,9 +229,9 @@ const cards: StatisticCardConfig[] = [
         series: [
           { key: "new-petrol", label: "petrol" },
           { key: "new-diesel", label: "diesel" },
-          { key: "new-hybrid", label: "hybrid" },
-          { key: "new-electric", label: "electric" },
-          { key: "new-other", label: "other" },
+          { key: "new-hybrid", label: "hybrid", color: FUEL_COLORS.hybrid },
+          { key: "new-electric", label: "electric", color: FUEL_COLORS.electric },
+          { key: "new-other", label: "otherFuel", color: FUEL_COLORS.other },
         ],
       },
       {
@@ -239,9 +242,9 @@ const cards: StatisticCardConfig[] = [
         series: [
           { key: "fleet-petrol", label: "petrol" },
           { key: "fleet-diesel", label: "diesel" },
-          { key: "fleet-hybrid", label: "hybrid" },
-          { key: "fleet-electric", label: "electric" },
-          { key: "fleet-other", label: "other" },
+          { key: "fleet-hybrid", label: "hybrid", color: FUEL_COLORS.hybrid },
+          { key: "fleet-electric", label: "electric", color: FUEL_COLORS.electric },
+          { key: "fleet-other", label: "otherFuel", color: FUEL_COLORS.other },
         ],
       },
     ],
