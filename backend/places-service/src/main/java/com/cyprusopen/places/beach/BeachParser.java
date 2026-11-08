@@ -94,7 +94,7 @@ class BeachParser {
         return rows;
     }
 
-    static Optional<String> quality(String label) {
+    private static Optional<String> quality(String label) {
         var match = QUALITY.matcher(label.strip());
         if (!match.matches()) return Optional.empty();
         return Optional.of(match.group(1).strip().toLowerCase(Locale.ROOT).replaceAll("[^a-z]+", "-"));

@@ -5,25 +5,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.cyprusopen.common.refresh.RefreshResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -37,15 +41,24 @@ import tools.jackson.databind.json.JsonMapper;
 class StatisticsApiIT {
     /** Table path below the API root to fixture file, shared with the browser CI fixture server. */
     static final Map<String, String> FIXTURES = fixtures();
+    /** How the fixture server answers every table. */
     static final AtomicReference<String> mode = new AtomicReference<>("initial");
+    /** Overrides {@link #mode} for single tables, by fixture file name. */
+    static final Map<String, String> faults = new ConcurrentHashMap<>();
     /** Answers the next request with 429 Too Many Requests, as CYSTAT does for bursts. */
     static final AtomicBoolean throttleNext = new AtomicBoolean();
+    static final AtomicInteger redirectTargetHits = new AtomicInteger();
     static final HttpServer upstream;
 
     static {
         try {
             upstream = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
             upstream.createContext("/api/", StatisticsApiIT::table);
+            upstream.createContext("/elsewhere", exchange -> {
+                redirectTargetHits.incrementAndGet();
+                exchange.sendResponseHeaders(200, -1);
+                exchange.close();
+            });
             upstream.start();
         } catch (IOException error) {
             throw new ExceptionInInitializerError(error);
@@ -80,31 +93,33 @@ class StatisticsApiIT {
     @Autowired
     private List<StatisticsDataset> datasets;
 
+    @Autowired
+    private JdbcClient jdbc;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
     }
 
-    @Test
-    void importsCystatTablesAndKeepsThemOnSourceErrors() throws Exception {
-        var sources = get("/api/v1/statistics/datasets", 200);
-        assertThat(sources.size()).isEqualTo(datasets.size()).isEqualTo(FIXTURES.size());
-        assertThat(sources.get(0).get("code").asString()).isEqualTo("immigrant-groups");
-        assertThat(sources.get(0).get("updatedAt").isNull()).isTrue();
-        assertThat(get("/api/v1/statistics/datasets/tourist-arrivals", 200).get("series").size()).isZero();
-        // A table that is not imported yet must not be cached, or the page keeps showing it empty.
-        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("no-store");
+    @BeforeEach
+    void emptyDatabaseAndHealthySource() {
+        jdbc.sql("DELETE FROM dataset").update();
+        mode.set("initial");
+        faults.clear();
+        throttleNext.set(false);
+        redirectTargetHits.set(0);
+    }
 
-        var imported = refresh.refreshAll();
-        assertThat(imported).hasSize(datasets.size())
-                .allSatisfy((code, result) -> assertThat(result).as(code).isEqualTo(RefreshResult.UPDATED));
+    @Test
+    void importsEveryTableAndServesItsSeries() throws Exception {
+        importAll();
+        assertThat(refresh.refreshAll()).containsValue(RefreshResult.UNCHANGED).doesNotContainValue(RefreshResult.UPDATED);
         for (var dataset : datasets) {
             assertThat(get("/api/v1/statistics/datasets/" + dataset.code(), 200).get("series").size())
                     .as(dataset.code()).isPositive();
         }
+        get("/api/v1/statistics/datasets/unknown", 404);
 
-        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("max-age=3600, public");
-        assertThat(cacheControl("/api/v1/statistics/datasets")).isEqualTo("no-store");
         var tourism = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(tourism.get("source").get("updatedAt").asString()).isEqualTo("2026-10-19T05:00:00Z");
         assertThat(tourism.get("source").get("url").asString()).isEqualTo("https://www.data.gov.cy/en/dataset/2285");
@@ -123,7 +138,6 @@ class StatisticsApiIT {
                 .isEqualTo("[9000.0,9100.0]");
         var movements = get("/api/v1/statistics/datasets/migration-movements", 200);
         assertThat(line(movements, "emigrants").get("values").toString()).isEqualTo("[null,18000.0]");
-        get("/api/v1/statistics/datasets/unknown", 404);
 
         // A table without a series dimension, one with two series dimensions and pinned dimensions.
         var inflation = get("/api/v1/statistics/datasets/inflation", 200);
@@ -182,33 +196,88 @@ class StatisticsApiIT {
                 .isEqualTo(2122.0);
         assertThat(line(get("/api/v1/statistics/datasets/births-by-month", 200), "08").get("values").get(1).asDouble())
                 .isEqualTo(839.0);
+    }
 
-        assertThat(refresh.refreshAll()).containsValue(RefreshResult.UNCHANGED).doesNotContainValue(RefreshResult.UPDATED);
-        mode.set("invalid");
-        assertThat(refresh.refreshAll()).hasSize(datasets.size())
-                .allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.INVALID));
-        // Malformed JSON-stat (null size and label) is rejected per table instead of aborting the whole run.
-        mode.set("malformed");
-        assertThat(refresh.refreshAll()).hasSize(datasets.size())
-                .allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.INVALID));
-        mode.set("unavailable");
-        assertThat(refresh.refreshAll()).allSatisfy((code, result) -> assertThat(result).isEqualTo(RefreshResult.UNAVAILABLE));
-        assertThat(line(get("/api/v1/statistics/datasets/tourist-arrivals", 200), "GB")).isNotNull();
+    /** The page polls an empty table until the first import lands; a cached empty answer would hide it for an hour. */
+    @Test
+    void emptyTableIsNeverCached() throws Exception {
+        var sources = get("/api/v1/statistics/datasets", 200);
+        assertThat(sources.size()).isEqualTo(datasets.size()).isEqualTo(FIXTURES.size());
+        assertThat(sources.get(0).get("updatedAt").isNull()).isTrue();
+        assertThat(get("/api/v1/statistics/datasets/tourist-arrivals", 200).get("series").size()).isZero();
+        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("no-store");
+
+        importAll();
+        assertThat(cacheControl("/api/v1/statistics/datasets/tourist-arrivals")).isEqualTo("max-age=3600, public");
+        assertThat(cacheControl("/api/v1/statistics/datasets")).isEqualTo("no-store");
+    }
+
+    @Test
+    void brokenTableDoesNotStopTheOthers() throws Exception {
+        faults.put("tourist-arrivals.json", "malformed");
+        faults.put("inflation.json", "unavailable");
+
+        var results = refresh.refreshAll();
+        assertThat(results).hasSize(datasets.size())
+                .containsEntry("tourist-arrivals", RefreshResult.INVALID)
+                .containsEntry("inflation", RefreshResult.UNAVAILABLE);
+        results.forEach((code, result) -> {
+            if (!code.equals("tourist-arrivals") && !code.equals("inflation")) {
+                assertThat(result).as(code).isEqualTo(RefreshResult.UPDATED);
+            }
+        });
+        assertThat(get("/api/v1/statistics/datasets/tourist-arrivals", 200).get("series").size()).isZero();
+        assertThat(get("/api/v1/statistics/datasets/population", 200).get("series").size()).isPositive();
+    }
+
+    /** Invalid, unreachable, redirecting or oversized answers never replace stored tables. */
+    @Test
+    void sourceFailuresKeepTheStoredTables() throws Exception {
+        importAll();
+        for (var failure : Map.of("invalid", RefreshResult.INVALID, "unavailable", RefreshResult.UNAVAILABLE,
+                "redirect", RefreshResult.UNAVAILABLE).entrySet()) {
+            mode.set(failure.getKey());
+            assertThat(refresh.refreshAll()).as(failure.getKey()).hasSize(datasets.size())
+                    .allSatisfy((code, result) -> assertThat(result).isEqualTo(failure.getValue()));
+        }
+        assertThat(redirectTargetHits).hasValue(0);
+
+        mode.set("initial");
+        faults.put("tourist-arrivals.json", "oversized");
+        assertThat(refresh.refresh(dataset("tourist-arrivals"))).isEqualTo(RefreshResult.UNAVAILABLE);
+
+        var kept = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
+        assertThat(kept.get("source").get("updatedAt").asString()).isEqualTo("2026-10-19T05:00:00Z");
+        assertThat(line(kept, "GB").get("values").toString()).isEqualTo("[400.0,420.0,null]");
+    }
+
+    /** A newer release replaces the table even after CYSTAT answers 429; an older copy never does. */
+    @Test
+    void onlyANewerReleaseReplacesATable() throws Exception {
+        importAll();
+        var tourist = dataset("tourist-arrivals");
 
         mode.set("revised");
         throttleNext.set(true);
-        var tourist = datasets.stream().filter(dataset -> dataset.code().equals("tourist-arrivals")).findFirst().orElseThrow();
         assertThat(refresh.refresh(tourist)).isEqualTo(RefreshResult.UPDATED);
         var revised = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(revised.get("source").get("updatedAt").asString()).isEqualTo("2026-11-19T05:00:00Z");
         assertThat(line(revised, "total").get("values").toString()).isEqualTo("[1000.0,1100.0,1250.0]");
 
-        // A table with an older update time than the stored one (a stale copy) never replaces newer data.
         mode.set("older");
         assertThat(refresh.refresh(tourist)).isEqualTo(RefreshResult.INVALID);
         var kept = get("/api/v1/statistics/datasets/tourist-arrivals", 200);
         assertThat(kept.get("source").get("updatedAt").asString()).isEqualTo("2026-11-19T05:00:00Z");
         assertThat(line(kept, "total").get("values").toString()).isEqualTo("[1000.0,1100.0,1250.0]");
+    }
+
+    private void importAll() {
+        assertThat(refresh.refreshAll()).hasSize(datasets.size())
+                .allSatisfy((code, result) -> assertThat(result).as(code).isEqualTo(RefreshResult.UPDATED));
+    }
+
+    private StatisticsDataset dataset(String code) {
+        return datasets.stream().filter(dataset -> dataset.code().equals(code)).findFirst().orElseThrow();
     }
 
     private static Map<String, String> fixtures() {
@@ -257,26 +326,40 @@ class StatisticsApiIT {
             exchange.close();
             return;
         }
+        var answer = fixture == null ? mode.get() : faults.getOrDefault(fixture, mode.get());
         if (!"POST".equals(exchange.getRequestMethod()) || !query.contains("json-stat2") || fixture == null
-                || mode.get().equals("unavailable")) {
-            exchange.sendResponseHeaders(mode.get().equals("unavailable") ? 503 : 404, -1);
+                || answer.equals("unavailable")) {
+            exchange.sendResponseHeaders(answer.equals("unavailable") ? 503 : 404, -1);
             exchange.close();
             return;
         }
-        String body;
-        try (var input = StatisticsApiIT.class.getResourceAsStream("/cystat/" + fixture)) {
-            body = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        if (answer.equals("redirect")) {
+            exchange.getResponseHeaders().add("Location", "/elsewhere");
+            exchange.sendResponseHeaders(302, -1);
+            exchange.close();
+            return;
         }
-        body = switch (mode.get()) {
-            case "invalid" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\"}";
-            case "malformed" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\","
-                    + "\"id\":[\"A\"],\"size\":[null],\"value\":[1],"
-                    + "\"dimension\":{\"A\":{\"category\":{\"index\":{\"a\":0},\"label\":{\"a\":null}}}}}";
-            case "revised" -> body.replace("2026-10-19T05:00:00Z", "2026-11-19T05:00:00Z").replace("1000, 1100, 1200,", "1000, 1100, 1250,");
-            case "older" -> body.replace("1000, 1100, 1200,", "1000, 1100, 1300,");
-            default -> body;
-        };
-        var bytes = body.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes;
+        if (answer.equals("oversized")) {
+            bytes = new byte[4 * 1024 * 1024 + 1];
+        } else {
+            String body;
+            try (var input = StatisticsApiIT.class.getResourceAsStream("/cystat/" + fixture)) {
+                body = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            body = switch (answer) {
+                case "invalid" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\"}";
+                // Null size and label: threw NullPointerException and stopped the whole run before the fix.
+                case "malformed" -> "{\"version\":\"2.0\",\"class\":\"dataset\",\"updated\":\"2026-12-01T00:00:00Z\","
+                        + "\"id\":[\"A\"],\"size\":[null],\"value\":[1],"
+                        + "\"dimension\":{\"A\":{\"category\":{\"index\":{\"a\":0},\"label\":{\"a\":null}}}}}";
+                case "revised" -> body.replace("2026-10-19T05:00:00Z", "2026-11-19T05:00:00Z")
+                        .replace("1000, 1100, 1200,", "1000, 1100, 1250,");
+                case "older" -> body.replace("1000, 1100, 1200,", "1000, 1100, 1300,");
+                default -> body;
+            };
+            bytes = body.getBytes(StandardCharsets.UTF_8);
+        }
         exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(200, bytes.length);
         exchange.getResponseBody().write(bytes);

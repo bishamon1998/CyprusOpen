@@ -206,7 +206,7 @@ class StatisticsDatasets {
     }
 
     /** "August" and "15" become "08-15"; "Total" and "Not stated" have no date. */
-    static Optional<String> calendarDate(String month, String day) {
+    private static Optional<String> calendarDate(String month, String day) {
         if (!day.matches("\\d{1,2}")) return Optional.empty();
         try {
             return Optional.of("%02d-%02d".formatted(Month.valueOf(month.toUpperCase(Locale.ROOT)).getValue(),

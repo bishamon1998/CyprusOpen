@@ -14,9 +14,14 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,8 +41,9 @@ import tools.jackson.databind.json.JsonMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class PharmacyScheduleIT {
+    static final ZoneId CYPRUS = ZoneId.of("Asia/Nicosia");
     /** 22:00 in Cyprus on 1 November 2026, when winter overnight on-call service has started. */
-    static final Instant NOW = Instant.parse("2026-11-01T20:00:00Z");
+    static final Instant NOW = cyprus("2026-11-01T22:00");
     static final String HEADERS = "Date,Day,Reg. No.,Surmame,Name,Address,Additional Address Info,"
             + "Muniuciplity / Community,Pharmacy Tel. No.,House Tel. No.\n";
     /** Catalog distribution titles as published in Greek. */
@@ -48,6 +54,7 @@ class PharmacyScheduleIT {
             {"paphos", "Πάφος"},
             {"famagusta", "Αμμόχωστος"}};
     static final AtomicReference<String> mode = new AtomicReference<>("initial");
+    static final AtomicInteger redirectTargetHits = new AtomicInteger();
     static final HttpServer upstream;
 
     static {
@@ -55,6 +62,10 @@ class PharmacyScheduleIT {
             upstream = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
             upstream.createContext("/metadata", PharmacyScheduleIT::metadata);
             upstream.createContext("/csv/", PharmacyScheduleIT::schedule);
+            upstream.createContext("/elsewhere", exchange -> {
+                redirectTargetHits.incrementAndGet();
+                respond(exchange, "{}");
+            });
             upstream.start();
         } catch (IOException error) {
             throw new ExceptionInInitializerError(error);
@@ -75,12 +86,36 @@ class PharmacyScheduleIT {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
+    /** The service clock, moved by the tests across the 08:00 roster change and the on-call start. */
+    static final class TestClock extends Clock {
+        private volatile Instant now = NOW;
+
+        void set(Instant instant) {
+            now = instant;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return Clock.fixed(now, zone);
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
+    }
+
     @TestConfiguration
-    static class FixedClock {
+    static class Clocks {
         @Bean
         @Primary
-        Clock fixedClock() {
-            return Clock.fixed(NOW, ZoneOffset.UTC);
+        TestClock testClock() {
+            return new TestClock();
         }
     }
 
@@ -96,13 +131,26 @@ class PharmacyScheduleIT {
     @Autowired
     private JdbcClient jdbc;
 
+    @Autowired
+    private TestClock clock;
+
     @AfterAll
     static void stopUpstream() {
         upstream.stop(0);
     }
 
+    @BeforeEach
+    void emptyRosterAndHealthySource() {
+        jdbc.sql("DELETE FROM duty_entry").update();
+        jdbc.sql("UPDATE schedule_refresh SET last_checked_at = NULL").update();
+        jdbc.sql("DELETE FROM pharmacy_location WHERE source = 'manual review'").update();
+        clock.set(NOW);
+        mode.set("initial");
+        redirectTargetHits.set(0);
+    }
+
     @Test
-    void refreshesAllDistrictsIntoPostgresAndKeepsTheRosterOnSourceErrors() throws Exception {
+    void importsEveryDistrictAndServesTheRoster() throws Exception {
         var empty = schedule("");
         assertThat(empty.get("items").size()).isZero();
         assertThat(empty.get("checkedAt").isNull()).isTrue();
@@ -113,42 +161,72 @@ class PharmacyScheduleIT {
                 VALUES ('10', 35.17, 33.36, 'street', 'manual review')
                 """).update();
         var current = schedule("");
-        assertThat(current.get("date").asText()).isEqualTo("2026-11-01");
-        assertThat(current.get("onCall").asBoolean()).isTrue();
-        assertThat(current.get("checkedAt").asText()).isEqualTo("2026-11-01T20:00:00Z");
+        assertThat(current.get("date").asString()).isEqualTo("2026-11-01");
+        assertThat(current.get("checkedAt").asString()).isEqualTo("2026-11-01T20:00:00Z");
         assertThat(current.get("items").size()).isEqualTo(5);
         assertThat(current.toString()).doesNotContain("99123456");
         var nicosia = item(current, "nicosia:10");
-        assertThat(nicosia.get("address").asText()).isEqualTo("First Street 1, Shop 2");
+        assertThat(nicosia.get("address").asString()).isEqualTo("First Street 1, Shop 2");
         assertThat(nicosia.get("location").get("latitude").asDouble()).isEqualTo(35.17);
-        assertThat(nicosia.get("location").get("precision").asText()).isEqualTo("street");
-        assertThat(nicosia.get("location").get("source").asText()).isEqualTo("manual review");
+        assertThat(nicosia.get("location").get("precision").asString()).isEqualTo("street");
         assertThat(item(current, "paphos:40").get("location").isNull()).isTrue();
+        assertThat(item(schedule("?date=2026-11-02"), "nicosia:11").get("name").asString()).isEqualTo("Sam Example");
 
-        var selected = schedule("?date=2026-11-02");
-        assertThat(selected.get("onCall").asBoolean()).isFalse();
-        assertThat(item(selected, "nicosia:11").get("name").asText()).isEqualTo("Sam Example");
-
-        mode.set("invalid");
-        assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
-        mode.set("broken-metadata");
-        assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
-        mode.set("broken-csv");
-        assertThat(refresh.refresh()).isEqualTo(RefreshResult.INVALID);
-        mode.set("unavailable");
-        assertThat(refresh.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
-        mode.set("foreign");
-        assertThat(refresh.refresh()).isEqualTo(RefreshResult.UNAVAILABLE);
-        assertThat(schedule("").get("items").size()).isEqualTo(5);
-
+        // A new file replaces the district from its first day on; earlier days stay available by date.
         mode.set("replacement");
         assertThat(refresh.refresh()).isEqualTo(RefreshResult.UPDATED);
         assertThat(item(schedule(""), "nicosia:10")).isNotNull();
         var replaced = schedule("?date=2026-11-02");
-        assertThat(item(replaced, "nicosia:12").get("name").asText()).isEqualTo("Jo Example");
+        assertThat(item(replaced, "nicosia:12").get("name").asString()).isEqualTo("Jo Example");
         assertThat(item(replaced, "nicosia:11")).isNull();
-
         assertThat(schedule("?date=2026-11-05").get("items").size()).isZero();
+    }
+
+    /** Until 08:00 the previous day's pharmacies are on duty; late evening and night service is on call. */
+    @Test
+    void rosterDayChangesAtEightAndNightIsOnCall() throws Exception {
+        assertThat(refresh.refresh()).isEqualTo(RefreshResult.UPDATED);
+
+        clock.set(cyprus("2026-11-02T07:59"));
+        var night = schedule("");
+        assertThat(night.get("date").asString()).isEqualTo("2026-11-01");
+        assertThat(night.get("onCall").asBoolean()).isTrue();
+        assertThat(item(night, "nicosia:10")).isNotNull();
+
+        clock.set(cyprus("2026-11-02T08:00"));
+        var morning = schedule("");
+        assertThat(morning.get("date").asString()).isEqualTo("2026-11-02");
+        assertThat(morning.get("onCall").asBoolean()).isFalse();
+        assertThat(item(morning, "nicosia:11")).isNotNull();
+
+        clock.set(cyprus("2026-11-02T21:59"));
+        assertThat(schedule("").get("onCall").asBoolean()).isFalse();
+        clock.set(cyprus("2026-11-02T22:00"));
+        assertThat(schedule("").get("onCall").asBoolean()).isTrue();
+        // Summer on-call service starts an hour later.
+        clock.set(cyprus("2026-07-01T22:30"));
+        assertThat(schedule("").get("onCall").asBoolean()).isFalse();
+        clock.set(cyprus("2026-07-01T23:00"));
+        assertThat(schedule("").get("onCall").asBoolean()).isTrue();
+        // A chosen date shows that day's roster, never as on call.
+        assertThat(schedule("?date=2026-11-01").get("onCall").asBoolean()).isFalse();
+    }
+
+    /** Broken files, unreachable or redirecting sources and foreign download links never touch the stored roster. */
+    @Test
+    void sourceFailuresKeepTheRoster() throws Exception {
+        assertThat(refresh.refresh()).isEqualTo(RefreshResult.UPDATED);
+        var stored = schedule("");
+        for (var failure : List.of("invalid", "broken-metadata", "broken-csv")) {
+            mode.set(failure);
+            assertThat(refresh.refresh()).as(failure).isEqualTo(RefreshResult.INVALID);
+        }
+        for (var failure : List.of("unavailable", "redirect", "foreign")) {
+            mode.set(failure);
+            assertThat(refresh.refresh()).as(failure).isEqualTo(RefreshResult.UNAVAILABLE);
+        }
+        assertThat(redirectTargetHits).hasValue(0);
+        assertThat(schedule("")).isEqualTo(stored);
     }
 
     private JsonNode schedule(String query) throws Exception {
@@ -164,9 +242,13 @@ class PharmacyScheduleIT {
 
     private static JsonNode item(JsonNode schedule, String id) {
         for (var item : schedule.get("items")) {
-            if (item.get("id").asText().equals(id)) return item;
+            if (item.get("id").asString().equals(id)) return item;
         }
         return null;
+    }
+
+    private static Instant cyprus(String localTime) {
+        return LocalDateTime.parse(localTime).atZone(CYPRUS).toInstant();
     }
 
     private static String origin() {
@@ -174,14 +256,24 @@ class PharmacyScheduleIT {
     }
 
     private static void metadata(HttpExchange exchange) throws IOException {
-        if (mode.get().equals("unavailable")) {
-            exchange.sendResponseHeaders(503, -1);
-            exchange.close();
-            return;
-        }
-        if (mode.get().equals("broken-metadata")) {
-            respond(exchange, "{\"dcat:Distribution\":[");
-            return;
+        switch (mode.get()) {
+            case "unavailable" -> {
+                exchange.sendResponseHeaders(503, -1);
+                exchange.close();
+                return;
+            }
+            case "redirect" -> {
+                exchange.getResponseHeaders().add("Location", "/elsewhere");
+                exchange.sendResponseHeaders(302, -1);
+                exchange.close();
+                return;
+            }
+            case "broken-metadata" -> {
+                respond(exchange, "{\"dcat:Distribution\":[");
+                return;
+            }
+            default -> {
+            }
         }
         var host = mode.get().equals("foreign") ? "http://localhost:" + upstream.getAddress().getPort() : origin();
         var distributions = new StringBuilder();
@@ -208,6 +300,7 @@ class PharmacyScheduleIT {
         } else {
             body = switch (mode.get()) {
                 case "invalid" -> "Unexpected,Columns\n1,2\n";
+                // An unclosed quote: Commons CSV fails with UncheckedIOException while iterating.
                 case "broken-csv" -> HEADERS + "01/11/26,Sunday,10,Example,Alex,\"First Street 1,,Nicosia,22123456,\n";
                 case "replacement" -> HEADERS + "02/11/26,Monday,12,Example,Jo,Third Street 3,,Nicosia,22123458,\n";
                 default -> "﻿" + HEADERS

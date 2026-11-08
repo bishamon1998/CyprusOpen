@@ -25,11 +25,10 @@ Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and 
 cd frontend
 pnpm install --frozen-lockfile
 pnpm build
-pnpm test
 pnpm test:e2e
 ```
 
-Each service has unit tests for its parsers that need no Docker, and integration tests (`*IT`) with an isolated PostgreSQL Testcontainer and a local HTTP server. Browser CI uses `docker-compose.test.yml` with a private XML fixture server; the real refresh job fills the database from that server. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
+Tests are integration and end-to-end only. Each backend service has `*IT` tests that call its HTTP API and run its refresh jobs against an isolated PostgreSQL Testcontainer and a local HTTP fixture server. `pnpm test:e2e` drives the real app in a browser: CI starts it with `docker-compose.test.yml` and private fixture servers; the real refresh jobs fill the databases from them. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
 
 For Vite development, run the backends locally and `pnpm start` alongside `pnpm dev` for runtime map configuration. The production frontend listens on `PORT` (3000 by default), proxies `STATISTICS_UPSTREAM` and `PARKING_UPSTREAM`, and exposes `/healthz`. Backend readiness is `/actuator/health/readiness`.
 
