@@ -80,10 +80,10 @@ class PharmacyScheduleIT {
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
         registry.add("pharmacies.catalog-metadata-url", () -> origin() + "/metadata");
-        registry.add("spring.datasource.url", () -> postgres.getJdbcUrl()
+        registry.add("pharmacies.datasource.url", () -> postgres.getJdbcUrl()
                 + (postgres.getJdbcUrl().contains("?") ? "&" : "?") + "currentSchema=pharmacies");
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("pharmacies.datasource.username", postgres::getUsername);
+        registry.add("pharmacies.datasource.password", postgres::getPassword);
     }
 
     /** The service clock, moved by the tests across the 08:00 roster change and the on-call start. */

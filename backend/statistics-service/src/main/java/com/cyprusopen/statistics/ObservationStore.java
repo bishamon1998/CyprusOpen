@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -19,13 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Stores observations per dataset; a refresh replaces a dataset's rows atomically. */
 @Repository
-@DependsOn("liquibase")
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DependsOn(StatisticsDatabase.LIQUIBASE)
 class ObservationStore {
     private static final int BATCH_SIZE = 1_000;
 
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
+
+    @Autowired
+    ObservationStore(@Qualifier(StatisticsDatabase.JDBC) JdbcClient jdbc,
+                     @Qualifier(StatisticsDatabase.BATCH) JdbcTemplate batch) {
+        this.jdbc = jdbc;
+        this.batch = batch;
+    }
 
     Map<String, Imported> imported() {
         return jdbc.sql(StatisticsSql.DATASETS).query(ObservationStore::importedRow).stream()
@@ -42,7 +48,7 @@ class ObservationStore {
                 .list();
     }
 
-    @Transactional
+    @Transactional(StatisticsDatabase.TRANSACTIONS)
     void replace(String code, Instant sourceUpdated, Instant checked, List<Observation> observations) {
         jdbc.sql(StatisticsSql.UPSERT_DATASET).param("code", code).param("updated", Timestamp.from(sourceUpdated))
                 .param("checked", Timestamp.from(checked)).update();

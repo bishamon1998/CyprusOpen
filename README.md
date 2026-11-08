@@ -4,14 +4,14 @@ Public statistics and everyday tools for people living in Cyprus.
 
 [cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, independent Spring Boot Statistics, Places (parking, beaches, air quality) and Pharmacies services, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
+React/TypeScript with EN/RU/EL interfaces, a Spring Boot backend made of separate Statistics, Places (parking, beaches, air quality) and Pharmacies modules, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
 Use Docker Desktop. Preserve the existing `.env`; for a new checkout copy `.env.example` and set three distinct database passwords. Run:
 
 ```sh
-docker compose up -d --build frontend statistics-service places-service pharmacies-service
+docker compose up -d --build frontend backend
 ```
 
 Open http://localhost:3000. Parking now requires PostgreSQL; Compose starts it automatically and preserves the existing volume. The Parking role owns its database/schema, separately from Statistics. Liquibase owns schema migrations. Never remove the database volume to update the app.
@@ -22,15 +22,16 @@ Java 25, Spring Boot 4.1.2, Maven Wrapper, Node 24, React, TypeScript, Vite and 
 ./mvnw -B -ntp -pl backend/places-service -am verify
 ./mvnw -B -ntp -pl backend/statistics-service -am verify
 ./mvnw -B -ntp -pl backend/pharmacies-service -am verify
+./mvnw -B -ntp -pl backend/app -am verify
 cd frontend
 pnpm install --frozen-lockfile
 pnpm build
 pnpm test:e2e
 ```
 
-Tests are integration and end-to-end only. Each backend service has `*IT` tests that call its HTTP API and run its refresh jobs against an isolated PostgreSQL Testcontainer and a local HTTP fixture server. `pnpm test:e2e` drives the real app in a browser: CI starts it with `docker-compose.test.yml` and private fixture servers; the real refresh jobs fill the databases from them. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
+Tests are integration and end-to-end only. Each backend module has `*IT` tests that call its HTTP API and run its refresh jobs against an isolated PostgreSQL Testcontainer and a local HTTP fixture server; `BackendApplicationIT` starts all modules in one process and checks that each migrates only its own changelog. `pnpm test:e2e` drives the real app in a browser: CI starts it with `docker-compose.test.yml` and private fixture servers; the real refresh jobs fill the databases from them. These small English-only protocol fixtures are never a production data source. No government or tile-provider requests leave CI. Docker image packaging skips tests that require a Docker daemon; CI runs those integration tests separately before review.
 
-For Vite development, run the backends locally and `pnpm start` alongside `pnpm dev` for runtime map configuration. The production frontend listens on `PORT` (3000 by default), proxies `STATISTICS_UPSTREAM` and `PARKING_UPSTREAM`, and exposes `/healthz`. Backend readiness is `/actuator/health/readiness`.
+For Vite development, run the backend locally (port 8080) and `pnpm start` alongside `pnpm dev` for runtime map configuration. The production frontend listens on `PORT` (3000 by default), proxies `STATISTICS_UPSTREAM`, `PARKING_UPSTREAM` and `PHARMACIES_UPSTREAM` (all the backend's address), and exposes `/healthz`. Backend readiness is `/actuator/health/readiness`.
 
 ## Parking data and refresh
 
@@ -43,7 +44,7 @@ The UI distinguishes the source publication timestamp, successful retrieval and 
 Automatic checking is **disabled by default**. When enabled, the job also runs after startup if the directory is empty. Setting `PARKING_DIRECTORY_SYNC_ENABLED=true` enables one check at **05:00 Cyprus time on the first day of each month** (see [Refresh schedule](#refresh-schedule)). This conservative internal schedule is for the slow-changing directory, not live occupancy. It is not a provider-issued quota. A manual one-shot check uses the same guarded code after PostgreSQL is running:
 
 ```sh
-docker compose run --rm --no-deps places-service --spring.profiles.active=directory-refresh
+docker compose run --rm --no-deps backend --spring.profiles.active=directory-refresh
 ```
 
 The job uses Spring `RestClient`, conditional ETag/Last-Modified headers, server-configured endpoint (the verified official HTTPS resource by default), no redirects, 5-second connection / 15-second read timeout, and a 2 MiB response limit. The job makes one request per run. If the source is unavailable or returns invalid data, the job logs the outcome and keeps the last successful snapshot. Only server configuration supplies the endpoint; user API input cannot change it. Tests replace that configuration with their HTTP server, without test flags or hostnames in production code. There is no public refresh endpoint. User API requests never call upstream. The browser polls our API every 10 seconds while the directory is empty and every 5 minutes after initialization.
@@ -105,11 +106,11 @@ Keep repository root as the build context. Service settings are managed directly
 | Service | Dockerfile | PORT | Health check |
 | --- | --- | --- | --- |
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
-| Statistics | `backend/statistics-service/Dockerfile` | 8081 | `/actuator/health/readiness` |
-| Places (parking, beaches, air quality) | `backend/places-service/Dockerfile` | 8082 | `/actuator/health/readiness` |
-| Pharmacies | `backend/pharmacies-service/Dockerfile` | 8083 | `/actuator/health/readiness` |
+| Backend (statistics, places, pharmacies) | `backend/app/Dockerfile` | 8080 | `/actuator/health/readiness` |
 
-Railway bills the memory each container holds, and traffic is low, so the backends are sized for a small steady footprint. Each backend image sets `JAVA_TOOL_OPTIONS` (Serial GC, 256 MB heap cap, C1 compiler only), and each service keeps at most 16 request threads and one idle database connection. Measured locally after all imports and the browser check: about 150 MB per backend instead of about 400 MB, and Postgres at 66 MB instead of 135 MB. A 3.3 MB CYSTAT table (560,000 cells, near the 4 MB response limit) still imports within the cap. To give a service more memory, override `JAVA_TOOL_OPTIONS` in its Railway variables.
+The backend runs the Statistics, Places and Pharmacies modules in one process to keep hosting small. The modules stay separate in code (`backend/statistics-service`, `backend/places-service`, `backend/pharmacies-service`): own packages, API paths, refresh jobs, databases, roles, connection pools, Liquibase changelogs and transactions. The backend service takes all their variables (`STATISTICS_*`, `PARKING_*`, `PHARMACIES_*`, `PHARMACY_*`, `AIR_QUALITY_*`, `BEACHES_*`), and the frontend's three upstream variables all point to the backend's private address. To split a module out again, give it a `@SpringBootApplication` class, a Dockerfile and its own Railway service.
+
+Railway bills the memory each container holds, and traffic is low, so the backend is sized for a small steady footprint. The image sets `JAVA_TOOL_OPTIONS` (Serial GC, 384 MB heap cap, C1 compiler only); the backend keeps at most 16 request threads and each module one idle database connection. A 3.3 MB CYSTAT table (560,000 cells, near the 4 MB response limit) imports within the cap. To give the backend more memory, override `JAVA_TOOL_OPTIONS` in its Railway variables.
 
 Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
 
@@ -119,7 +120,7 @@ Deploy the updated Parking backend together with the frontend release after revi
 
 Publish feature branches through PRs; the owner controls merging. README is published in English; other Markdown stays local. Interface translations are an owner-approved exception to English-only repository content.
 
-places-service (formerly parking-service) serves parking, beaches and air quality on one machine. On Railway, point the service's Dockerfile path to `backend/places-service/Dockerfile` and set `AIR_QUALITY_SYNC_ENABLED=true` and `BEACHES_SYNC_ENABLED=true`. Environment variables keep their `PARKING_` prefix and the database stays `parking`, so no secrets or data move; if renaming the Railway service changes its private domain, update `PARKING_UPSTREAM` on the frontend.
+The places module (formerly parking-service) keeps the `PARKING_` variable prefix and the `parking` database, so no secrets or data moved when it took over beaches and air quality.
 
 ## Shared map and parsing components
 
@@ -129,7 +130,7 @@ places-service (formerly parking-service) serves parking, beaches and air qualit
 
 ## Pharmacy duty schedules
 
-The independent Spring service (port 8083) stores the Pharmaceutical Services duty roster in its own PostgreSQL database (`pharmacies`, role `pharmacies_app`), created by Liquibase. The API and the Pharmacies page show entries for the selected date, defaulting to the current roster in Cyprus. The page links to address directions and the pharmacy's public telephone number; house numbers are never stored.
+The pharmacies module stores the Pharmaceutical Services duty roster in its own PostgreSQL database (`pharmacies`, role `pharmacies_app`), created by Liquibase. The API and the Pharmacies page show entries for the selected date, defaulting to the current roster in Cyprus. The page links to address directions and the pharmacy's public telephone number; house numbers are never stored.
 
 Set `PHARMACY_SYNC_ENABLED=true` to enable automatic checks. The service reads the five district CSV links from the official catalog metadata (`PHARMACY_CATALOG_METADATA_URL`), downloads only from that origin and replaces the stored roster when all five files are valid. It checks at startup if the last successful check is older than one day, then daily at 06:15 Cyprus time (see [Refresh schedule](#refresh-schedule)). A failed check keeps the stored roster. Each district's schedule is replaced from the first day its new file covers, so earlier days remain available by date. The current roster rolls over at 08:00 Cyprus time; late-evening and overnight entries are marked on call for urgent prescriptions.
 

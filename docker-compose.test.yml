@@ -8,40 +8,34 @@ services:
     volumes:
       - ./scripts/fixtures:/fixtures:ro
     command: ["node", "/fixtures/places-server.mjs"]
-  places-service:
-    environment:
-      PARKING_DIRECTORY_SYNC_ENABLED: "true"
-      PARKING_DIRECTORY_RESOURCE_URL: http://places-fixture:9090/directory
-      AIR_QUALITY_SYNC_ENABLED: "true"
-      AIR_QUALITY_RESOURCE_URL: http://places-fixture:9090/air
-      BEACHES_SYNC_ENABLED: "true"
-      BEACHES_DISCODATA_URL: http://places-fixture:9090/sql
-    depends_on:
-      places-fixture:
-        condition: service_started
   statistics-fixture:
     image: node:24-alpine
     volumes:
       - ./scripts/fixtures/statistics-server.mjs:/fixtures/statistics-server.mjs:ro
       - ./backend/statistics-service/src/test/resources/cystat:/cystat:ro
     command: ["node", "/fixtures/statistics-server.mjs"]
-  statistics-service:
-    environment:
-      STATISTICS_SYNC_ENABLED: "true"
-      STATISTICS_CYSTAT_API_URL: http://statistics-fixture:9091/api/
-      STATISTICS_CYSTAT_REQUEST_INTERVAL: 0s
-    depends_on:
-      statistics-fixture:
-        condition: service_started
   pharmacy-fixture:
     image: node:24-alpine
     volumes:
       - ./scripts/fixtures:/fixtures:ro
     command: ["node", "/fixtures/pharmacy-server.mjs"]
-  pharmacies-service:
+  backend:
     environment:
+      STATISTICS_SYNC_ENABLED: "true"
+      STATISTICS_CYSTAT_API_URL: http://statistics-fixture:9091/api/
+      STATISTICS_CYSTAT_REQUEST_INTERVAL: 0s
+      PARKING_DIRECTORY_SYNC_ENABLED: "true"
+      PARKING_DIRECTORY_RESOURCE_URL: http://places-fixture:9090/directory
+      AIR_QUALITY_SYNC_ENABLED: "true"
+      AIR_QUALITY_RESOURCE_URL: http://places-fixture:9090/air
+      BEACHES_SYNC_ENABLED: "true"
+      BEACHES_DISCODATA_URL: http://places-fixture:9090/sql
       PHARMACY_SYNC_ENABLED: "true"
       PHARMACY_CATALOG_METADATA_URL: http://pharmacy-fixture:9091/metadata
     depends_on:
+      statistics-fixture:
+        condition: service_started
+      places-fixture:
+        condition: service_started
       pharmacy-fixture:
         condition: service_started

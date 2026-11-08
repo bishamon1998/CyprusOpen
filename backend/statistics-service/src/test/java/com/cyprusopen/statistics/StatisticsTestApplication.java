@@ -1,18 +1,14 @@
-package com.cyprusopen.pharmacies;
+package com.cyprusopen.statistics;
 
 import java.time.Clock;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+/** Starts the statistics module on its own for its integration tests; production runs it inside backend/app. */
 @SpringBootApplication
-public class PharmaciesApplication {
+class StatisticsTestApplication {
     @Bean
     Clock clock() {
         return Clock.systemUTC();
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(PharmaciesApplication.class, args);
     }
 }

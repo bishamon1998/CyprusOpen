@@ -37,13 +37,13 @@ app.get("/map-config.json", (_request, response) =>
 for (const [prefix, target] of [
   [
     "/api/v1/statistics",
-    process.env.STATISTICS_UPSTREAM || "http://localhost:8081",
+    process.env.STATISTICS_UPSTREAM || "http://localhost:8080",
   ],
-  ["/api/v1/parking", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
+  ["/api/v1/parking", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
   // Beaches and air quality are served by places-service with parking: one machine for the map tools.
-  ["/api/v1/air-quality", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
-  ["/api/v1/beaches", process.env.PARKING_UPSTREAM || "http://localhost:8082"],
-  ["/api/v1/pharmacies", process.env.PHARMACIES_UPSTREAM || "http://localhost:8083"],
+  ["/api/v1/air-quality", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
+  ["/api/v1/beaches", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
+  ["/api/v1/pharmacies", process.env.PHARMACIES_UPSTREAM || "http://localhost:8080"],
 ]) {
   const upstream = new URL(target);
   if (

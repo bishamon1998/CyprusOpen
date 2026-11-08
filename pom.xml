@@ -16,6 +16,7 @@
     <module>backend/statistics-service</module>
     <module>backend/places-service</module>
     <module>backend/pharmacies-service</module>
+    <module>backend/app</module>
   </modules>
 
   <properties>

@@ -69,10 +69,10 @@ class AirQualityApiIT {
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
         registry.add("air-quality.resource-url", () -> "http://127.0.0.1:" + upstream.getAddress().getPort() + "/air");
-        registry.add("spring.datasource.url", () -> postgres.getJdbcUrl()
+        registry.add("parking.datasource.url", () -> postgres.getJdbcUrl()
                 + (postgres.getJdbcUrl().contains("?") ? "&" : "?") + "currentSchema=parking");
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("parking.datasource.username", postgres::getUsername);
+        registry.add("parking.datasource.password", postgres::getPassword);
     }
 
     @LocalServerPort

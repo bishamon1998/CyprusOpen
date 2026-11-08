@@ -11,8 +11,9 @@ import static com.cyprusopen.places.parking.DirectoryConstants.TRANSFORMATIONS;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import com.cyprusopen.places.PlacesDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -20,11 +21,16 @@ import tools.jackson.databind.json.JsonMapper;
 
 /** Persists the single normalized parking directory document. Validation belongs to {@link DirectoryXmlParser}. */
 @Repository
-@DependsOn("liquibase")
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DependsOn(PlacesDatabase.LIQUIBASE)
 class ParkingDirectory {
     private final JdbcClient jdbc;
     private final JsonMapper mapper;
+
+    @Autowired
+    ParkingDirectory(@Qualifier(PlacesDatabase.JDBC) JdbcClient jdbc, JsonMapper mapper) {
+        this.jdbc = jdbc;
+        this.mapper = mapper;
+    }
 
     Snapshot snapshot() {
         return read().snapshot();
