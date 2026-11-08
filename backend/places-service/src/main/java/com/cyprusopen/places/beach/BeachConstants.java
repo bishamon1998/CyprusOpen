@@ -3,7 +3,6 @@ package com.cyprusopen.places.beach;
 import java.time.Duration;
 
 final class BeachConstants {
-    static final int SNAPSHOT_ID = 1;
     static final int MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
     static final int MAX_BEACHES = 1000;
     /** Seasons of classification history kept per beach, newest first. */

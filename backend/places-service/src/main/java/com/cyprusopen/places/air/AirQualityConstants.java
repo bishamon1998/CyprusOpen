@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.time.ZoneId;
 
 final class AirQualityConstants {
-    static final int SNAPSHOT_ID = 1;
     static final int MAX_RESPONSE_BYTES = 1024 * 1024;
     static final int MAX_STATIONS = 200;
     static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);

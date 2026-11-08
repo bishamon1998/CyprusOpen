@@ -140,8 +140,10 @@ export function MapView({
   }, [points, markerSymbol, labels.cluster]);
 
   useEffect(() => {
+    // A lookup table instead of points.find per marker: Parking has 651 markers.
+    const tones = new Map(points.map((point) => [point.id, point.tone]));
     for (const [id, marker] of markers.current)
-      marker.setIcon(pin(markerSymbol, id === selected?.id, points.find((point) => point.id === id)?.tone));
+      marker.setIcon(pin(markerSymbol, id === selected?.id, tones.get(id)));
     if (selected && map.current) {
       map.current.setView(
         [selected.latitude, selected.longitude],

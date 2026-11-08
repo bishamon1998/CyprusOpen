@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Wind } from "lucide-react";
-import { MapView, type MapLabels } from "../components/map/MapView";
+import { MapView } from "../components/map/MapView";
+import { useMapLabels } from "../components/map/useMapLabels";
 import { PageTitle } from "../components/PageTitle";
 import {
   ExternalLink,
@@ -16,6 +17,7 @@ import {
   ToolLayout,
   ToolWorkspace,
 } from "../components/tool/Tool";
+import { useDistanceLabel } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
@@ -95,16 +97,8 @@ export default function AirQuality() {
       })),
     [stations, language],
   );
-  const labels = useMemo<MapLabels>(
-    () => ({
-      region: t("airQuality"),
-      unavailable: t("tilesUnavailable"),
-      hint: t("mapHint"),
-      location: t("yourLocation"),
-      cluster: (count) => t("stationCount", { count }),
-    }),
-    [t],
-  );
+  const labels = useMapLabels("airQuality", "stationCount");
+  const distanceLabel = useDistanceLabel();
 
   const time = (value: string) =>
     new Date(value).toLocaleString(language === "en" ? "en-GB" : language, {
@@ -126,9 +120,7 @@ export default function AirQuality() {
     return [
       <LevelChip level={station.level} />,
       type ? t(type) : station.type,
-      away !== null
-        ? t("distance", { distance: away.toLocaleString(language, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) })
-        : null,
+      away !== null ? distanceLabel(away) : null,
     ];
   };
 
