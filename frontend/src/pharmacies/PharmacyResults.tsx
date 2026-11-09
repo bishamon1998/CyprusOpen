@@ -1,5 +1,6 @@
 import { type RefObject } from "react";
 import { ArrowUpRight, Navigation, Phone } from "lucide-react";
+import { Glyph } from "../components/icons/SoftTile";
 import {
   NearestFirst,
   ResultRow,
@@ -85,7 +86,7 @@ export function PharmacyResults({
         </ResultsMessage>
       )}
       {schedule.data && pharmacies.length === 0 && (
-        <ResultsMessage>{t("scheduleUnavailable")}</ResultsMessage>
+        <ResultsMessage kind="pending">{t("scheduleUnavailable")}</ResultsMessage>
       )}
       {selected && (
         <SelectedResult label={t("selectedPharmacy")} title={selected.name} detail={pharmacyAddress(selected)} lang="el">
@@ -110,7 +111,8 @@ export function PharmacyResults({
         {pharmacies.map((pharmacy) => (
           <ResultRow
             key={pharmacy.id}
-            icon="+"
+            icon={<Glyph name="cross" />}
+            tone="pharmacies-tile"
             title={pharmacy.name}
             lang="el"
             details={[<span lang="el">{pharmacyAddress(pharmacy)}</span>, detail(pharmacy)]}

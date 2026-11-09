@@ -5,7 +5,7 @@
 .tone-poor { --tone: #ff5050; --tone-text: #fff; }
 .tone-very-poor { --tone: #960032; --tone-text: #fff; }
 .tone-extremely-poor { --tone: #7d2181; --tone-text: #fff; }
-.result-row-icon[class*="tone-"] {
+.result-row-icon:is(.tone-good, .tone-fair, .tone-moderate, .tone-poor, .tone-very-poor, .tone-extremely-poor) {
   background: var(--tone);
   color: var(--tone-text);
 }

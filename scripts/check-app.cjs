@@ -127,6 +127,12 @@ async function main() {
     await page.getByRole("link", { name: /Directions to the trail/ }).waitFor();
     await page.getByRole("searchbox", { name: "Search picnic sites, camping, trails" }).fill("Σπηλιές");
     assert.equal(await page.locator(".result-list li").count(), 1);
+    // A mistyped address shows the app's own not-found page with links to every section.
+    const mistyped = await page.goto(`${baseUrl}/parkng`);
+    assert.equal(mistyped.status(), 404);
+    await page.getByRole("heading", { name: "Page not found", level: 1 }).waitFor();
+    await page.locator(".not-found").getByRole("link", { name: "Parking" }).click();
+    await page.getByRole("heading", { name: "Parking", exact: true, level: 1 }).waitFor();
     await page.goto(`${baseUrl}/about`);
     await page.getByRole("heading", { name: "About Cyprus Open", level: 2 }).waitFor();
     await page.getByRole("link", { name: /Source code on GitHub/ }).waitFor();
@@ -216,8 +222,9 @@ async function main() {
       .locator(".result-row small")
       .first()
       .textContent();
-    assert.match(firstDistance, /km · straight-line/);
-    assert.ok(parseFloat(firstDistance) < 2);
+    // The town comes first, then the distance.
+    assert.match(firstDistance, /^Larnaca · [\d.]+ km · straight-line/);
+    assert.ok(parseFloat(firstDistance.split(" · ")[1]) < 2);
     await page.getByRole("button", { name: "Clear location" }).click();
     const deniedContext = await browser.newContext();
     await deniedContext.route("**/*", interceptExternal);

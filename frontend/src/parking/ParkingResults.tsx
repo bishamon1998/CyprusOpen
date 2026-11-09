@@ -9,7 +9,9 @@ import {
   ShowMore,
 } from "../components/tool/Tool";
 import { useDistanceLabel } from "../format";
+import { Glyph } from "../components/icons/SoftTile";
 import { distance, type Position } from "../geo/coordinates";
+import { townOf } from "../geo/cyprusAreas";
 import { googleDirections } from "../geo/directions";
 import { useI18n } from "../i18n";
 import { type ParkingPlace, useParking } from "./api";
@@ -25,6 +27,7 @@ export function ParkingResults({
   onSelect,
   onMore,
   onClearLocation,
+  onReset,
 }: {
   report: ReturnType<typeof useParking>;
   places: ParkingPlace[];
@@ -35,6 +38,7 @@ export function ParkingResults({
   onSelect: (id: string) => void;
   onMore: () => void;
   onClearLocation: () => void;
+  onReset: () => void;
 }) {
   const { t } = useI18n();
   const name = useParkingName();
@@ -45,10 +49,12 @@ export function ParkingResults({
     : (report.isError && !report.data) || !published
       ? t("carParks")
       : t("carParkCount", { count: places.length });
-  const detail = (place: ParkingPlace) =>
-    position
-      ? distanceLabel(distance(position, place))
-      : `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`;
+  // The town says more to people than coordinates; the distance follows once the location is known.
+  const detail = (place: ParkingPlace) => {
+    const { town, inside } = townOf(place);
+    const where = inside ? t(town) : t("aroundArea", { town: t(town) });
+    return position ? `${where} · ${distanceLabel(distance(position, place))}` : where;
+  };
 
   return (
     <ResultsPanel
@@ -61,7 +67,11 @@ export function ParkingResults({
         <ResultsMessage onRetry={() => void report.refetch()}>{t("loadError")}</ResultsMessage>
       )}
       {!report.isPending && !report.isError && places.length === 0 && (
-        <ResultsMessage>{t(published ? "noMatches" : "directoryPending")}</ResultsMessage>
+        published ? (
+          <ResultsMessage kind="empty" onReset={onReset}>{t("noMatches")}</ResultsMessage>
+        ) : (
+          <ResultsMessage kind="pending">{t("directoryPending")}</ResultsMessage>
+        )
       )}
       {selected && (
         <SelectedResult label={t("selected")} title={name(selected)}>
@@ -80,7 +90,8 @@ export function ParkingResults({
         {places.slice(0, visibleCount).map((place) => (
           <ResultRow
             key={place.id}
-            icon="P"
+            icon={<Glyph name="parking" />}
+            tone="parking-tile"
             title={name(place)}
             details={[detail(place)]}
             selected={selected?.id === place.id}

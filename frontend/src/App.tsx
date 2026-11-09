@@ -1,15 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import {
-  ChartColumn,
-  Database,
-  ParkingCircle,
-  Pill,
-  Trees,
-  Waves,
-  Wind,
-  type LucideIcon,
-} from "lucide-react";
+import { SoftTile } from "./components/icons/SoftTile";
+import { sections } from "./navigation";
 import { useI18n } from "./i18n";
 import { languages, type Language, type MessageKey } from "./locales";
 import NotFound from "./pages/NotFound";
@@ -22,26 +14,12 @@ const AirQuality = lazy(() => import("./air/AirQuality"));
 const Beaches = lazy(() => import("./beaches/Beaches"));
 const Nature = lazy(() => import("./nature/Nature"));
 
-const navigation: {
-  path: string;
-  label: MessageKey;
-  icon: LucideIcon;
-  iconSize: number;
-}[] = [
-  { path: "/", label: "statistics", icon: ChartColumn, iconSize: 17 },
-  { path: "/parking", label: "parking", icon: ParkingCircle, iconSize: 18 },
-  { path: "/pharmacies", label: "pharmacies", icon: Pill, iconSize: 17 },
-  { path: "/beaches", label: "beaches", icon: Waves, iconSize: 17 },
-  { path: "/air", label: "airQuality", icon: Wind, iconSize: 17 },
-  { path: "/nature", label: "nature", icon: Trees, iconSize: 17 },
-  { path: "/about", label: "sources", icon: Database, iconSize: 16 },
-];
 
 export function App() {
   const { pathname } = useLocation();
   const { language, setLanguage, t } = useI18n();
-  const title =
-    navigation.find((item) => item.path === pathname)?.label ?? "notFound";
+  const title: MessageKey =
+    sections.find((item) => item.path === pathname)?.label ?? "notFound";
 
   useEffect(() => {
     document.title = `${t(title)} · Cyprus Open`;
@@ -62,9 +40,9 @@ export function App() {
             cyprus<span className="wordmark-light">open</span>
           </Link>
           <nav aria-label={t("navigation")}>
-            {navigation.map(({ path, label, icon: Icon, iconSize }) => (
+            {sections.map(({ path, label, icon }) => (
               <NavLink key={path} to={path} end={path === "/"}>
-                <Icon size={iconSize} aria-hidden="true" />
+                <SoftTile icon={icon} />
                 <span>{t(label)}</span>
               </NavLink>
             ))}

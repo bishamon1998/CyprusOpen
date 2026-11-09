@@ -121,3 +121,60 @@
   outline-offset: 2px;
   border-radius: 6px;
 }
+.shortcuts {
+  margin-bottom: 30px;
+}
+.shortcuts p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.shortcuts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.shortcuts a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+}
+.shortcuts a:hover {
+  border-color: #cfd6ea;
+  background: #fbfcff;
+}
+.shortcuts strong,
+.shortcuts small {
+  display: block;
+}
+.shortcuts strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.shortcuts small {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (max-width: 900px) {
+  .shortcuts ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .shortcuts ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

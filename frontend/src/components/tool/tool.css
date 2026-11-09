@@ -136,6 +136,14 @@
   color: var(--muted);
   margin-top: 5px;
 }
+.result-row-icon[class*="-tile"] {
+  color: var(--tile);
+  background: color-mix(in srgb, var(--tile) 12%, #fff);
+}
+.result-row-icon svg {
+  width: 18px;
+  height: 18px;
+}
 .result-row-icon {
   display: grid;
   place-items: center;
@@ -181,10 +189,27 @@
   font-size: 12px;
 }
 .result-list-empty {
-  padding: 28px 8px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 18px 8px 24px;
   color: var(--muted);
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.6;
+  text-align: center;
+}
+.result-list-mouflon {
+  width: 124px;
+  height: 124px;
+}
+.result-list-empty strong {
+  color: #191c24;
+  font-size: 15px;
+  font-weight: 600;
+}
+.result-list-empty p {
+  margin: 0 0 6px;
+  max-width: 34ch;
 }
 .result-list-empty button {
   border: 0;

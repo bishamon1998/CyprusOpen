@@ -1,6 +1,8 @@
 import { type ReactNode, type RefObject } from "react";
 import { ArrowUpRight, LocateFixed, X } from "lucide-react";
 import { useI18n } from "../../i18n";
+import { type MessageKey } from "../../locales";
+import { Mouflon, type MouflonScene } from "../Mouflon";
 import "./tool.css";
 
 /**
@@ -86,19 +88,39 @@ export function ResultsPanel({
   );
 }
 
-/** Empty, loading-error or no-match message inside a results panel, with an optional retry. */
+const messageLooks: Record<"empty" | "pending" | "error" | "offline", { scene: MouflonScene; title: MessageKey }> = {
+  empty: { scene: "empty", title: "emptyTitle" },
+  pending: { scene: "loading", title: "pendingTitle" },
+  error: { scene: "error", title: "errorTitle" },
+  offline: { scene: "offline", title: "offlineTitle" },
+};
+
+/**
+ * A results panel with nothing to list: no matches ("empty"), data not imported yet ("pending") or a failed load,
+ * which is a retryable error, or "offline" when the browser has no network.
+ */
 export function ResultsMessage({
   children,
+  kind,
   onRetry,
+  onReset,
 }: {
   children: ReactNode;
+  kind?: "empty" | "pending";
   onRetry?: () => void;
+  /** Clears the search and filters behind a no-match result. */
+  onReset?: () => void;
 }) {
   const { t } = useI18n();
+  const offline = onRetry !== undefined && typeof navigator !== "undefined" && !navigator.onLine;
+  const look = messageLooks[onRetry ? (offline ? "offline" : "error") : (kind ?? "empty")];
   return (
     <div className="result-list-empty" role={onRetry ? "alert" : undefined}>
-      <p>{children}</p>
+      <Mouflon scene={look.scene} className="result-list-mouflon" />
+      <strong>{t(look.title)}</strong>
+      <p>{offline ? t("offlineText") : children}</p>
       {onRetry && <button onClick={onRetry}>{t("retry")}</button>}
+      {onReset && <button onClick={onReset}>{t("resetSearch")}</button>}
     </div>
   );
 }
@@ -112,8 +134,9 @@ export function ResultRow({
   lang,
   onSelect,
 }: {
-  icon: string;
-  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level. */
+  /** A short symbol, or a schematic icon (Glyph). */
+  icon: ReactNode;
+  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level, or a section tile ("parking-tile"). */
   tone?: string;
   title: string;
   details: ReactNode[];

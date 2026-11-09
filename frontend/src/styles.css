@@ -94,7 +94,8 @@ nav a {
   border-radius: 7px;
 }
 nav a.active {
-  color: var(--blue);
+  color: #191c24;
+  font-weight: 600;
   background: #eef2ff;
 }
 nav a:not(.active):hover {
@@ -110,6 +111,26 @@ main {
   justify-content: space-between;
   padding: 44px 0 29px;
   gap: 16px;
+}
+/* A section page: its tile, title with one line under it, and its mouflon on the right. */
+.page-title.with-section {
+  justify-content: flex-start;
+  padding-block: 26px 18px;
+}
+.page-title-text {
+  min-width: 0;
+}
+.page-title-text p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.page-mouflon {
+  width: 108px;
+  height: 108px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 h1 {
   font-size: 30px;
@@ -279,16 +300,6 @@ h2,
 .travel .main-tile svg {
   transform: rotate(-7deg);
 }
-.quick-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #f0f3fb;
-  color: #7184b2;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-}
 .about-card {
   background: white;
   border: 1px solid var(--line);
@@ -393,12 +404,22 @@ h2,
     gap: 6px;
     min-height: 44px;
   }
-  nav svg {
-    width: 15px;
-    height: 15px;
+  nav .soft-tile {
+    --tile-size: 26px;
   }
   .page-title {
     padding-block: 30px 23px;
+  }
+  .page-title.with-section {
+    padding-block: 22px 16px;
+    align-items: flex-start;
+  }
+  .page-title.with-section .soft-tile {
+    --tile-size: 40px !important;
+  }
+  /* The map matters more on a phone. */
+  .page-mouflon {
+    display: none;
   }
   h1 {
     font-size: 28px;
@@ -467,33 +488,34 @@ h2,
   font-size: 11px;
   min-height: 36px;
 }
-@media (max-width: 1180px) {
-  .header-inner {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding-top: 16px;
-  }
-  .header-inner nav {
-    order: 3;
-    width: 100%;
-    margin: 0;
-    justify-content: space-between;
-    padding-bottom: 10px;
-  }
-  /* One row of equal columns, icon above label, so seven sections fit in every language. */
-  nav {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-  }
-  nav a {
-    justify-content: center;
-    flex-direction: column;
-    padding: 8px 2px;
-    gap: 6px;
-    min-width: 0;
-    text-align: center;
-  }
+/*
+ * The menu always sits on its own row under the logo: seven equal columns, tile above label, so it fits in
+ * every language and with any system font.
+ */
+.header-inner {
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+}
+.header-inner nav {
+  order: 3;
+  width: 100%;
+  margin: 0;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+nav {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+nav a {
+  justify-content: center;
+  flex-direction: column;
+  padding: 8px 2px;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
 }
 @media (max-width: 700px) {
   nav {
@@ -522,4 +544,45 @@ h2,
   nav a {
     font-size: 10px;
   }
+}
+.not-found {
+  padding: 28px 0 20px;
+  max-width: 760px;
+}
+.not-found-mouflon {
+  width: 150px;
+  height: 150px;
+}
+.not-found .page-title {
+  padding: 4px 0 8px;
+}
+.not-found p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.not-found ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.not-found a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.not-found a:hover {
+  border-color: #cfd6ea;
 }

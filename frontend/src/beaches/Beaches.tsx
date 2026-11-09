@@ -114,7 +114,7 @@ export default function Beaches() {
 
   return (
     <>
-      <PageTitle title={t("beaches")} />
+      <PageTitle title={t("beaches")} path="/beaches" />
       <ToolWorkspace label={t("beaches")}>
         <ToolFilters>
           <label className="tool-search">
@@ -155,9 +155,11 @@ export default function Beaches() {
             {query.isError && (
               <ResultsMessage onRetry={() => void query.refetch()}>{t("beachLoadError")}</ResultsMessage>
             )}
-            {query.data && beaches.length === 0 && <ResultsMessage>{t("beachUnavailable")}</ResultsMessage>}
+            {query.data && beaches.length === 0 && <ResultsMessage kind="pending">{t("beachUnavailable")}</ResultsMessage>}
             {query.data && beaches.length > 0 && matching.length === 0 && (
-              <ResultsMessage>{t("beachNoMatches")}</ResultsMessage>
+              <ResultsMessage kind="empty" onReset={() => setSearch("")}>
+                {t("beachNoMatches")}
+              </ResultsMessage>
             )}
             {selected && (
               <SelectedResult
