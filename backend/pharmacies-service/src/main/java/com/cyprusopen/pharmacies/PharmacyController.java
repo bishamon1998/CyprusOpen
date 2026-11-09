@@ -24,7 +24,8 @@ class PharmacyController {
         var period = date == null ? periods.current() : periods.on(date);
         var items = schedules.on(period.date()).stream().map(PharmacyController::item).toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(new Schedule(period.date(), SOURCE, schedules.checkedAt(), period.onCall(), items));
+                .body(new Schedule(period.date(), SOURCE, schedules.publishedAt(), schedules.checkedAt(),
+                        period.onCall(), items));
     }
 
     private static Pharmacy item(ScheduledPharmacy scheduled) {
@@ -34,7 +35,9 @@ class PharmacyController {
                 scheduled.location());
     }
 
-    record Schedule(LocalDate date, String source, Instant checkedAt, boolean onCall, List<Pharmacy> items) {}
+    /** {@code publishedAt}: the publisher's last change of the roster; {@code checkedAt}: the last successful check. */
+    record Schedule(LocalDate date, String source, Instant publishedAt, Instant checkedAt, boolean onCall,
+                    List<Pharmacy> items) {}
 
     record Pharmacy(String id, String district, String registrationNumber, String name, String address,
                     String municipality, String phone, PharmacyLocation location) {}

@@ -42,8 +42,9 @@ class NatureParser {
     private static final int CAMPING_NAME_LIMIT = 13;
     private final XmlDocumentReader reader = new XmlDocumentReader(MAX_FILE_BYTES);
 
+    /** {@code publishedAt}: when the source last changed the files, null when unknown. */
     record Files(byte[] picnic, byte[] campingKmz, byte[] campingCatalogue, byte[] trailRoutes, byte[] trailStarts,
-                 byte[] trailCatalogue) {}
+                 byte[] trailCatalogue, Instant publishedAt) {}
 
     private record Placemark(String id, Map<String, String> attributes, List<List<double[]>> lines) {
         String attribute(String key) {
@@ -73,7 +74,7 @@ class NatureParser {
             }
         }
         if (sites.size() > MAX_SITES) throw new IllegalArgumentException("Too many sites");
-        return new NatureSnapshot(retrievedAt, sites);
+        return new NatureSnapshot(retrievedAt, files.publishedAt(), sites);
     }
 
     /** Several points of one picnic site share its name; the first point stands for the site. */

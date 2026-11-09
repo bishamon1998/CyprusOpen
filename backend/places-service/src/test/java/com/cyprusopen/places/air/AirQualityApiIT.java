@@ -108,6 +108,8 @@ class AirQualityApiIT {
         assertThat(sync.needsInitialRun()).isFalse();
         var imported = get();
         assertThat(imported.get("stations").size()).isEqualTo(3);
+        // How current the data is: the newest station reading.
+        assertThat(imported.get("source").get("measuredAt").asString()).isEqualTo("2026-11-07T17:00:00Z");
 
         var nicosia = station(imported, "station_1");
         assertThat(nicosia.get("name").get("el").asString()).startsWith("Λευκωσία");

@@ -53,6 +53,9 @@ class NatureApiIT {
                 if (body == null) {
                     exchange.sendResponseHeaders(404, -1);
                 } else {
+                    // The newest file decides the source date: the camping catalogue here.
+                    exchange.getResponseHeaders().set("Last-Modified", file.endsWith("Catalogue_0.csv")
+                            ? "Fri, 01 Mar 2024 09:30:00 GMT" : "Mon, 23 Oct 2023 03:56:43 GMT");
                     exchange.sendResponseHeaders(200, body.length);
                     exchange.getResponseBody().write(body);
                 }
@@ -108,7 +111,10 @@ class NatureApiIT {
 
         assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
         assertThat(sync.needsInitialRun()).isFalse();
-        var sites = get().get("sites");
+        var response = get();
+        assertThat(response.get("source").get("publishedAt").asString()).isEqualTo("2024-03-01T09:30:00Z");
+        assertThat(response.get("source").get("retrievedAt").isNull()).isFalse();
+        var sites = response.get("sites");
 
         // Four Almyrolivado points and two Platania points are one site each.
         assertThat(names(sites, "picnic")).containsExactly("Agioi Anargyroi", "Rizoelia", "Platania", "Almyrolivado");

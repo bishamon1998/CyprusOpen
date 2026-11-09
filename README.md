@@ -76,6 +76,8 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 | `beaches` | places | Tuesdays, 05:40 | `BEACHES_SYNC_ENABLED` |
 | `nature` | places | 1st of each month, 05:20 | `NATURE_SYNC_ENABLED` |
 
+Every page shows two dates under its data: when the source last changed the data, and when the site last checked the source successfully (many sources change rarely, so the first is often much older). The data date comes from the source: the parking directory's publication time, the pharmacy dataset's `dct:modified` (stored in `schedule_refresh.source_modified_at`, changeset `3-schedule-source-date`), the newest air quality reading, the bathing season, the nature files' `Last-Modified` header and each CYSTAT table's update time.
+
 Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). `Upstream.fetch` reads a body only for 200 OK and within the size limit, and the read timeout also bounds a slowly sent body. Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
 
 ## Air quality

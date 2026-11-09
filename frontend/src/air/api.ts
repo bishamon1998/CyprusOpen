@@ -26,6 +26,8 @@ export type AirQuality = {
     licenseUrl: string;
     index: string;
     indexUrl: string;
+    /** The newest station reading. */
+    measuredAt: string | null;
     retrievedAt: string | null;
   };
   stations: Station[];

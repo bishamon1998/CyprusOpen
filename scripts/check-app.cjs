@@ -51,6 +51,15 @@ async function main() {
         year: "numeric",
         timeZone: "Asia/Nicosia",
       });
+    const dateTime = (value) =>
+      new Date(value).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Nicosia",
+      });
     const missing = await fetch(`${baseUrl}/api/unknown`);
     assert.equal(missing.status, 404);
     assert.match(missing.headers.get("content-type"), /json/);
@@ -64,7 +73,7 @@ async function main() {
         ["/beaches", "Beaches"],
         ["/air", "Air quality"],
         ["/nature", "Nature"],
-        ["/about", "Sources"],
+        ["/about", "About"],
       ]) {
         const response = await page.goto(`${baseUrl}${route}`);
         assert.equal(response.status(), 200);
@@ -107,6 +116,10 @@ async function main() {
     await page.locator(".result-list li").nth(12).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 13);
     assert.equal(await page.locator("path.map-route").count(), 3);
+    // Every tool shows when the source last changed its data and when it was last checked.
+    const natureDates = await page.locator(".tool-attribution").innerText();
+    assert.ok(natureDates.includes("Data as of 23 Oct 2023"), natureDates);
+    assert.ok(natureDates.includes("Last checked ") && !natureDates.includes("Last checked —"), natureDates);
     await page.getByRole("combobox", { name: "Kind of place" }).selectOption("trail");
     assert.equal(await page.locator(".result-list li").count(), 3);
     await page.getByRole("list", { name: "Picnic sites, camping sites and trails" })
@@ -114,8 +127,13 @@ async function main() {
     await page.getByRole("link", { name: /Directions to the trail/ }).waitFor();
     await page.getByRole("searchbox", { name: "Search picnic sites, camping, trails" }).fill("Σπηλιές");
     assert.equal(await page.locator(".result-list li").count(), 1);
+    await page.goto(`${baseUrl}/about`);
+    await page.getByRole("heading", { name: "About Cyprus Open", level: 2 }).waitFor();
+    await page.getByRole("link", { name: /Source code on GitHub/ }).waitFor();
     await page.goto(`${baseUrl}/pharmacies`);
     await page.locator(".result-list li").nth(4).waitFor();
+    const pharmacyDates = await page.locator(".tool-attribution").innerText();
+    assert.ok(pharmacyDates.includes("Data as of 3 Oct 2026"), pharmacyDates);
     assert.equal(await page.locator(".result-list li").count(), 5);
 
     await page.goto(baseUrl);
@@ -135,12 +153,12 @@ async function main() {
     ).replace(/\s+/g, " ");
     assert.ok(
       attribution.includes(
-        `Source published ${date(report.directory.publishedAt)}`,
+        `Data as of ${date(report.directory.publishedAt)}`,
       ),
     );
     assert.ok(
       attribution.includes(
-        `Directory checked ${date(report.directory.checkedAt)}`,
+        `Last checked ${dateTime(report.directory.checkedAt)}`,
       ),
     );
     for (const area of [

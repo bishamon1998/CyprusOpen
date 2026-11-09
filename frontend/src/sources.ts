@@ -16,3 +16,4 @@ export const eeaLicenseUrl = "https://www.eea.europa.eu/en/legal-notice";
 export const ccBySaLicenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/";
 export const ccByLicenseUrl = "https://creativecommons.org/licenses/by/4.0/";
 export const osmCopyrightUrl = "https://www.openstreetmap.org/copyright";
+export const repositoryUrl = "https://github.com/bishamon1998/CyprusOpen";

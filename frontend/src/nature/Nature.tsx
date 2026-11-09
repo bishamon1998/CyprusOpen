@@ -18,7 +18,7 @@ import {
   ToolLayout,
   ToolWorkspace,
 } from "../components/tool/Tool";
-import { useDistanceLabel } from "../format";
+import { useDistanceLabel, useSourceDates } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { googleDirections } from "../geo/directions";
@@ -100,6 +100,7 @@ export default function Nature() {
   );
   const labels = useMapLabels("natureMap", "natureCount");
   const distanceLabel = useDistanceLabel();
+  const sourceDates = useSourceDates();
   const number = new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
 
   function choose(id: string) {
@@ -218,6 +219,7 @@ export default function Nature() {
           badge={<Trees size={20} aria-hidden="true" />}
           name={t("forestsDepartment")}
           facts={[
+            ...sourceDates(query.data?.source.publishedAt, query.data?.source.retrievedAt),
             <ExternalLink href={ccByLicenseUrl}>CC BY 4.0</ExternalLink>,
             <ExternalLink href={osmCopyrightUrl}>{t("osm")}</ExternalLink>,
           ]}

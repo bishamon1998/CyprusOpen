@@ -167,10 +167,15 @@ h2,
 .card-footer {
   border-top: 1px solid #f0f1f5;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 4px 12px;
   padding: 8px 24px;
+}
+.card-footer .source-link {
+  margin-left: auto;
+  white-space: nowrap;
 }
 .source-link {
   display: inline-flex;
@@ -284,6 +289,29 @@ h2,
   place-items: center;
   flex-shrink: 0;
 }
+.about-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 24px;
+}
+.about-card h2 {
+  font-size: 16px;
+}
+.about-card p {
+  margin: 10px 0 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.about-card .source-link {
+  margin-top: 16px;
+}
+.about-heading {
+  margin: 28px 0 12px;
+  font-size: 16px;
+}
 .sources-list {
   background: white;
   border: 1px solid var(--line);
@@ -391,7 +419,8 @@ h2,
   .card-footer {
     padding-inline: 20px;
   }
-  .sources-list {
+  .sources-list,
+  .about-card {
     padding-inline: 18px;
   }
   .source-row {

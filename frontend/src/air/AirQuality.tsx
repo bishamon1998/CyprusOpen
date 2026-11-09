@@ -17,7 +17,7 @@ import {
   ToolLayout,
   ToolWorkspace,
 } from "../components/tool/Tool";
-import { useDistanceLabel } from "../format";
+import { useDistanceLabel, useSourceDates } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
@@ -99,6 +99,7 @@ export default function AirQuality() {
   );
   const labels = useMapLabels("airQuality", "stationCount");
   const distanceLabel = useDistanceLabel();
+  const sourceDates = useSourceDates();
 
   const time = (value: string) =>
     new Date(value).toLocaleString(language === "en" ? "en-GB" : language, {
@@ -225,6 +226,7 @@ export default function AirQuality() {
           badge={<Wind size={20} aria-hidden="true" />}
           name={t("labourInspection")}
           facts={[
+            ...sourceDates(query.data?.source.measuredAt, query.data?.source.retrievedAt, true),
             <ExternalLink href={airQualityIndexUrl}>{t("airIndexSource")}</ExternalLink>,
             <ExternalLink href={ccBySaLicenseUrl}>CC BY-SA 4.0</ExternalLink>,
             <ExternalLink href={osmCopyrightUrl}>{t("osm")}</ExternalLink>,

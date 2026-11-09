@@ -12,6 +12,7 @@ import {
   nicosiaParkingUrl,
   parkingDirectoryUrl,
   pharmacyScheduleUrl,
+  repositoryUrl,
 } from "../sources";
 
 const rows: {
@@ -64,12 +65,21 @@ const rows: {
   },
 ];
 
-export default function Sources() {
+export default function About() {
   const { t } = useI18n();
   return (
     <>
       <PageTitle title={t("sources")} />
-      <section className="sources-list" aria-label={t("dataSources")}>
+      <section className="about-card" aria-labelledby="about-title">
+        <h2 id="about-title">{t("aboutTitle")}</h2>
+        <p>{t("aboutWhat")}</p>
+        <p>{t("aboutHow")}</p>
+        <SourceLink href={repositoryUrl}>{t("sourceCode")}</SourceLink>
+      </section>
+      <h2 className="about-heading" id="data-sources">
+        {t("dataSources")}
+      </h2>
+      <section className="sources-list" aria-labelledby="data-sources">
         {rows.map((row) => (
           <div className="source-row" key={row.title}>
             <span className="quick-icon" aria-hidden="true">

@@ -21,7 +21,15 @@ export type NatureSite = {
 };
 
 export type Nature = {
-  source: { name: string; url: string; license: string; licenseUrl: string; retrievedAt: string | null };
+  source: {
+    name: string;
+    url: string;
+    license: string;
+    licenseUrl: string;
+    /** When the source last changed its files. */
+    publishedAt: string | null;
+    retrievedAt: string | null;
+  };
   sites: NatureSite[];
 };
 

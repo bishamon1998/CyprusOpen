@@ -24,11 +24,14 @@ class NatureController {
     ResponseEntity<Response> nature() {
         var snapshot = store.read();
         var source = new Source(SOURCE_NAME, SOURCE_URL, LICENSE, LICENSE_URL,
+                snapshot.map(NatureSnapshot::publishedAt).orElse(null),
                 snapshot.map(NatureSnapshot::retrievedAt).orElse(null));
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(new Response(source, snapshot.map(NatureSnapshot::sites).orElse(List.of())));
     }
 
     record Response(Source source, List<NatureSnapshot.Site> sites) {}
-    record Source(String name, String url, String license, String licenseUrl, Instant retrievedAt) {}
+    /** {@code publishedAt}: when the source last changed its files; {@code retrievedAt}: the last download. */
+    record Source(String name, String url, String license, String licenseUrl, Instant publishedAt,
+                  Instant retrievedAt) {}
 }

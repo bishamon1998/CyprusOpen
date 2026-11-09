@@ -18,7 +18,7 @@ import {
   ToolLayout,
   ToolWorkspace,
 } from "../components/tool/Tool";
-import { useDistanceLabel } from "../format";
+import { useDistanceLabel, useSourceDates } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { googleDirections } from "../geo/directions";
@@ -94,6 +94,9 @@ export default function Beaches() {
   );
   const labels = useMapLabels("beaches", "beachCount");
   const distanceLabel = useDistanceLabel();
+  const sourceDates = useSourceDates();
+  // EEA publishes one bathing season a year, so the season is the date of the data.
+  const [publishedFact, checkedFact] = sourceDates(null, query.data?.source.retrievedAt);
   const number = new Intl.NumberFormat(language, { maximumFractionDigits: 0 });
 
   function choose(id: string) {
@@ -246,6 +249,8 @@ export default function Beaches() {
           badge={<Waves size={20} aria-hidden="true" />}
           name={t("bathingWaterSource")}
           facts={[
+            query.data?.season ? t("dataSeason", { season: query.data.season }) : publishedFact,
+            checkedFact,
             <ExternalLink href={eeaLicenseUrl}>CC BY 4.0</ExternalLink>,
             <ExternalLink href={osmCopyrightUrl}>{t("osm")}</ExternalLink>,
           ]}

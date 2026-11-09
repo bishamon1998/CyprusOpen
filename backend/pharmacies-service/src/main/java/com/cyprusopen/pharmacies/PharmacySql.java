@@ -10,6 +10,7 @@ final class PharmacySql {
             ORDER BY d.district, d.name, d.registration_number
             """;
     static final String CHECKED_AT = "SELECT last_checked_at FROM schedule_refresh WHERE id = 1";
+    static final String PUBLISHED_AT = "SELECT source_modified_at FROM schedule_refresh WHERE id = 1";
     static final String DELETE_FROM = "DELETE FROM duty_entry WHERE district = :district AND duty_date >= :from";
     static final String INSERT = """
             INSERT INTO duty_entry (duty_date, district, registration_number, name, address, municipality, phone)
@@ -17,7 +18,8 @@ final class PharmacySql {
                 CAST(:names AS text[]), CAST(:addresses AS text[]), CAST(:municipalities AS text[]),
                 CAST(:phones AS text[]))
             """;
-    static final String MARK_CHECKED = "UPDATE schedule_refresh SET last_checked_at = :checked WHERE id = 1";
+    static final String MARK_CHECKED =
+            "UPDATE schedule_refresh SET last_checked_at = :checked, source_modified_at = :published WHERE id = 1";
 
     private PharmacySql() {}
 }

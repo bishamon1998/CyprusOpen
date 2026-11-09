@@ -13,7 +13,7 @@ import {
 import { useI18n } from "./i18n";
 import { languages, type Language, type MessageKey } from "./locales";
 import NotFound from "./pages/NotFound";
-import Sources from "./pages/Sources";
+import About from "./pages/About";
 import Statistics from "./statistics/Statistics";
 
 const Parking = lazy(() => import("./parking/Parking"));
@@ -93,7 +93,7 @@ export function App() {
             <Route path="/beaches" element={<Beaches />} />
             <Route path="/air" element={<AirQuality />} />
             <Route path="/nature" element={<Nature />} />
-            <Route path="/about" element={<Sources />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

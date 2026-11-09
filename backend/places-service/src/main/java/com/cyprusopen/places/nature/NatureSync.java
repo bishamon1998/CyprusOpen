@@ -10,7 +10,12 @@ import static com.cyprusopen.places.nature.NatureConstants.TRAIL_STARTS_FILE;
 
 import com.cyprusopen.common.refresh.RefreshJob;
 import com.cyprusopen.common.refresh.RefreshResult;
+import com.cyprusopen.common.http.Upstream;
 import java.time.Clock;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +46,15 @@ class NatureSync implements RefreshJob {
     public RefreshResult refresh() {
         NatureParser.Files files;
         try {
-            files = new NatureParser.Files(client.file(PICNIC_FILE), client.file(CAMPING_FILE),
-                    client.file(CAMPING_CATALOGUE_FILE), client.file(TRAIL_ROUTES_FILE),
-                    client.file(TRAIL_STARTS_FILE), client.file(TRAIL_CATALOGUE_FILE));
+            var picnic = client.file(PICNIC_FILE);
+            var camping = client.file(CAMPING_FILE);
+            var campingCatalogue = client.file(CAMPING_CATALOGUE_FILE);
+            var trailRoutes = client.file(TRAIL_ROUTES_FILE);
+            var trailStarts = client.file(TRAIL_STARTS_FILE);
+            var trailCatalogue = client.file(TRAIL_CATALOGUE_FILE);
+            files = new NatureParser.Files(picnic.body(), camping.body(), campingCatalogue.body(),
+                    trailRoutes.body(), trailStarts.body(), trailCatalogue.body(),
+                    latest(List.of(picnic, camping, campingCatalogue, trailRoutes, trailStarts, trailCatalogue)));
         } catch (RestClientException | IllegalArgumentException unavailable) {
             log.warn("Department of Forests files unavailable: {}", unavailable.getMessage());
             return RefreshResult.UNAVAILABLE;
@@ -56,5 +67,11 @@ class NatureSync implements RefreshJob {
             log.warn("Department of Forests files rejected: {}", invalid.getMessage());
             return RefreshResult.INVALID;
         }
+    }
+
+    /** When the source last changed any of the files; null when it sends no Last-Modified. */
+    private static Instant latest(List<Upstream.Response> responses) {
+        return responses.stream().map(Upstream.Response::lastModifiedAt).filter(Objects::nonNull)
+                .max(Comparator.naturalOrder()).orElse(null);
     }
 }

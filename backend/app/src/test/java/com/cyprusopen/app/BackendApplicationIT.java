@@ -50,7 +50,8 @@ class BackendApplicationIT {
         assertThat(changesets(jdbc, "statistics")).containsExactly("1-observations", "2-quarter-periods");
         assertThat(changesets(jdbc, "parking")).contains("1-parking-directory", "4-air-quality", "5-beaches", "6-nature")
                 .hasSize(6);
-        assertThat(changesets(jdbc, "pharmacies")).contains("1-duty-schedule", "2-pharmacy-location").hasSize(7);
+        assertThat(changesets(jdbc, "pharmacies")).contains("1-duty-schedule", "2-pharmacy-location", "3-schedule-source-date")
+                .hasSize(8);
 
         try (var client = HttpClient.newHttpClient()) {
             for (var path : List.of("/api/v1/statistics/datasets", "/api/v1/parking", "/api/v1/air-quality",

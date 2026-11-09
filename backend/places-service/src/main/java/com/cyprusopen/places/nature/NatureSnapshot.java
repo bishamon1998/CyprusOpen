@@ -3,8 +3,13 @@ package com.cyprusopen.places.nature;
 import java.time.Instant;
 import java.util.List;
 
-/** Picnic sites, camping sites and nature trails of the Department of Forests. */
-record NatureSnapshot(Instant retrievedAt, List<Site> sites) {
+/**
+ * Picnic sites, camping sites and nature trails of the Department of Forests.
+ *
+ * @param retrievedAt when the files were last downloaded
+ * @param publishedAt when the source last changed them (Last-Modified), null when unknown
+ */
+record NatureSnapshot(Instant retrievedAt, Instant publishedAt, List<Site> sites) {
     /**
      * @param kind       "picnic", "camping" or "trail"
      * @param name       name in Latin letters, as published

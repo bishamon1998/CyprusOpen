@@ -8,6 +8,7 @@ import com.cyprusopen.common.refresh.RefreshResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
@@ -44,8 +45,11 @@ class PharmacyScheduleRefresh implements RefreshJob {
     @Override
     public synchronized RefreshResult refresh() {
         Map<District, List<DutyEntry>> downloaded;
+        Instant publishedAt;
         try {
-            downloaded = download();
+            var metadata = client.metadata();
+            downloaded = download(metadata);
+            publishedAt = distributions.modified(metadata);
         } catch (RestClientException unavailable) {
             log.warn("Pharmacy schedule source unavailable: {}", unavailable.getMessage());
             return RefreshResult.UNAVAILABLE;
@@ -53,14 +57,14 @@ class PharmacyScheduleRefresh implements RefreshJob {
             log.warn("Pharmacy schedule rejected: {}", invalid.getMessage());
             return RefreshResult.INVALID;
         }
-        schedules.replace(downloaded, clock.instant());
+        schedules.replace(downloaded, clock.instant(), publishedAt);
         return RefreshResult.UPDATED;
     }
 
-    private Map<District, List<DutyEntry>> download() throws IOException {
+    private Map<District, List<DutyEntry>> download(String metadata) throws IOException {
         var today = LocalDate.now(clock.withZone(CYPRUS));
         var result = new EnumMap<District, List<DutyEntry>>(District.class);
-        for (var link : distributions.parse(client.metadata()).entrySet()) {
+        for (var link : distributions.parse(metadata).entrySet()) {
             var entries = reader.read(new StringReader(client.download(link.getValue())), link.getKey());
             if (entries.stream().allMatch(entry -> entry.date().isBefore(today))) {
                 throw new IllegalArgumentException("No current or upcoming entries for " + link.getKey().code());

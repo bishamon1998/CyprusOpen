@@ -25,9 +25,9 @@ class NatureClient {
     }
 
     /** {@code file} is one of the constant names in {@link NatureConstants}, never user input. */
-    byte[] file(String file) {
+    Upstream.Response file(String file) {
         var response = Upstream.fetch(client.get().uri(folder.resolve(file)), MAX_FILE_BYTES);
         if (!response.ok()) throw new RestClientException(file + " returned " + response.status());
-        return response.body();
+        return response;
     }
 }

@@ -17,7 +17,7 @@ http.createServer((request, response) => {
   if (url.pathname.startsWith("/nature/")) {
     const file = url.pathname.slice("/nature/".length);
     if (!natureFiles.has(file)) { response.writeHead(404).end(); return; }
-    response.writeHead(200);
+    response.writeHead(200, { "Last-Modified": "Mon, 23 Oct 2023 03:56:43 GMT" });
     response.end(readFileSync(new URL("./nature/" + file, import.meta.url)));
     return;
   }

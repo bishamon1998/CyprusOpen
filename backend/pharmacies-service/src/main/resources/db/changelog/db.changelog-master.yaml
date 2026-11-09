@@ -13,6 +13,13 @@ databaseChangeLog:
         - sqlFile:
             path: pharmacy-location.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 3-schedule-source-date
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: schedule-source-date.sql
+            relativeToChangelogFile: true
   - include:
       file: pharmacy-location-seed.sql
       relativeToChangelogFile: true
