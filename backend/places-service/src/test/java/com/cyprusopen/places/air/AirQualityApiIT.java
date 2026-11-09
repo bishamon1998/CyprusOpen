@@ -48,6 +48,12 @@ class AirQualityApiIT {
                         try (var input = AirQualityApiIT.class.getResourceAsStream("/air-quality.json")) {
                             body = input.readAllBytes();
                         }
+                        // "hour:20" serves the same readings as measured an hour later, NO2 at 80.
+                        if (mode.get().startsWith("hour:")) {
+                            body = new String(body, StandardCharsets.UTF_8)
+                                    .replace("2026-11-07 19:00:00", "2026-11-07 " + mode.get().substring(5) + ":00:00")
+                                    .replace("\"55.00293000\"", "\"80\"").getBytes(StandardCharsets.UTF_8);
+                        }
                     }
                     exchange.getResponseHeaders().add("Content-Type", "application/json");
                     exchange.sendResponseHeaders(200, body.length);
@@ -95,6 +101,7 @@ class AirQualityApiIT {
     @BeforeEach
     void emptyStoreAndHealthySource() {
         jdbc.sql("DELETE FROM air_quality").update();
+        jdbc.sql("DELETE FROM air_quality_history").update();
         mode.set("ok");
     }
 
@@ -134,9 +141,49 @@ class AirQualityApiIT {
         assertThat(get()).isEqualTo(stored);
     }
 
-    private JsonNode get() throws Exception {
+    /** Every import adds an hour per station; a repeated hour is stored once and the station's level is kept per hour. */
+    @Test
+    void collectsHourlyHistoryPerStation() throws Exception {
+        assertThat(get("/api/v1/air-quality/stations/station_1/history").get("hours").size()).isZero();
+
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+        mode.set("hour:20");
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+
+        var hours = get("/api/v1/air-quality/stations/station_1/history").get("hours");
+        assertThat(hours.size()).isEqualTo(2);
+        assertThat(hours.get(0).get("measuredAt").asString()).isEqualTo("2026-11-07T17:00:00Z");
+        assertThat(hours.get(0).get("level").asString()).isEqualTo("moderate");
+        // NO2 80 µg/m³ is "poor" (61-100).
+        assertThat(hours.get(1).get("measuredAt").asString()).isEqualTo("2026-11-07T18:00:00Z");
+        assertThat(hours.get(1).get("level").asString()).isEqualTo("poor");
+        assertThat(reading(hours.get(1), "no2").get("value").asDouble()).isEqualTo(80);
+
+        // A week after the newest reading, older hours are dropped.
+        jdbc.sql("UPDATE air_quality_history SET measured_at = measured_at - INTERVAL '8 days' WHERE measured_at < '2026-11-07T18:00:00Z'").update();
+        assertThat(sync.refresh()).isEqualTo(RefreshResult.UPDATED);
+        assertThat(get("/api/v1/air-quality/stations/station_1/history").get("hours").size()).isEqualTo(1);
+
+        assertThat(get("/api/v1/air-quality/stations/unknown/history").get("hours").size()).isZero();
+    }
+
+    @Test
+    void rejectsMalformedStationIds() throws Exception {
         try (var client = HttpClient.newHttpClient()) {
-            var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/v1/air-quality"))
+            var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port
+                    + "/api/v1/air-quality/stations/a%20b/history")).build(), HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isEqualTo(404);
+        }
+    }
+
+    private JsonNode get() throws Exception {
+        return get("/api/v1/air-quality");
+    }
+
+    private JsonNode get(String path) throws Exception {
+        try (var client = HttpClient.newHttpClient()) {
+            var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                     .build(), HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).isEqualTo(200);
             assertThat(response.headers().firstValue("Cache-Control")).hasValue("no-store");

@@ -106,11 +106,22 @@ async function main() {
     assert.equal(await page.locator(".result-list li").count(), 1);
     await page.locator(".result-row").first().click();
     await page.locator(".beach-tests").waitFor();
+    // Beaches sort by name on request, and dog beaches are a list of their own.
+    await page.getByRole("searchbox", { name: "Search beaches" }).fill("");
+    await page.getByRole("combobox", { name: "Sort" }).selectOption("name");
+    const beachNames = await page.locator(".result-list .result-row strong").allInnerTexts();
+    assert.deepEqual(beachNames, [...beachNames].sort((a, b) => a.localeCompare(b)));
+    await page.getByRole("radio", { name: /Dog beaches/ }).click();
+    assert.equal(await page.locator(".result-list li").count(), 7);
+    await page.locator(".result-row", { hasText: "Pitili" }).click();
+    await page.locator(".selected-result").getByText("No exact point on the map yet").waitFor();
     await page.goto(`${baseUrl}/air`);
     await page.locator(".result-list li").nth(2).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 3);
     await page.locator(".result-row").first().click();
     await page.getByRole("table").getByText("NO₂").waitFor();
+    // The fixture has one hour, so the trend explains that the history is still being collected.
+    await page.locator(".air-trend").getByText(/only just started keeping/).waitFor();
     // Four picnic sites, six camping sites and three trails; the trails are drawn as routes.
     await page.goto(`${baseUrl}/nature`);
     await page.locator(".result-list li").nth(12).waitFor();

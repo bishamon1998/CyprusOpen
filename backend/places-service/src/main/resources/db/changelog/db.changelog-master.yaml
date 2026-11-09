@@ -41,3 +41,10 @@ databaseChangeLog:
         - sqlFile:
             path: nature.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 7-air-quality-history
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: air-quality-history.sql
+            relativeToChangelogFile: true

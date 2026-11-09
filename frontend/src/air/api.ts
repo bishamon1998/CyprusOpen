@@ -44,3 +44,17 @@ export function useAirQuality() {
     queryFn: () => get<AirQuality>("/api/v1/air-quality"),
   });
 }
+
+export type Hour = { measuredAt: string; level: Level | null; readings: Reading[] };
+export type StationHistory = { stationId: string; hours: Hour[] };
+
+/** A station's hourly readings of the last week, oldest first; collected by the site, so it may start later. */
+export function useStationHistory(id: string | undefined) {
+  return useQuery({
+    queryKey: ["air-quality", "history", id],
+    enabled: id !== undefined,
+    staleTime: REFRESH,
+    refetchInterval: REFRESH,
+    queryFn: () => get<StationHistory>(`/api/v1/air-quality/stations/${encodeURIComponent(id!)}/history`),
+  });
+}

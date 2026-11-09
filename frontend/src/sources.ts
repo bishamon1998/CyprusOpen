@@ -17,3 +17,5 @@ export const ccBySaLicenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/
 export const ccByLicenseUrl = "https://creativecommons.org/licenses/by/4.0/";
 export const osmCopyrightUrl = "https://www.openstreetmap.org/copyright";
 export const repositoryUrl = "https://github.com/bishamon1998/CyprusOpen";
+export const dogBeachesUrl =
+  "https://www.en.politis.com.cy/in-depth/guides/1014426/taking-your-dog-to-the-beach-in-cyprus-here-is-what-to-know";
