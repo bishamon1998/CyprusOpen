@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { type GlyphName, SoftTile } from "../components/icons/SoftTile";
 import { PageTitle } from "../components/PageTitle";
 import { useI18n } from "../i18n";
-import { sections } from "../navigation";
 import { categories } from "./cards";
 import { ChartCard } from "./ChartCard";
 import { StatisticCard } from "./StatisticCard";
@@ -22,8 +20,6 @@ const categoryIcons: Record<string, GlyphName> = {
   tourism: "tourism",
   safety: "safety",
 };
-/** The map tools, linked from the top of the home page so they are not missed. */
-const shortcuts = sections.filter((item) => item.path !== "/" && item.path !== "/about");
 
 /** Category ids the viewer folded away; a convenience only, so unreadable storage means "all open". */
 function savedCollapsed(): Set<string> {
@@ -54,22 +50,6 @@ export default function Statistics() {
   return (
     <>
       <PageTitle title={t("statistics")} path="/" />
-      <section className="shortcuts" aria-labelledby="shortcuts-title">
-        <p id="shortcuts-title">{t("moreOnSite")}</p>
-        <ul>
-          {shortcuts.map((item) => (
-            <li key={item.path}>
-              <Link to={item.path}>
-                <SoftTile icon={item.icon} size={34} />
-                <span>
-                  <strong>{t(item.label)}</strong>
-                  <small>{t(item.short)}</small>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
       {categories.map((category) => {
         const open = !collapsed.has(category.id);
         const panel = "statistics-" + category.id;
