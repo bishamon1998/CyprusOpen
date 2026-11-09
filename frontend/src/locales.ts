@@ -360,7 +360,7 @@ export const en = {
   mapLabel: "Car park map",
   tilesUnavailable:
     "Map tiles unavailable. The list and directions still work.",
-  mapHint: "Pinch to zoom · drag to explore",
+  mapHint: "Pinch or scroll to zoom · drag to explore",
   yourLocation: "Your location",
   areaCyprus: "All Cyprus",
   areaNicosia: "Nicosia area",
@@ -741,7 +741,7 @@ const ru: Messages = {
   osm: "Участники OSM",
   mapLabel: "Карта парковок",
   tilesUnavailable: "Карта недоступна. Список и маршруты работают.",
-  mapHint: "Масштаб — двумя пальцами · перемещение — перетаскиванием",
+  mapHint: "Масштаб — пальцами или колесом · двигайте перетаскиванием",
   yourLocation: "Вы здесь",
   areaCyprus: "Весь Кипр",
   areaNicosia: "Никосия и рядом",
@@ -1119,7 +1119,7 @@ const el: Messages = {
   mapLabel: "Χάρτης στάθμευσης",
   tilesUnavailable:
     "Ο χάρτης δεν είναι διαθέσιμος. Η λίστα και οι οδηγίες λειτουργούν.",
-  mapHint: "Μεγέθυνση με δύο δάχτυλα · σύρετε για μετακίνηση",
+  mapHint: "Μεγέθυνση με δάχτυλα ή τροχό · σύρετε για μετακίνηση",
   yourLocation: "Η τοποθεσία σας",
   areaCyprus: "Όλη η Κύπρος",
   areaNicosia: "Περιοχή Λευκωσίας",
