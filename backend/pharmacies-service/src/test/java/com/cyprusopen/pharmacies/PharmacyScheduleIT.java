@@ -142,7 +142,7 @@ class PharmacyScheduleIT {
     @BeforeEach
     void emptyRosterAndHealthySource() {
         jdbc.sql("DELETE FROM duty_entry").update();
-        jdbc.sql("UPDATE schedule_refresh SET last_checked_at = NULL").update();
+        jdbc.sql("UPDATE schedule_refresh SET last_checked_at = NULL, source_modified_at = NULL").update();
         jdbc.sql("DELETE FROM pharmacy_location WHERE source = 'manual review'").update();
         clock.set(NOW);
         mode.set("initial");
@@ -154,6 +154,7 @@ class PharmacyScheduleIT {
         var empty = schedule("");
         assertThat(empty.get("items").size()).isZero();
         assertThat(empty.get("checkedAt").isNull()).isTrue();
+        assertThat(empty.get("publishedAt").isNull()).isTrue();
 
         assertThat(refresh.refresh()).isEqualTo(RefreshResult.UPDATED);
         jdbc.sql("""
@@ -163,6 +164,7 @@ class PharmacyScheduleIT {
         var current = schedule("");
         assertThat(current.get("date").asString()).isEqualTo("2026-11-01");
         assertThat(current.get("checkedAt").asString()).isEqualTo("2026-11-01T20:00:00Z");
+        assertThat(current.get("publishedAt").asString()).isEqualTo("2026-10-03T07:42:38Z");
         assertThat(current.get("items").size()).isEqualTo(5);
         assertThat(current.toString()).doesNotContain("99123456");
         var nicosia = item(current, "nicosia:10");
@@ -283,7 +285,11 @@ class PharmacyScheduleIT {
                     .append("\",\"dcat:downloadURL\":{\"@rdf:resource\":\"").append(host).append("/csv/")
                     .append(district[0]).append("\"}}");
         }
-        respond(exchange, "{\"dcat:Distribution\":[" + distributions + "]}");
+        // Only the dataset's dct:modified dates the data; the catalog's own date is the generation time.
+        respond(exchange, """
+                {"dcat:Catalog":{"dct:modified":{"#":"2026-11-01T22:00:00+02:00"},"dcat:dataset":[{"dcat:Dataset":
+                {"dct:modified":{"#":"2026-10-03T10:42:38+03:00"}}}]},"dcat:Distribution":["""
+                + distributions + "]}");
     }
 
     private static void schedule(HttpExchange exchange) throws IOException {

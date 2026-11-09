@@ -5,6 +5,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Set;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -64,6 +68,16 @@ public final class Upstream {
     public record Response(int status, byte[] body, String etag, String lastModified) {
         public boolean ok() {
             return status == HttpStatus.OK.value();
+        }
+
+        /** The Last-Modified header as an instant: when the source last changed the file; null when missing. */
+        public Instant lastModifiedAt() {
+            if (lastModified == null) return null;
+            try {
+                return ZonedDateTime.parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
+            } catch (DateTimeParseException invalid) {
+                return null;
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ import {
   ToolLayout,
   ToolWorkspace,
 } from "../components/tool/Tool";
-import { useCyprusDate } from "../format";
+import { useSourceDates } from "../format";
 import { distance } from "../geo/coordinates";
 import { areas } from "../geo/cyprusAreas";
 import { useBrowserLocation } from "../hooks/useBrowserLocation";
@@ -22,7 +22,7 @@ import { PharmacyResults } from "./PharmacyResults";
 
 export default function Pharmacies() {
   const { t } = useI18n();
-  const date = useCyprusDate();
+  const sourceDates = useSourceDates();
   const results = useRef<HTMLDivElement>(null);
   const [scheduleDate, setScheduleDate] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export default function Pharmacies() {
           badge={<Pill size={20} aria-hidden="true" />}
           name={t("pharmaceuticalServices")}
           facts={[
-            t("scheduleChecked", { date: date(schedule.data?.checkedAt) }),
+            ...sourceDates(schedule.data?.publishedAt, schedule.data?.checkedAt),
             <ExternalLink href={ccByLicenseUrl}>CC BY 4.0</ExternalLink>,
             <ExternalLink href={osmCopyrightUrl}>{t("osm")}</ExternalLink>,
           ]}

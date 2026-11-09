@@ -58,7 +58,7 @@ jobs:
       - name: Wait for services
         run: |
           for attempt in $(seq 1 40); do
-            if curl -fsS http://localhost:3000/api/v1/statistics/datasets && curl -fsS http://localhost:3000/api/v1/parking | jq -e '.items | length > 0' && curl -fsS http://localhost:3000/api/v1/pharmacies | jq -e '.items | length == 5' && curl -fsS http://localhost:3000/api/v1/air-quality | jq -e '.stations | length == 3' && curl -fsS http://localhost:3000/api/v1/beaches | jq -e '.beaches | length == 3'; then
+            if curl -fsS http://localhost:3000/api/v1/statistics/datasets && curl -fsS http://localhost:3000/api/v1/parking | jq -e '.items | length > 0' && curl -fsS http://localhost:3000/api/v1/pharmacies | jq -e '.items | length == 5' && curl -fsS http://localhost:3000/api/v1/air-quality | jq -e '.stations | length == 3' && curl -fsS http://localhost:3000/api/v1/beaches | jq -e '.beaches | length == 3' && curl -fsS http://localhost:3000/api/v1/nature | jq -e '.sites | length == 13'; then
               exit 0
             fi
             sleep 2

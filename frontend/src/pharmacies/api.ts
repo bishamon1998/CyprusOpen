@@ -18,6 +18,8 @@ export type Pharmacy = {
 export type PharmacySchedule = {
   date: string;
   source: string;
+  /** When the publisher last changed the roster. */
+  publishedAt: string | null;
   checkedAt: string | null;
   onCall: boolean;
   items: Pharmacy[];

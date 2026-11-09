@@ -3,7 +3,7 @@ import { RefreshCw } from "lucide-react";
 import { type ChartOption } from "../components/Chart";
 import { Illustration, type IllustrationKind } from "../components/Illustration";
 import { SourceLink } from "../components/SourceLink";
-import { useCyprusDate } from "../format";
+import { useSourceDates } from "../format";
 import { useI18n } from "../i18n";
 import { type DatasetSource } from "./api";
 
@@ -37,9 +37,7 @@ export function ChartCard({
   source?: DatasetSource;
 }) {
   const { t } = useI18n();
-  const date = useCyprusDate();
-  // Same Cyprus-time date as the map tools; the browser's own zone could show another day.
-  const updated = source?.updatedAt ? date(source.updatedAt) : null;
+  const sourceDates = useSourceDates();
   return (
     <article className="dataset-card">
       <div className="card-heading">
@@ -75,7 +73,9 @@ export function ChartCard({
       )}
       {state.status === "ready" && summary && <p className="chart-summary">{summary}</p>}
       <div className="card-footer">
-        {updated && <span className="card-updated">{t("sourceUpdated", { date: updated })}</span>}
+        {source && (
+          <span className="card-updated">{sourceDates(source.updatedAt, source.checkedAt).join(" · ")}</span>
+        )}
         {source && (
           <SourceLink href={source.url}>
             {t("cystat")} · {source.license}

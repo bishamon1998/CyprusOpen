@@ -5,6 +5,7 @@ import {
   Database,
   ParkingCircle,
   Pill,
+  Trees,
   Waves,
   Wind,
   type LucideIcon,
@@ -12,13 +13,14 @@ import {
 import { useI18n } from "./i18n";
 import { languages, type Language, type MessageKey } from "./locales";
 import NotFound from "./pages/NotFound";
-import Sources from "./pages/Sources";
+import About from "./pages/About";
 import Statistics from "./statistics/Statistics";
 
 const Parking = lazy(() => import("./parking/Parking"));
 const Pharmacies = lazy(() => import("./pharmacies/Pharmacies"));
 const AirQuality = lazy(() => import("./air/AirQuality"));
 const Beaches = lazy(() => import("./beaches/Beaches"));
+const Nature = lazy(() => import("./nature/Nature"));
 
 const navigation: {
   path: string;
@@ -31,6 +33,7 @@ const navigation: {
   { path: "/pharmacies", label: "pharmacies", icon: Pill, iconSize: 17 },
   { path: "/beaches", label: "beaches", icon: Waves, iconSize: 17 },
   { path: "/air", label: "airQuality", icon: Wind, iconSize: 17 },
+  { path: "/nature", label: "nature", icon: Trees, iconSize: 17 },
   { path: "/about", label: "sources", icon: Database, iconSize: 16 },
 ];
 
@@ -89,7 +92,8 @@ export function App() {
             <Route path="/pharmacies" element={<Pharmacies />} />
             <Route path="/beaches" element={<Beaches />} />
             <Route path="/air" element={<AirQuality />} />
-            <Route path="/about" element={<Sources />} />
+            <Route path="/nature" element={<Nature />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

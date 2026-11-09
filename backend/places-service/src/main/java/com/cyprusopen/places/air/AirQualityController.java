@@ -33,7 +33,10 @@ class AirQualityController {
         var snapshot = store.read();
         var stations = snapshot.map(stored -> stored.stations().stream().map(AirQualityController::station).toList())
                 .orElse(List.of());
-        var source = new Source(SOURCE_NAME, CATALOG_URL, LICENSE, LICENSE_URL, INDEX_NAME, INDEX_URL,
+        // The newest station reading is how current the data is; retrievedAt is the last successful download.
+        var measuredAt = snapshot.flatMap(stored -> stored.stations().stream().map(AirQualitySnapshot.Station::measuredAt)
+                .max(Comparator.naturalOrder())).orElse(null);
+        var source = new Source(SOURCE_NAME, CATALOG_URL, LICENSE, LICENSE_URL, INDEX_NAME, INDEX_URL, measuredAt,
                 snapshot.map(AirQualitySnapshot::retrievedAt).orElse(null));
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new Response(source, stations));
     }
@@ -55,7 +58,7 @@ class AirQualityController {
 
     record Response(Source source, List<Station> stations) {}
     record Source(String name, String url, String license, String licenseUrl, String index, String indexUrl,
-                  Instant retrievedAt) {}
+                  Instant measuredAt, Instant retrievedAt) {}
     record Station(String id, Map<String, String> name, String type, double latitude, double longitude,
                    Instant measuredAt, String level, List<Reading> readings) {}
     record Reading(String pollutant, double value, String level) {}

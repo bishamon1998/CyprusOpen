@@ -6,6 +6,9 @@ import static com.cyprusopen.pharmacies.PharmacyConstants.DOWNLOAD_URL;
 import static com.cyprusopen.pharmacies.PharmacyConstants.RESOURCE;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.EnumMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,21 @@ class CatalogDistributions {
             throw new IllegalArgumentException("Missing district distributions");
         }
         return links;
+    }
+
+    /**
+     * When the publisher last changed the dataset (its {@code dct:modified}); null when missing. The catalog's own
+     * and the distributions' dates are the time the metadata was generated, not a change of the data.
+     */
+    Instant modified(String metadata) {
+        var datasets = tree(metadata).path("dcat:Catalog").path("dcat:dataset");
+        var dataset = datasets.isArray() ? datasets.path(0) : datasets;
+        var modified = dataset.path("dcat:Dataset").path("dct:modified").path("#").asString("");
+        try {
+            return modified.isBlank() ? null : OffsetDateTime.parse(modified).toInstant();
+        } catch (DateTimeParseException invalid) {
+            return null;
+        }
     }
 
     private JsonNode tree(String metadata) {

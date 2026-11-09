@@ -40,9 +40,15 @@ class PharmacySchedules {
         return checked.map(Timestamp::toInstant).orElse(null);
     }
 
+    /** When the publisher last changed the dataset, as of the last successful check; null when unknown. */
+    Instant publishedAt() {
+        var published = jdbc.sql(PharmacySql.PUBLISHED_AT).query(Timestamp.class).optional();
+        return published.map(Timestamp::toInstant).orElse(null);
+    }
+
     /** Replaces each district's schedule from the first day its new file covers; earlier days are kept. */
     @Transactional(PharmaciesDatabase.TRANSACTIONS)
-    void replace(Map<District, List<DutyEntry>> schedules, Instant checkedAt) {
+    void replace(Map<District, List<DutyEntry>> schedules, Instant checkedAt, Instant publishedAt) {
         for (var schedule : schedules.entrySet()) {
             var entries = schedule.getValue();
             var from = entries.stream().map(DutyEntry::date).min(Comparator.naturalOrder()).orElseThrow();
@@ -57,7 +63,8 @@ class PharmacySchedules {
                     .param("phones", column(entries, DutyEntry::phone))
                     .update();
         }
-        jdbc.sql(PharmacySql.MARK_CHECKED).param("checked", Timestamp.from(checkedAt)).update();
+        jdbc.sql(PharmacySql.MARK_CHECKED).param("checked", Timestamp.from(checkedAt))
+                .param("published", publishedAt == null ? null : Timestamp.from(publishedAt)).update();
     }
 
     private static String[] column(List<DutyEntry> entries, Function<DutyEntry, String> field) {

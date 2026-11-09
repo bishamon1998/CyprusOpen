@@ -1,0 +1,13 @@
+/* Kinds of nature sites: marker and list icon colours. */
+.tone-picnic { --tone: #2f9e5b; --tone-text: #fff; }
+.tone-camping { --tone: #d9822b; --tone-text: #fff; }
+.tone-trail { --tone: #2f7d4f; --tone-text: #fff; }
+.result-row-icon.tone-picnic,
+.result-row-icon.tone-camping,
+.result-row-icon.tone-trail,
+.map-pin.tone-picnic span,
+.map-pin.tone-camping span,
+.map-pin.tone-trail span {
+  background: var(--tone);
+  color: var(--tone-text);
+}

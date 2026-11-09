@@ -19,8 +19,13 @@ const pin = (symbol: string, selected: boolean, tone?: string) => {
   });
 };
 
-/** `tone` colours the pin (a CSS class "tone-…"), e.g. an air quality level. */
-export type MapPoint = Position & { id: string; label: string; tone?: string };
+/**
+ * `tone` colours the pin (a CSS class "tone-…"), e.g. an air quality level; `symbol` replaces the map's
+ * marker symbol for this point.
+ */
+export type MapPoint = Position & { id: string; label: string; tone?: string; symbol?: string };
+/** A route drawn under the markers, e.g. a trail: lines of [latitude, longitude] pairs. Clicking it selects `id`. */
+export type MapLine = { id: string; label: string; route: [number, number][][] };
 export type MapLabels = {
   region: string;
   unavailable: string;
@@ -28,6 +33,8 @@ export type MapLabels = {
   location: string;
   cluster: (count: number) => string;
 };
+const noLines: MapLine[] = [];
+
 export function MapView({
   points,
   bounds,
@@ -36,8 +43,10 @@ export function MapView({
   onSelect,
   markerSymbol,
   labels,
+  lines = noLines,
 }: {
   points: MapPoint[];
+  lines?: MapLine[];
   bounds: Bounds;
   selectedId: string | undefined;
   position: Position | null;
@@ -50,6 +59,7 @@ export function MapView({
   const map = useRef<L.Map | null>(null);
   const markers = useRef(new Map<string, L.Marker>());
   const clusters = useRef<L.MarkerClusterGroup | null>(null);
+  const routes = useRef(new Map<string, L.Polyline>());
   const select = useRef(onSelect);
   select.current = onSelect;
   const config = useMapConfig();
@@ -122,7 +132,7 @@ export function MapView({
     for (const place of points) {
       const name = place.label;
       const marker = L.marker([place.latitude, place.longitude], {
-        icon: pin(markerSymbol, false, place.tone),
+        icon: pin(place.symbol ?? markerSymbol, false, place.tone),
         title: name,
         alt: name,
         keyboard: true,
@@ -140,11 +150,36 @@ export function MapView({
   }, [points, markerSymbol, labels.cluster]);
 
   useEffect(() => {
+    if (!map.current) return;
+    const layer = L.layerGroup().addTo(map.current);
+    routes.current.clear();
+    for (const line of lines) {
+      const polyline = L.polyline(line.route, { className: "map-route", weight: 3, opacity: 0.75 }).addTo(layer);
+      const tooltip = document.createElement("span");
+      tooltip.textContent = line.label;
+      polyline.bindTooltip(tooltip, { sticky: true }).on("click", () => select.current(line.id));
+      routes.current.set(line.id, polyline);
+    }
+    return () => {
+      layer.remove();
+      routes.current.clear();
+    };
+  }, [lines]);
+
+  useEffect(() => {
     // A lookup table instead of points.find per marker: Parking has 651 markers.
-    const tones = new Map(points.map((point) => [point.id, point.tone]));
+    const looks = new Map(points.map((point) => [point.id, point]));
     for (const [id, marker] of markers.current)
-      marker.setIcon(pin(markerSymbol, id === selected?.id, tones.get(id)));
-    if (selected && map.current) {
+      marker.setIcon(pin(looks.get(id)?.symbol ?? markerSymbol, id === selected?.id, looks.get(id)?.tone));
+    for (const [id, polyline] of routes.current) {
+      const chosen = id === selected?.id;
+      polyline.setStyle({ weight: chosen ? 6 : 3, opacity: chosen ? 1 : 0.75 });
+      if (chosen) polyline.bringToFront();
+    }
+    const route = selected && routes.current.get(selected.id);
+    if (route && map.current) {
+      map.current.fitBounds(route.getBounds(), { padding: [32, 32], maxZoom: 16, animate: false });
+    } else if (selected && map.current) {
       map.current.setView(
         [selected.latitude, selected.longitude],
         Math.max(15, map.current.getZoom()),
@@ -154,7 +189,7 @@ export function MapView({
       if (marker)
         clusters.current?.zoomToShowLayer(marker, () => marker.openTooltip());
     }
-  }, [selected, points, markerSymbol, labels.cluster]);
+  }, [selected, points, lines, markerSymbol, labels.cluster]);
 
   useEffect(() => {
     if (!position || !map.current) return;

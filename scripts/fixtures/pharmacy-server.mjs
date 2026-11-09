@@ -30,7 +30,10 @@ http
         "dcat:downloadURL": { "@rdf:resource": `${origin}/csv/${code}` },
       }));
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ "dcat:Distribution": distributions }));
+      response.end(JSON.stringify({
+        "dcat:Catalog": { "dcat:dataset": [{ "dcat:Dataset": { "dct:modified": { "#": "2026-10-03T10:42:38+03:00" } } }] },
+        "dcat:Distribution": distributions,
+      }));
       return;
     }
     const code = request.url?.match(/^\/csv\/([a-z]+)$/)?.[1];

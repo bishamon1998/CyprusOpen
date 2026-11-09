@@ -1,5 +1,5 @@
 import http from "node:http";
-import { readFileSync } from "node:fs";
+import fs, { readFileSync } from "node:fs";
 
 const xml = readFileSync(new URL("./parking-directory.xml", import.meta.url));
 // Trimmed copy of the real air quality response (three stations in Cyprus and one misplaced).
@@ -10,8 +10,17 @@ const beachTables = {
   "[assessment_BathingWaterStatus]": "beach-status.json",
   "[assessment_BathingWaterQuality]": "beach-quality.json",
 };
+// Trimmed copies of the real Department of Forests files, served by file name like data.gov.cy.
+const natureFiles = new Set(fs.readdirSync(new URL("./nature/", import.meta.url)));
 http.createServer((request, response) => {
   const url = new URL(request.url, "http://fixture");
+  if (url.pathname.startsWith("/nature/")) {
+    const file = url.pathname.slice("/nature/".length);
+    if (!natureFiles.has(file)) { response.writeHead(404).end(); return; }
+    response.writeHead(200, { "Last-Modified": "Mon, 23 Oct 2023 03:56:43 GMT" });
+    response.end(readFileSync(new URL("./nature/" + file, import.meta.url)));
+    return;
+  }
   if (url.pathname === "/sql") {
     const query = url.searchParams.get("query") ?? "";
     const table = Object.keys(beachTables).find((name) => query.includes(name));

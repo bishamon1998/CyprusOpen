@@ -4,7 +4,7 @@ Public statistics and everyday tools for people living in Cyprus.
 
 [cyprus-open.cy](https://cyprus-open.cy) · [Source catalog](https://www.data.gov.cy/en/search?s=&f%5B0%5D=content_type%3Adataset.dataset)
 
-React/TypeScript with EN/RU/EL interfaces, a Spring Boot backend made of separate Statistics, Places (parking, beaches, air quality) and Pharmacies modules, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
+React/TypeScript with EN/RU/EL interfaces, a Spring Boot backend made of separate Statistics, Places (parking, beaches, air quality, nature) and Pharmacies modules, and a searchable map of 651 verified parking locations. Statistics charts (migration, tourism, inflation, population, marriages, crime, earnings, fuel) use official CYSTAT tables; live parking occupancy is not connected yet.
 
 ## Local development
 
@@ -74,6 +74,9 @@ Every scheduled import is listed in one file, [`cyprus-open-refresh.properties`]
 | `statistics` | statistics | Mondays, 04:30 | `STATISTICS_SYNC_ENABLED` |
 | `air-quality` | places | hourly, at :20 | `AIR_QUALITY_SYNC_ENABLED` |
 | `beaches` | places | Tuesdays, 05:40 | `BEACHES_SYNC_ENABLED` |
+| `nature` | places | 1st of each month, 05:20 | `NATURE_SYNC_ENABLED` |
+
+Every page shows two dates under its data: when the source last changed the data, and when the site last checked the source successfully (many sources change rarely, so the first is often much older). The data date comes from the source: the parking directory's publication time, the pharmacy dataset's `dct:modified` (stored in `schedule_refresh.source_modified_at`, changeset `3-schedule-source-date`), the newest air quality reading, the bathing season, the nature files' `Last-Modified` header and each CYSTAT table's update time.
 
 Upstream clients share timeouts, no redirects, size limits and the user agent (`Upstream`). `Upstream.fetch` reads a body only for 200 OK and within the size limit, and the read timeout also bounds a slowly sent body. Parsers stay with their services because the formats differ: DATEX II XML (parking), DCAT JSON and CSV (pharmacies), JSON-stat (statistics).
 
@@ -93,6 +96,14 @@ The weekly `beaches` job reads three tables for Cyprus from the [EEA Discodata](
 
 The page shows the latest season's class (EEA publishes one season a year, in spring), up to ten seasons of history, the bacteria results against the limits for "excellent" coastal water (E. coli 250, enterococci 100 cfu/100 ml, 95th percentile) and the official bathing water profile.
 
+## Nature
+
+The Nature page maps the Department of Forests' picnic sites, camping sites and nature trails in the state forests, with trail routes drawn on the map. places-service serves them at `/api/v1/nature`.
+
+The monthly `nature` job downloads six files by name from the data.gov.cy files folder (`NATURE_FILES_URL`, default `https://www.data.gov.cy/sites/default/files/`), all CC BY 4.0: picnic sites ([245](https://www.data.gov.cy/el/dataset/245), `PicnicSites.kml`), camping sites ([233](https://www.data.gov.cy/el/dataset/233), `CampingSites.kmz`, and the catalogue [236](https://www.data.gov.cy/el/dataset/236) for full names and capacity), trail routes ([228](https://www.data.gov.cy/el/dataset/228), `NatureTrailsRoutes.kml`), and the trail starting points ([229](https://www.data.gov.cy/el/dataset/229)) and trail catalogue ([235](https://www.data.gov.cy/el/dataset/235)), used only for full Greek trail names. The files last changed in October 2023.
+
+The layers keep their attributes in an HTML table inside each placemark's description. Greek names there are cut at a byte limit; a cut name is completed when exactly one fuller name matches, otherwise it ends with "…". Points of one picnic site with the same name within 1.5 km become one site; route pieces with the same Greek name become one trail, its length the sum of the published lengths. Unnamed road pieces are left out and routes are simplified to about 6 m. A trail's map point is the first point of its first line, not always its trailhead. Opening periods, fees and fire bans are not in the source. The snapshot is stored in `parking.nature_sites` (JSONB, changeset `6-nature`); failures keep it.
+
 ## Maps and privacy
 
 Leaflet with clustered markers uses standard OSM tiles, visible attribution and ordinary browser caching, without prefetch. Runtime `MAP_TILE_URL`, `MAP_ATTRIBUTION` and `MAP_ATTRIBUTION_URL` can change the provider without rebuilding. Use HTTPS and respect provider terms; this public client configuration must not contain secrets. The list and Google Maps directions remain usable if tiles fail.
@@ -108,9 +119,11 @@ Keep repository root as the build context. Service settings are managed directly
 | Frontend | `frontend/Dockerfile` | 3000 | `/healthz` |
 | Backend (statistics, places, pharmacies) | `backend/app/Dockerfile` | 8080 | `/actuator/health/readiness` |
 
-The backend runs the Statistics, Places and Pharmacies modules in one process to keep hosting small. The modules stay separate in code (`backend/statistics-service`, `backend/places-service`, `backend/pharmacies-service`): own packages, API paths, refresh jobs, databases, roles, connection pools, Liquibase changelogs and transactions. The backend service takes all their variables (`STATISTICS_*`, `PARKING_*`, `PHARMACIES_*`, `PHARMACY_*`, `AIR_QUALITY_*`, `BEACHES_*`), and the frontend's three upstream variables all point to the backend's private address. To split a module out again, give it a `@SpringBootApplication` class, a Dockerfile and its own Railway service.
+The backend runs the Statistics, Places and Pharmacies modules in one process to keep hosting small. The modules stay separate in code (`backend/statistics-service`, `backend/places-service`, `backend/pharmacies-service`): own packages, API paths, refresh jobs, databases, roles, connection pools, Liquibase changelogs and transactions. The backend service takes all their variables (`STATISTICS_*`, `PARKING_*`, `PHARMACIES_*`, `PHARMACY_*`, `AIR_QUALITY_*`, `BEACHES_*`, `NATURE_*`), and the frontend's three upstream variables all point to the backend's private address. To split a module out again, give it a `@SpringBootApplication` class, a Dockerfile and its own Railway service.
 
 Railway bills the memory each container holds, and traffic is low, so the backend is sized for a small steady footprint. The image sets `JAVA_TOOL_OPTIONS` (Serial GC, 384 MB heap cap, C1 compiler only); the backend keeps at most 16 request threads and each module one idle database connection. A 3.3 MB CYSTAT table (560,000 cells, near the 4 MB response limit) imports within the cap. To give the backend more memory, override `JAVA_TOOL_OPTIONS` in its Railway variables.
+
+For the Nature page, set `NATURE_SYNC_ENABLED=true` on the backend; it imports the Department of Forests files on startup when they are missing and then monthly. Verify that `/api/v1/nature` returns sites.
 
 Before deploying Statistics, configure `STATISTICS_JDBC_URL`, `STATISTICS_DB_USER`, `STATISTICS_DB_PASSWORD` and `STATISTICS_SYNC_ENABLED=true`; the restricted role and schema come from `infra/postgres/001-databases.sql`.
 

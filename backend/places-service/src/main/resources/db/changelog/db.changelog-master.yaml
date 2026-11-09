@@ -34,3 +34,10 @@ databaseChangeLog:
         - sqlFile:
             path: beaches.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 6-nature
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: nature.sql
+            relativeToChangelogFile: true

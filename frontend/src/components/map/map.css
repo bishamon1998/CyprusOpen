@@ -98,3 +98,8 @@
 .map-pin.tone-poor span { background: #ff5050; color: #fff; }
 .map-pin.tone-very-poor span { background: #960032; color: #fff; }
 .map-pin.tone-extremely-poor span { background: #7d2181; color: #fff; }
+/* Routes such as nature trails, drawn under the markers. */
+.map-route {
+  stroke: #2f7d4f;
+  cursor: pointer;
+}
