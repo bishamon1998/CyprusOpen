@@ -52,7 +52,7 @@ export default function Pharmacies() {
 
   return (
     <>
-      <PageTitle title={t("pharmacies")} />
+      <PageTitle title={t("pharmacies")} path="/pharmacies" />
       <ToolWorkspace label={t("dutyPharmacies")}>
         <PharmacyFilters
           date={scheduleDate}

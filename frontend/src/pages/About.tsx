@@ -1,5 +1,4 @@
-import { type ReactNode } from "react";
-import { ChartColumn, MapPin, ParkingCircle, Pill, Trees, Waves, Wind } from "lucide-react";
+import { type GlyphName, SoftTile } from "../components/icons/SoftTile";
 import { PageTitle } from "../components/PageTitle";
 import { SourceLink } from "../components/SourceLink";
 import { useI18n } from "../i18n";
@@ -19,49 +18,49 @@ const rows: {
   title: MessageKey;
   description: MessageKey;
   href: string;
-  icon: ReactNode;
+  icon: GlyphName;
 }[] = [
   {
     title: "statistics",
     description: "statisticsSource",
     href: catalogUrl,
-    icon: <ChartColumn size={21} />,
+    icon: "statistics",
   },
   {
     title: "parkingLocations",
     description: "directorySource",
     href: parkingDirectoryUrl,
-    icon: <MapPin size={21} />,
+    icon: "parking",
   },
   {
     title: "nicosiaParking",
     description: "nicosiaSource",
     href: nicosiaParkingUrl,
-    icon: <ParkingCircle size={23} />,
+    icon: "parking",
   },
   {
     title: "dutyPharmacies",
     description: "pharmacySource",
     href: pharmacyScheduleUrl,
-    icon: <Pill size={22} />,
+    icon: "pharmacies",
   },
   {
     title: "beaches",
     description: "beachSource",
     href: bathingWaterUrl,
-    icon: <Waves size={22} />,
+    icon: "beaches",
   },
   {
     title: "airQuality",
     description: "airQualitySource",
     href: airQualityUrl,
-    icon: <Wind size={22} />,
+    icon: "air",
   },
   {
     title: "nature",
     description: "natureSource",
     href: natureSourceUrl,
-    icon: <Trees size={22} />,
+    icon: "nature",
   },
 ];
 
@@ -69,7 +68,7 @@ export default function About() {
   const { t } = useI18n();
   return (
     <>
-      <PageTitle title={t("sources")} />
+      <PageTitle title={t("sources")} path="/about" />
       <section className="about-card" aria-labelledby="about-title">
         <h2 id="about-title">{t("aboutTitle")}</h2>
         <p>{t("aboutWhat")}</p>
@@ -82,9 +81,7 @@ export default function About() {
       <section className="sources-list" aria-labelledby="data-sources">
         {rows.map((row) => (
           <div className="source-row" key={row.title}>
-            <span className="quick-icon" aria-hidden="true">
-              {row.icon}
-            </span>
+            <SoftTile icon={row.icon} size={42} />
             <div>
               <h2>{t(row.title)}</h2>
               <p>{t(row.description)}</p>

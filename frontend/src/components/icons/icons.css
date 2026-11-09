@@ -1,0 +1,32 @@
+/* One colour per section; the tile is a light tint of it and the icon is drawn in it. */
+.tone-statistics-tile { --tile: #4263eb; }
+.tone-parking-tile { --tile: #7048e8; }
+.tone-pharmacies-tile { --tile: #0ca678; }
+.tone-beaches-tile { --tile: #f59f00; }
+.tone-air-tile { --tile: #1098ad; }
+.tone-nature-tile { --tile: #5c940d; }
+.tone-about-tile { --tile: #e64980; }
+/* Statistics categories */
+.tone-people-tile { --tile: #4263eb; }
+.tone-family-tile { --tile: #e64980; }
+.tone-economy-tile { --tile: #f59f00; }
+.tone-housing-tile { --tile: #7048e8; }
+.tone-transport-tile { --tile: #1098ad; }
+.tone-tourism-tile { --tile: #0ca678; }
+.tone-safety-tile { --tile: #f03e3e; }
+
+.soft-tile {
+  --tile-size: 28px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  border-radius: 30%;
+  color: var(--tile);
+  background: color-mix(in srgb, var(--tile) 12%, #fff);
+}
+.soft-tile svg {
+  width: 60%;
+  height: 60%;
+}

@@ -119,7 +119,7 @@ export default function Nature() {
 
   return (
     <>
-      <PageTitle title={t("nature")} />
+      <PageTitle title={t("nature")} path="/nature" />
       <ToolWorkspace label={t("nature")}>
         <ToolFilters>
           <label className="tool-search">
@@ -177,9 +177,17 @@ export default function Nature() {
             {query.isError && (
               <ResultsMessage onRetry={() => void query.refetch()}>{t("natureLoadError")}</ResultsMessage>
             )}
-            {query.data && sites.length === 0 && <ResultsMessage>{t("natureUnavailable")}</ResultsMessage>}
+            {query.data && sites.length === 0 && <ResultsMessage kind="pending">{t("natureUnavailable")}</ResultsMessage>}
             {query.data && sites.length > 0 && matching.length === 0 && (
-              <ResultsMessage>{t("natureNoMatches")}</ResultsMessage>
+              <ResultsMessage
+                kind="empty"
+                onReset={() => {
+                  setSearch("");
+                  setKind("all");
+                }}
+              >
+                {t("natureNoMatches")}
+              </ResultsMessage>
             )}
             {selected && (
               <SelectedResult

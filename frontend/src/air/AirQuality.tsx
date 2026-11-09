@@ -132,7 +132,7 @@ export default function AirQuality() {
 
   return (
     <>
-      <PageTitle title={t("airQuality")} />
+      <PageTitle title={t("airQuality")} path="/air" />
       <ToolWorkspace label={t("airQuality")}>
         <ToolFilters>
           <NearMeButton locating={locating} onClick={() => locate(() => setSelectedId(null))} />
@@ -170,7 +170,7 @@ export default function AirQuality() {
             {query.isError && (
               <ResultsMessage onRetry={() => void query.refetch()}>{t("airLoadError")}</ResultsMessage>
             )}
-            {query.data && stations.length === 0 && <ResultsMessage>{t("airUnavailable")}</ResultsMessage>}
+            {query.data && stations.length === 0 && <ResultsMessage kind="pending">{t("airUnavailable")}</ResultsMessage>}
             {selected && (
               <SelectedResult label={t("selectedStation")} title={name(selected)} detail={time(selected.measuredAt)}>
                 <table className="air-readings">

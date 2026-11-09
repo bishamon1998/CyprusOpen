@@ -96,6 +96,11 @@ app.get("/favicon.ico", (_request, response) => {
 app.get(["/", "/parking", "/pharmacies", "/beaches", "/air", "/nature", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
 });
+// A mistyped page address gets the app's own "page not found" page; files and other requests get JSON.
+app.get(/^\/[^.]*$/, (request, response, next) => {
+  if (!request.accepts("html")) return next();
+  response.status(404).set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
+});
 app.use((_request, response) =>
   response.status(404).json({ title: "Not found", status: 404 }),
 );

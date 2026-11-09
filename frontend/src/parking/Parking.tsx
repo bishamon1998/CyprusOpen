@@ -72,7 +72,7 @@ export default function Parking() {
 
   return (
     <>
-      <PageTitle title={t("parking")} />
+      <PageTitle title={t("parking")} path="/parking" />
       <ToolWorkspace label={t("findParking")}>
         <ParkingFilters
           areaId={areaId}
@@ -110,6 +110,10 @@ export default function Parking() {
             onSelect={choose}
             onMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
             onClearLocation={clearLocation}
+            onReset={() => {
+              setSearch("");
+              setAreaId("cyprus");
+            }}
           />
         </ToolLayout>
         <ParkingAttribution directory={report.data?.directory} />
