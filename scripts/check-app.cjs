@@ -63,6 +63,7 @@ async function main() {
         ["/pharmacies", "Pharmacies"],
         ["/beaches", "Beaches"],
         ["/air", "Air quality"],
+        ["/nature", "Nature"],
         ["/about", "Sources"],
       ]) {
         const response = await page.goto(`${baseUrl}${route}`);
@@ -101,6 +102,18 @@ async function main() {
     assert.equal(await page.locator(".result-list li").count(), 3);
     await page.locator(".result-row").first().click();
     await page.getByRole("table").getByText("NO₂").waitFor();
+    // Four picnic sites, six camping sites and three trails; the trails are drawn as routes.
+    await page.goto(`${baseUrl}/nature`);
+    await page.locator(".result-list li").nth(12).waitFor();
+    assert.equal(await page.locator(".result-list li").count(), 13);
+    assert.equal(await page.locator("path.map-route").count(), 3);
+    await page.getByRole("combobox", { name: "Kind of place" }).selectOption("trail");
+    assert.equal(await page.locator(".result-list li").count(), 3);
+    await page.getByRole("list", { name: "Picnic sites, camping sites and trails" })
+      .getByRole("button", { name: /Pipis/ }).click();
+    await page.getByRole("link", { name: /Directions to the trail/ }).waitFor();
+    await page.getByRole("searchbox", { name: "Search picnic sites, camping, trails" }).fill("Σπηλιές");
+    assert.equal(await page.locator(".result-list li").count(), 1);
     await page.goto(`${baseUrl}/pharmacies`);
     await page.locator(".result-list li").nth(4).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 5);
@@ -251,7 +264,7 @@ async function main() {
           `${language} overflows at ${width}px`,
         );
       }
-      for (const route of ["/", "/pharmacies", "/beaches", "/air", "/about"]) {
+      for (const route of ["/", "/pharmacies", "/beaches", "/air", "/nature", "/about"]) {
         await page.goto(`${baseUrl}${route}`);
         await page.locator("main h1").waitFor();
         assert.equal(
@@ -367,7 +380,7 @@ async function main() {
       }
     }
     console.log(
-      "PASS: responsive layouts in EN/RU/EL, statistics charts, parking search/selection/directions, location/denial, tile and API failure fallbacks, beaches, air quality, pharmacies. No external network or browser errors.",
+      "PASS: responsive layouts in EN/RU/EL, statistics charts, parking search/selection/directions, location/denial, tile and API failure fallbacks, beaches, air quality, nature, pharmacies. No external network or browser errors.",
     );
   } finally {
     await browser.close();

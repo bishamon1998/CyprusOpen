@@ -5,6 +5,7 @@ import {
   Database,
   ParkingCircle,
   Pill,
+  Trees,
   Waves,
   Wind,
   type LucideIcon,
@@ -19,6 +20,7 @@ const Parking = lazy(() => import("./parking/Parking"));
 const Pharmacies = lazy(() => import("./pharmacies/Pharmacies"));
 const AirQuality = lazy(() => import("./air/AirQuality"));
 const Beaches = lazy(() => import("./beaches/Beaches"));
+const Nature = lazy(() => import("./nature/Nature"));
 
 const navigation: {
   path: string;
@@ -31,6 +33,7 @@ const navigation: {
   { path: "/pharmacies", label: "pharmacies", icon: Pill, iconSize: 17 },
   { path: "/beaches", label: "beaches", icon: Waves, iconSize: 17 },
   { path: "/air", label: "airQuality", icon: Wind, iconSize: 17 },
+  { path: "/nature", label: "nature", icon: Trees, iconSize: 17 },
   { path: "/about", label: "sources", icon: Database, iconSize: 16 },
 ];
 
@@ -89,6 +92,7 @@ export function App() {
             <Route path="/pharmacies" element={<Pharmacies />} />
             <Route path="/beaches" element={<Beaches />} />
             <Route path="/air" element={<AirQuality />} />
+            <Route path="/nature" element={<Nature />} />
             <Route path="/about" element={<Sources />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

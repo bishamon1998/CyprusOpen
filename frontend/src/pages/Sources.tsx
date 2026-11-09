@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { ChartColumn, MapPin, ParkingCircle, Pill, Waves, Wind } from "lucide-react";
+import { ChartColumn, MapPin, ParkingCircle, Pill, Trees, Waves, Wind } from "lucide-react";
 import { PageTitle } from "../components/PageTitle";
 import { SourceLink } from "../components/SourceLink";
 import { useI18n } from "../i18n";
@@ -8,6 +8,7 @@ import {
   airQualityUrl,
   bathingWaterUrl,
   catalogUrl,
+  natureSourceUrl,
   nicosiaParkingUrl,
   parkingDirectoryUrl,
   pharmacyScheduleUrl,
@@ -54,6 +55,12 @@ const rows: {
     description: "airQualitySource",
     href: airQualityUrl,
     icon: <Wind size={22} />,
+  },
+  {
+    title: "nature",
+    description: "natureSource",
+    href: natureSourceUrl,
+    icon: <Trees size={22} />,
   },
 ];
 

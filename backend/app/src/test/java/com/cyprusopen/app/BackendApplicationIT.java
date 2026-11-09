@@ -48,13 +48,13 @@ class BackendApplicationIT {
         var jdbc = JdbcClient.create(new org.springframework.jdbc.datasource.DriverManagerDataSource(
                 postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()));
         assertThat(changesets(jdbc, "statistics")).containsExactly("1-observations", "2-quarter-periods");
-        assertThat(changesets(jdbc, "parking")).contains("1-parking-directory", "4-air-quality", "5-beaches")
-                .hasSize(5);
+        assertThat(changesets(jdbc, "parking")).contains("1-parking-directory", "4-air-quality", "5-beaches", "6-nature")
+                .hasSize(6);
         assertThat(changesets(jdbc, "pharmacies")).contains("1-duty-schedule", "2-pharmacy-location").hasSize(7);
 
         try (var client = HttpClient.newHttpClient()) {
             for (var path : List.of("/api/v1/statistics/datasets", "/api/v1/parking", "/api/v1/air-quality",
-                    "/api/v1/beaches", "/api/v1/pharmacies", "/actuator/health/readiness")) {
+                    "/api/v1/beaches", "/api/v1/nature", "/api/v1/pharmacies", "/actuator/health/readiness")) {
                 var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).build(),
                         HttpResponse.BodyHandlers.ofString());
                 assertThat(response.statusCode()).as(path).isEqualTo(200);

@@ -30,6 +30,8 @@ services:
       AIR_QUALITY_RESOURCE_URL: http://places-fixture:9090/air
       BEACHES_SYNC_ENABLED: "true"
       BEACHES_DISCODATA_URL: http://places-fixture:9090/sql
+      NATURE_SYNC_ENABLED: "true"
+      NATURE_FILES_URL: http://places-fixture:9090/nature/
       PHARMACY_SYNC_ENABLED: "true"
       PHARMACY_CATALOG_METADATA_URL: http://pharmacy-fixture:9091/metadata
     depends_on:
