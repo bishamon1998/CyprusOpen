@@ -66,8 +66,10 @@ export function MapView({
   const [tileError, setTileError] = useState(false);
 
   useEffect(() => {
+    // Pinch and the mouse wheel zoom around the gesture; one finger pans the map.
     const instance = L.map(container.current!, {
-      scrollWheelZoom: false,
+      touchZoom: true,
+      scrollWheelZoom: true,
       zoomControl: false,
       maxZoom: 19,
     });
