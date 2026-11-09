@@ -25,6 +25,7 @@ import { useI18n } from "../i18n";
 import { type MessageKey } from "../locales";
 import { airQualityIndexUrl, airQualityUrl, ccBySaLicenseUrl, osmCopyrightUrl } from "../sources";
 import { type Level, levels, type Station, useAirQuality } from "./api";
+import { AirTrend } from "./AirTrend";
 import "./air.css";
 
 /** Readings older than this are shown with a warning: the source normally publishes every hour. */
@@ -203,6 +204,12 @@ export default function AirQuality() {
                     </p>
                   </div>
                 )}
+                <AirTrend
+                  key={selected.id}
+                  station={selected}
+                  pollutantNames={pollutantNames}
+                  levelLabels={levelLabels}
+                />
               </SelectedResult>
             )}
             <ol className="result-list" aria-label={t("airStations")}>

@@ -1,3 +1,5 @@
+import "./segmented.css";
+
 /** A compact single-choice control rendered as a radio group of buttons. */
 export function SegmentedControl<T extends string>({
   label,

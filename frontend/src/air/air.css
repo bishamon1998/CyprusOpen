@@ -52,3 +52,56 @@
 .air-advice strong {
   color: #191c24;
 }
+.air-trend {
+  flex: 1 1 100%;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #dde3f5;
+}
+.selected-result .air-trend h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.air-trend h4 {
+  margin: 12px 0 6px;
+  color: #5c6a8d;
+  font-size: 11px;
+  font-weight: 600;
+}
+.air-recent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.air-recent li {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  font-size: 10px;
+  color: #5c6a8d;
+  font-variant-numeric: tabular-nums;
+}
+.air-recent-value {
+  width: 100%;
+  padding: 3px 0;
+  border-radius: 6px;
+  background: var(--tone, #e4e7ef);
+  color: var(--tone-text, #2b3140);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+.air-trend-head {
+  margin: 12px 0 0;
+}
+.air-trend .chart {
+  margin: 0 -6px;
+}
+.selected-result .air-trend p.air-trend-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+}

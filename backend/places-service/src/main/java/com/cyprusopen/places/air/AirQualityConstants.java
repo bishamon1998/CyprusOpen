@@ -10,6 +10,8 @@ final class AirQualityConstants {
     static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
     /** The source updates hourly; a start-up refresh runs when the last check is older than this. */
     static final Duration REFRESH_AFTER = Duration.ofMinutes(50);
+    /** How long hourly readings are kept and shown as the trend of a station. */
+    static final Duration HISTORY = Duration.ofDays(7);
     /** The source publishes measurement times in Cyprus local time without an offset. */
     static final ZoneId SOURCE_ZONE = ZoneId.of("Asia/Nicosia");
     static final String SOURCE_NAME = "Department of Labour Inspection";

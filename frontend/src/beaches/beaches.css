@@ -70,11 +70,16 @@
   font-size: 11px;
   line-height: 1.5;
 }
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+/* Dog beaches: the pins and list icons of the "Dog beaches" view. */
+.tone-dog { --tone: #b8692e; --tone-text: #fff; }
+.result-row-icon.tone-dog,
+.map-pin.tone-dog span {
+  background: var(--tone);
+  color: var(--tone-text);
+}
+.beach-dog-note {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
