@@ -97,7 +97,9 @@ export function AirTrend({
       },
       xAxis: {
         type: "time",
+        axisLine: { lineStyle: { color: "#9aa0ad" } },
         axisLabel: {
+          color: "#3d4250",
           hideOverlap: true,
           formatter: (value: number) => (range === "day" ? hourFormat : dayFormat).format(value),
         },
@@ -106,8 +108,9 @@ export function AirTrend({
       yAxis: {
         type: "value",
         name: "µg/m³",
-        nameTextStyle: { align: "left", padding: [0, 0, 0, -36] },
-        splitLine: { lineStyle: { color: "#eef0f4" } },
+        axisLabel: { color: "#3d4250" },
+        nameTextStyle: { align: "left", padding: [0, 0, 0, -36], color: "#3d4250" },
+        splitLine: { lineStyle: { color: "#e3e5ec" } },
       },
       series: [
         {

@@ -136,10 +136,6 @@
   color: var(--muted);
   margin-top: 5px;
 }
-.result-row-icon[class*="-tile"] {
-  color: var(--tile);
-  background: color-mix(in srgb, var(--tile) 12%, #fff);
-}
 .result-row-icon svg {
   width: 18px;
   height: 18px;
