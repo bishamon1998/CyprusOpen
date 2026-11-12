@@ -37,6 +37,15 @@
     transform: scale(1.15);
   }
 }
+@keyframes pin-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.08);
+  }
+}
 @keyframes popover-in {
   from {
     opacity: 0;
@@ -53,8 +62,11 @@
     animation: mouflon-peek 0.6s 0.1s ease-out both;
     transform-origin: 50% 90%;
   }
+  /* Adding the wiggle keeps the peek in the list, so leaving the mouflon does not replay the peek from hidden. */
   .page-mouflon:hover {
-    animation: mouflon-wiggle 0.5s ease-in-out;
+    animation:
+      mouflon-peek 0.6s 0.1s ease-out both,
+      mouflon-wiggle 0.5s ease-in-out;
   }
 
   /* Cards and tools rise in once when the page opens. */
@@ -86,6 +98,16 @@
   /* Buttons give a little under the finger. */
   button:not(:disabled):active {
     transform: scale(0.97);
+  }
+
+  /* Map pins and list icons pop in after the map has risen; a pin also pops when it is selected. */
+  .map-pin span,
+  .map-cluster span {
+    animation: pin-pop 0.35s 0.25s ease-out both;
+    transform-origin: 50% 100%;
+  }
+  .result-row-icon {
+    animation: pin-pop 0.3s 0.2s ease-out both;
   }
 
   .info-popover-panel {
