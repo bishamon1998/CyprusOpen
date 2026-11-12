@@ -1,0 +1,95 @@
+/*
+ * Small, quick animations. Everything here is decoration: with reduced motion requested, all of it is off.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes mouflon-peek {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) rotate(-6deg);
+  }
+  70% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mouflon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes tile-pop {
+  50% {
+    transform: scale(1.15);
+  }
+}
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Page header: the text rises in, the mouflon peeks up and wiggles when hovered. */
+  .page-title-text {
+    animation: rise-in 0.35s ease-out both;
+  }
+  .page-mouflon {
+    animation: mouflon-peek 0.6s 0.1s ease-out both;
+    transform-origin: 50% 90%;
+  }
+  .page-mouflon:hover {
+    animation: mouflon-wiggle 0.5s ease-in-out;
+  }
+
+  /* Cards and tools rise in once when the page opens. */
+  .dataset-card,
+  .tool-workspace,
+  .about-card,
+  .sources-list {
+    animation: rise-in 0.4s 0.05s ease-out both;
+  }
+
+  /* Navigation: the icon hops on hover and pops when its section opens. */
+  nav a,
+  button {
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.1s ease;
+  }
+  nav .soft-tile {
+    transition: transform 0.2s ease;
+  }
+  nav a:not(.active):hover .soft-tile {
+    transform: translateY(-2px) rotate(-6deg);
+  }
+  nav a.active .soft-tile {
+    animation: tile-pop 0.3s ease-out;
+  }
+
+  /* Buttons give a little under the finger. */
+  button:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  .info-popover-panel {
+    animation: popover-in 0.14s ease-out;
+    transform-origin: 100% 100%;
+  }
+}

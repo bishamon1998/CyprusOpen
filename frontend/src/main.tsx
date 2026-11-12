@@ -6,6 +6,7 @@ import { App } from "./App";
 import { I18nProvider } from "./i18n";
 import "@fontsource-variable/manrope";
 import "./styles.css";
+import "./motion.css";
 
 // After a deploy the previous build's hashed chunks are gone. A tab opened before it fails to load a page chunk;
 // reload once to pick up the new build (at most once a minute, so a real outage does not loop).
