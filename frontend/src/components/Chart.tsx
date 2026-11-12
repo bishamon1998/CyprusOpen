@@ -28,7 +28,8 @@ export const chartColors = ["#4263eb", "#9aa9f5", "#191c24", "#8a909d", "#c9cedb
 const baseOption: ChartOption = {
   color: chartColors,
   textStyle: { fontFamily: "'Manrope Variable', ui-sans-serif, system-ui, sans-serif", color: "#191c24" },
-  animationDuration: 300,
+  animationDuration: 700,
+  animationEasing: "cubicOut",
 };
 
 /**

@@ -130,6 +130,11 @@ main {
   font-size: 14px;
   line-height: 1.5;
 }
+.page-mouflon-wrap {
+  display: flex;
+  margin-left: auto;
+  flex-shrink: 0;
+}
 .page-mouflon {
   width: 108px;
   height: 108px;
@@ -407,6 +412,7 @@ h2,
     --tile-size: 40px !important;
   }
   /* The map matters more on a phone. */
+  .page-mouflon-wrap,
   .page-mouflon {
     display: none;
   }
