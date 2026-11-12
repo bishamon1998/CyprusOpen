@@ -10,6 +10,14 @@ const { chromium } = process.env.PLAYWRIGHT_MODULE_PATH
   : frontendRequire("playwright");
 const baseUrl = process.env.APP_URL || "http://localhost:3000";
 
+/** Opens a tool's info button and returns the text of its panel (source, data dates, licences). */
+async function sourceInfo(page) {
+  await page.locator(".tool-attribution").getByRole("button", { name: "About this data" }).click();
+  const text = await page.locator(".info-popover-panel").innerText();
+  await page.keyboard.press("Escape");
+  return text;
+}
+
 async function main() {
   const browser = await chromium.launch({
     headless: true,
@@ -127,8 +135,8 @@ async function main() {
     await page.locator(".result-list li").nth(12).waitFor();
     assert.equal(await page.locator(".result-list li").count(), 13);
     assert.equal(await page.locator("path.map-route").count(), 3);
-    // Every tool shows when the source last changed its data and when it was last checked.
-    const natureDates = await page.locator(".tool-attribution").innerText();
+    // Every tool's info button shows when the source last changed its data and when it was last checked.
+    const natureDates = await sourceInfo(page);
     assert.ok(natureDates.includes("Data as of 23 Oct 2023"), natureDates);
     assert.ok(natureDates.includes("Last checked ") && !natureDates.includes("Last checked —"), natureDates);
     await page.getByRole("combobox", { name: "Kind of place" }).selectOption("trail");
@@ -149,7 +157,7 @@ async function main() {
     await page.getByRole("link", { name: /Source code on GitHub/ }).waitFor();
     await page.goto(`${baseUrl}/pharmacies`);
     await page.locator(".result-list li").nth(4).waitFor();
-    const pharmacyDates = await page.locator(".tool-attribution").innerText();
+    const pharmacyDates = await sourceInfo(page);
     assert.ok(pharmacyDates.includes("Data as of 3 Oct 2026"), pharmacyDates);
     assert.equal(await page.locator(".result-list li").count(), 5);
 
@@ -166,7 +174,7 @@ async function main() {
       })
       .waitFor();
     const attribution = (
-      await page.locator(".tool-attribution").textContent()
+      await sourceInfo(page)
     ).replace(/\s+/g, " ");
     assert.ok(
       attribution.includes(
@@ -234,8 +242,8 @@ async function main() {
       .first()
       .textContent();
     // The town comes first, then the distance.
-    assert.match(firstDistance, /^Larnaca · [\d.]+ km · straight-line/);
-    assert.ok(parseFloat(firstDistance.split(" · ")[1]) < 2);
+    assert.match(firstDistance, /^Larnaca, [\d.]+ km, straight-line/);
+    assert.ok(parseFloat(firstDistance.split(", ")[1]) < 2);
     await page.getByRole("button", { name: "Clear location" }).click();
     const deniedContext = await browser.newContext();
     await deniedContext.route("**/*", interceptExternal);
@@ -267,7 +275,7 @@ async function main() {
     await context.route(`${tileOrigin}/**`, (route) => route.abort());
     await page.reload();
     await page
-      .getByText("Map tiles unavailable. The list and directions still work.")
+      .getByText("Map unavailable", { exact: true })
       .waitFor();
     await page.getByRole("combobox", { name: "Area" }).selectOption("nicosia");
     await page
@@ -316,48 +324,48 @@ async function main() {
     await page.locator("#language").selectOption("en");
     await page.getByRole("link", { name: "Statistics", exact: true }).click();
     for (const chart of [
-      "Immigration · Citizenship",
-      "Tourist arrivals · Tourist arrivals",
-      "Inflation · By year",
-      "Population · Population",
-      "Marriages · Marriages",
-      "Crime · By type",
-      "Earnings · Median and average",
-      "Fuel sales · Road fuels",
-      "Cyprus calendar · Birthdays",
-      "Seasons of life · Births",
-      "Causes of death · By cause",
-      "Family today · Wedding age",
-      "Who marries whom · Nationalities",
-      "Divorces · Years married",
-      "Where every 100 € goes · By category",
-      "Household income · By district",
-      "House prices · Index",
-      "New homes approved · Per month",
-      "Cars by fuel · New registrations",
-      "What tourists spend · Per day",
-      "Trips of residents · By year",
+      "Immigration: Citizenship",
+      "Tourist arrivals: Tourist arrivals",
+      "Inflation: By year",
+      "Population: Population",
+      "Marriages: Marriages",
+      "Crime: By type",
+      "Earnings: Median and average",
+      "Fuel sales: Road fuels",
+      "Cyprus calendar: Birthdays",
+      "Seasons of life: Births",
+      "Causes of death: By cause",
+      "Family today: Wedding age",
+      "Who marries whom: Nationalities",
+      "Divorces: Years married",
+      "Where every 100 € goes: By category",
+      "Household income: By district",
+      "House prices: Index",
+      "New homes approved: Per month",
+      "Cars by fuel: New registrations",
+      "What tourists spend: Per day",
+      "Trips of residents: By year",
     ]) {
       await page.getByRole("img", { name: chart, exact: true }).waitFor();
     }
     await page.getByRole("radio", { name: "Weddings" }).click();
-    await page.getByRole("img", { name: "Cyprus calendar · Weddings" }).waitFor();
+    await page.getByRole("img", { name: "Cyprus calendar: Weddings" }).waitFor();
     // A folded category hides its charts and stays folded after a reload.
     await page.getByRole("button", { name: /^Safety/ }).click();
-    await page.getByRole("img", { name: "Crime · By type" }).waitFor({ state: "detached" });
+    await page.getByRole("img", { name: "Crime: By type" }).waitFor({ state: "detached" });
     await page.reload();
-    await page.getByRole("img", { name: "Cyprus calendar · Birthdays" }).waitFor();
-    assert.equal(await page.getByRole("img", { name: "Crime · By type" }).count(), 0, "Safety stays folded");
+    await page.getByRole("img", { name: "Cyprus calendar: Birthdays" }).waitFor();
+    assert.equal(await page.getByRole("img", { name: "Crime: By type" }).count(), 0, "Safety stays folded");
     await page.getByRole("button", { name: /^Safety/ }).click();
-    await page.getByRole("img", { name: "Crime · By type" }).waitFor();
+    await page.getByRole("img", { name: "Crime: By type" }).waitFor();
     await page.getByRole("radio", { name: "Since 1981" }).click();
-    await page.getByRole("img", { name: "Immigration · Since 1981" }).waitFor();
+    await page.getByRole("img", { name: "Immigration: Since 1981" }).waitFor();
     await page.getByRole("radio", { name: "Winter" }).click();
     await page
-      .getByRole("img", { name: "Tourist arrivals · Tourist arrivals" })
+      .getByRole("img", { name: "Tourist arrivals: Tourist arrivals" })
       .waitFor();
     await page.getByRole("radio", { name: "By category" }).click();
-    await page.getByRole("img", { name: "Inflation · By category" }).waitFor();
+    await page.getByRole("img", { name: "Inflation: By category" }).waitFor();
     let parkingFailure = "legacy";
     await context.route(`${baseUrl}/api/v1/parking`, (route) =>
       parkingFailure
