@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" fill="none" stroke="#1d5a5e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.06">
+  <!-- sun -->
+  <g transform="translate(40 42)">
+    <circle r="11"/>
+    <path d="M0-19v-6M0 19v6M-19 0h-6M19 0h6M-13.4-13.4l-4.3-4.3M13.4 13.4l4.3 4.3M13.4-13.4l4.3-4.3M-13.4 13.4l-4.3 4.3"/>
+    <path d="M-4 2q4 4 8 0M-4-3h.01M4-3h.01"/>
+  </g>
+  <!-- lemon with a leaf -->
+  <g transform="translate(130 36) rotate(-20)">
+    <path d="M-18 0q0-12 16-12t18 10q2 2 4 2q-2 0-4 2q-4 10-18 10t-16-12z"/>
+    <path d="M-18 0l-5-2M-2-12q4-10 14-8q-4 8-14 8z"/>
+  </g>
+  <!-- sailboat -->
+  <g transform="translate(232 40)">
+    <path d="M0-26v30M0-24l18 24h-18M0-18l-14 18h14"/>
+    <path d="M-22 8h44l-6 9h-32z"/>
+    <path d="M-30 24q5-4 10 0t10 0 10 0 10 0 10 0 10 0"/>
+  </g>
+  <!-- starfish -->
+  <g transform="translate(318 34) rotate(12)">
+    <path d="M0-16l4 10 11 1-8 7 3 11-10-6-10 6 3-11-8-7 11-1z"/>
+  </g>
+  <!-- olive branch -->
+  <g transform="translate(46 132) rotate(-35)">
+    <path d="M-28 0q28-4 56 0"/>
+    <path d="M-18-1q4-10 12-9q-4 8-12 9zM-6 0q6 9 14 7q-6-8-14-7zM6-1q4-10 12-9q-4 8-12 9zM16 0q6 9 12 6"/>
+    <ellipse cx="-12" cy="8" rx="3.2" ry="4.4"/>
+    <ellipse cx="14" cy="-9" rx="3.2" ry="4.4"/>
+  </g>
+  <!-- cat -->
+  <g transform="translate(140 128)">
+    <path d="M-14 6q0-14 14-14t14 14q0 12-14 12t-14-12z"/>
+    <path d="M-12-3l-3-13 10 6M12-3l3-13-10 6"/>
+    <path d="M-6 3h.01M6 3h.01M-2 9q2 2 4 0M-22 8l9 1M-22 13l9-2M22 8l-9 1M22 13l-9-2"/>
+  </g>
+  <!-- amphora -->
+  <g transform="translate(236 132)">
+    <path d="M-6-26h12M-5-26v6q-13 8-13 24q0 14 18 22q18-8 18-22q0-16-13-24v-6"/>
+    <path d="M-8-18q-12-2-10 10M8-18q12-2 10 10"/>
+    <path d="M-15 0q15 5 30 0"/>
+  </g>
+  <!-- fish -->
+  <g transform="translate(318 128) rotate(-8)">
+    <path d="M-18 0q12-14 28 0q-16 14-28 0zM10 0l10-8v16z"/>
+    <path d="M-10-2h.01M-4-6q2 6 0 12"/>
+  </g>
+  <!-- watermelon slice -->
+  <g transform="translate(44 222) rotate(14)">
+    <path d="M-22-6a22 22 0 0 0 44 0z"/>
+    <path d="M-17-6a17 17 0 0 0 34 0"/>
+    <path d="M-8 2h.01M0 6h.01M8 2h.01"/>
+  </g>
+  <!-- palm tree -->
+  <g transform="translate(138 222)">
+    <path d="M2 26q-6-22 0-42"/>
+    <path d="M2-16q-14-10-24 2q12-6 24-2zM2-16q14-10 24 2q-12-6-24-2zM2-16q-8-14-20-12M2-16q8-14 20-12"/>
+    <path d="M-24 28q26-8 52 0"/>
+  </g>
+  <!-- wave -->
+  <g transform="translate(236 222)">
+    <path d="M-30 6q8-16 22-12q-8 2-6 10q4 8 16 2q10-6 26 4"/>
+    <path d="M-28 16q7-5 14 0t14 0 14 0 14 0"/>
+  </g>
+  <!-- ice cream -->
+  <g transform="translate(320 222) rotate(-10)">
+    <path d="M-10-2l10 26 10-26"/>
+    <path d="M-12-2q-2-14 12-14q14 0 12 14z"/>
+    <path d="M-4-14q2-8 8-6"/>
+  </g>
+  <!-- shell -->
+  <g transform="translate(42 310)">
+    <path d="M0 14l-18-14q0-18 18-18t18 18z"/>
+    <path d="M0 14l-9-30M0 14v-32M0 14l9-30M0 14l-16-20M0 14l16-20"/>
+  </g>
+  <!-- sunglasses -->
+  <g transform="translate(136 312) rotate(-6)">
+    <path d="M-24-4h18q0 12-9 12t-9-12zM6-4h18q0 12-9 12t-9-12zM-6-2q6-4 12 0M-24-4l-4-6M24-4l4-6"/>
+  </g>
+  <!-- pomegranate -->
+  <g transform="translate(234 306)">
+    <path d="M0-12q16 0 16 14t-16 16t-16-16t16-14z"/>
+    <path d="M-5-12l1-6 4 3 4-3 1 6"/>
+    <path d="M-5 2h.01M3 6h.01M5-2h.01M-1 10h.01"/>
+  </g>
+  <!-- flip-flops -->
+  <g transform="translate(318 310) rotate(18)">
+    <path d="M-12-16q8-2 9 8l-1 22q-1 4-5 4t-5-4l-2-22q0-6 4-8z"/>
+    <path d="M-7-8l-5 8M-7-8l4 8"/>
+  </g>
+  <!-- small fillers -->
+  <g stroke-width="1.4">
+    <path d="M88 86l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+    <path d="M190 88h.01M286 86h.01M92 176h.01M188 176l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/>
+    <path d="M282 176h.01M90 268l2 4 4 2-4 2-2 4-2-4-4-2 4-2zM186 268h.01M284 268h.01"/>
+    <circle cx="282" cy="86" r="3"/>
+    <circle cx="96" cy="176" r="2.5"/>
+    <circle cx="188" cy="268" r="3"/>
+  </g>
+</svg>

@@ -29,7 +29,6 @@ export type MapLine = { id: string; label: string; route: [number, number][][] }
 export type MapLabels = {
   region: string;
   unavailable: string;
-  hint: string;
   location: string;
   cluster: (count: number) => string;
 };
@@ -225,7 +224,6 @@ export function MapView({
           {labels.unavailable}
         </p>
       )}
-      <span className="map-hint">{labels.hint}</span>
     </div>
   );
 }

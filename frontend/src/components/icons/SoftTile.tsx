@@ -2,7 +2,8 @@ import { type CSSProperties, type ReactNode } from "react";
 import "./icons.css";
 
 /**
- * Schematic icons drawn for this site on a 24px grid with a thin stroke in the current text colour.
+ * Schematic icons drawn for this site on a 24px grid with a 2px stroke in the current colour, so a tile tints
+ * them. Each section has its own colour (see icons.css).
  */
 const glyphs = {
   statistics: (
@@ -110,7 +111,7 @@ export function Glyph({ name }: { name: GlyphName }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -121,11 +122,11 @@ export function Glyph({ name }: { name: GlyphName }) {
   );
 }
 
-/** A schematic icon in the text colour. Decorative: the label next to it names it. */
-export function SoftTile({ icon, size }: { icon: GlyphName; size?: number }) {
+/** A schematic icon on a light tile of its section's colour. Decorative: the label next to it names it. */
+export function SoftTile({ icon, tone = icon, size }: { icon: GlyphName; tone?: GlyphName; size?: number }) {
   return (
     <span
-      className="soft-tile"
+      className={`soft-tile tone-${tone}-tile`}
       style={size ? ({ "--tile-size": `${size}px` } as CSSProperties) : undefined}
       aria-hidden="true"
     >

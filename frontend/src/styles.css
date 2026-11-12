@@ -1,6 +1,6 @@
 :root {
   font-family:
-    Inter,
+    "Manrope Variable",
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -10,15 +10,20 @@
   color: #191c24;
   background: #f7f8fa;
   font-synthesis: none;
-  --muted: #727784;
+  font-weight: 500;
+  --muted: #4a505e;
   --line: #e8eaf0;
   --blue: #4263eb;
+  --card-shadow: 0 1px 2px rgb(25 28 36 / 6%), 0 6px 20px rgb(25 28 36 / 6%);
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
+  min-height: 100vh;
+  /* A faint doodle pattern of Cyprus things on white. */
+  background: #fff url("./assets/doodles.svg") 0 0 / 360px repeat;
 }
 a {
   color: inherit;
@@ -69,8 +74,7 @@ input:focus-visible {
   align-items: center;
   text-decoration: none;
   font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.9px;
+  font-weight: 700;
   flex-shrink: 0;
 }
 .wordmark-light {
@@ -89,7 +93,7 @@ nav a {
   min-height: 42px;
   padding: 10px 13px;
   text-decoration: none;
-  color: #777c89;
+  color: #4a505e;
   font-size: 13px;
   border-radius: 7px;
 }
@@ -135,7 +139,6 @@ main {
 h1 {
   font-size: 30px;
   font-weight: 600;
-  letter-spacing: -1px;
   line-height: 1.2;
   margin: 0;
 }
@@ -146,7 +149,7 @@ h1 {
 }
 .dataset-card,
 .tool-panel {
-  border: 1px solid var(--line);
+  box-shadow: var(--card-shadow);
   background: #fff;
   border-radius: 14px;
   overflow: hidden;
@@ -161,14 +164,13 @@ h1 {
 h2,
 .card-heading h3 {
   font-size: 17px;
-  font-weight: 550;
-  letter-spacing: -0.3px;
+  font-weight: 600;
   line-height: 1.4;
   margin: 0;
 }
 .card-description {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   margin: 2px 24px 0;
   line-height: 1.6;
 }
@@ -181,7 +183,7 @@ h2,
   padding: 24px;
 }
 .chart-empty > p {
-  color: #8a909d;
+  color: #4a505e;
   font-size: 12px;
   margin: 2px 0 0;
 }
@@ -189,8 +191,8 @@ h2,
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  color: #5c6a8d;
-  font-size: 11px;
+  color: #3f4a68;
+  font-size: 12px;
   text-decoration: none;
   min-height: 40px;
 }
@@ -289,7 +291,7 @@ h2,
 }
 .about-card {
   background: white;
-  border: 1px solid var(--line);
+  box-shadow: var(--card-shadow);
   border-radius: 14px;
   padding: 22px 24px;
 }
@@ -312,7 +314,7 @@ h2,
 }
 .sources-list {
   background: white;
-  border: 1px solid var(--line);
+  box-shadow: var(--card-shadow);
   border-radius: 14px;
   padding-inline: 24px;
 }
@@ -330,7 +332,7 @@ h2,
 }
 .source-row p {
   margin: 7px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   line-height: 1.6;
 }
@@ -387,7 +389,7 @@ h2,
   }
   nav a {
     padding: 10px 8px;
-    font-size: 11px;
+    font-size: 12px;
     gap: 6px;
     min-height: 44px;
   }
@@ -445,7 +447,7 @@ h2,
     flex: 1;
     min-width: 0;
     flex-direction: column;
-    font-size: 10px;
+    font-size: 12px;
     min-height: 52px;
     padding: 8px 4px;
     gap: 6px;
@@ -467,9 +469,9 @@ h2,
   border: 1px solid var(--line);
   border-radius: 7px;
   background: #fff;
-  color: #505866;
+  color: #3d4250;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   min-height: 36px;
 }
 /*
@@ -512,7 +514,7 @@ nav a {
     padding: 8px 2px;
     gap: 6px;
     min-width: 0;
-    font-size: 11px;
+    font-size: 12px;
   }
   nav a span {
     max-width: 100%;
@@ -526,7 +528,7 @@ nav a {
 }
 @media (max-width: 360px) {
   nav a {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 .not-found {

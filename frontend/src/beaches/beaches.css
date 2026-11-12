@@ -23,8 +23,8 @@
   padding: 1px 8px;
   border-radius: 999px;
   background: var(--tone, #f1f3f7);
-  color: var(--tone-text, #5c6a8d);
-  font-size: 11px;
+  color: var(--tone-text, #3f4a68);
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -35,7 +35,7 @@
   margin: 6px 0 10px;
   padding: 0;
   list-style: none;
-  font-size: 11px;
+  font-size: 12px;
 }
 .beach-history li {
   display: inline-flex;
@@ -67,7 +67,7 @@
 .beach-note {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 /* Dog beaches: the pins and list icons of the "Dog beaches" view. */

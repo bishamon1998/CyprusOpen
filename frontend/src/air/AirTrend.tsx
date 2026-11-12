@@ -20,7 +20,7 @@ const levelColors: Record<Level, string> = {
   "very-poor": "#960032",
   "extremely-poor": "#7d2181",
 };
-const NO_LEVEL = "#8a909d";
+const NO_LEVEL = "#4a505e";
 
 type Range = "day" | "week";
 
@@ -91,7 +91,7 @@ export function AirTrend({
         formatter: (params: { data: { value: [number, number]; level: Level | null } }[]) => {
           const point = params[0]?.data;
           if (!point) return "";
-          const level = point.level ? " · " + t(levelLabels[point.level]) : "";
+          const level = point.level ? ", " + t(levelLabels[point.level]) : "";
           return `${fullFormat.format(point.value[0])}<br>${number.format(point.value[1])} µg/m³${level}`;
         },
       },

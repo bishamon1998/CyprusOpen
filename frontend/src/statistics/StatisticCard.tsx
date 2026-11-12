@@ -198,7 +198,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
       return {
         status: "ready",
         height: 300,
-        label: t(card.title) + " · " + t(view.label),
+        label: t(card.title) + ": " + t(view.label),
         option: {
           grid: { left: 8, right: 8, top: 12, bottom: 8, containLabel: true },
           tooltip: {
@@ -231,7 +231,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
       return {
         status: "ready",
         height: 120 + matrix.rows.length * 26,
-        label: t(card.title) + " · " + t(view.label),
+        label: t(card.title) + ": " + t(view.label),
         option: {
           grid: { left: 8, right: 8, top: 8, bottom: 40, containLabel: true },
           tooltip: {
@@ -247,7 +247,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             data: matrix.columns.map(country),
             ...axisStyle,
             splitLine: { show: false },
-            axisLabel: { ...axisStyle.axisLabel, rotate: 50, fontSize: 10, width: 70, overflow: "truncate", interval: 0 },
+            axisLabel: { ...axisStyle.axisLabel, rotate: 50, fontSize: 12, width: 70, overflow: "truncate", interval: 0 },
           },
           yAxis: {
             type: "category",
@@ -255,7 +255,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             inverse: true,
             ...axisStyle,
             splitLine: { show: false },
-            axisLabel: { ...axisStyle.axisLabel, fontSize: 10, width: 80, overflow: "truncate", interval: 0 },
+            axisLabel: { ...axisStyle.axisLabel, fontSize: 12, width: 80, overflow: "truncate", interval: 0 },
           },
           visualMap: {
             min: 0,
@@ -270,7 +270,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             textGap: 8,
             inRange: { color: calendarColors },
             outOfRange: { color: calendarColors[calendarColors.length - 1] },
-            textStyle: { color: "#3d4250", fontSize: 11 },
+            textStyle: { color: "#3d4250", fontSize: 12 },
           },
           series: [
             {
@@ -301,7 +301,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
       return {
         status: "ready",
         height: 380,
-        label: t(card.title) + " · " + t(view.label),
+        label: t(card.title) + ": " + t(view.label),
         option: {
           grid: { left: 8, right: 8, top: 4, bottom: 44, containLabel: true },
           tooltip: {
@@ -330,7 +330,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             itemHeight: 140,
             calculable: false,
             inRange: { color: calendarColors },
-            textStyle: { color: "#3d4250", fontSize: 11 },
+            textStyle: { color: "#3d4250", fontSize: 12 },
           },
           series: [
             {
@@ -350,7 +350,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
       return {
         status: "ready",
         height: 64 + rows.length * 30,
-        label: t(card.title) + " · " + t(view.label),
+        label: t(card.title) + ": " + t(view.label),
         option: {
           grid: { left: 8, right: 64, top: 8, bottom: 8, containLabel: true },
           tooltip: {
@@ -375,8 +375,8 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
               label: {
                 show: true,
                 position: "right",
-                color: "#727784",
-                fontSize: 11,
+                color: "#4a505e",
+                fontSize: 12,
                 formatter: ({ value: amount }: { value: number }) => value(amount, view.unit),
               },
             },
@@ -408,11 +408,11 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
     return {
       status: "ready",
       height: 320,
-      label: t(card.title) + " · " + t(view.label),
+      label: t(card.title) + ": " + t(view.label),
       option: {
         grid: { left: 8, right: 8, top: lines.length > 1 ? 36 : 12, bottom: 8, containLabel: true },
         legend: lines.length > 1
-          ? { top: 0, left: 0, icon: "roundRect", itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 11 } }
+          ? { top: 0, left: 0, icon: "roundRect", itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 12 } }
           : { show: false },
         tooltip: { ...tooltipStyle, valueFormatter: (amount: number | null) => value(amount, view.unit) },
         xAxis: { type: "category", data: data.periods, ...axisStyle },
@@ -466,7 +466,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
         !ranking.complete && t("partialPeriod"),
         ranking.items.some((item) => item.lowReliability) && t("lowReliability"),
       ].filter(Boolean);
-      return notes.length ? notes.join(" · ") : undefined;
+      return notes.length ? notes.join(". ") : undefined;
     }
     if (view.kind === "stacked") {
       const parts = view.series.map((item) => valuesByPeriod(table, item.key));

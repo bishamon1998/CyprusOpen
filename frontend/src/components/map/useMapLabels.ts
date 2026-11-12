@@ -13,7 +13,6 @@ export function useMapLabels(region: MessageKey, count: MessageKey): MapLabels {
     () => ({
       region: t(region),
       unavailable: t("tilesUnavailable"),
-      hint: t("mapHint"),
       location: t("yourLocation"),
       cluster: (total: number) => t(count, { count: total }),
     }),

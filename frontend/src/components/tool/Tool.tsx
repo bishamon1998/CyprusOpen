@@ -2,12 +2,13 @@ import { type ReactNode, type RefObject } from "react";
 import { ArrowUpRight, LocateFixed, X } from "lucide-react";
 import { useI18n } from "../../i18n";
 import { type MessageKey } from "../../locales";
+import { InfoPopover } from "../InfoPopover";
 import { Mouflon, type MouflonScene } from "../Mouflon";
 import "./tool.css";
 
 /**
  * Building blocks shared by the map tools (Parking, Pharmacies): a framed workspace with
- * filters, a map beside a results panel, selectable rows and a source attribution footer.
+ * filters, a map beside a results panel, selectable rows and an info button with the source.
  */
 export function ToolWorkspace({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -136,7 +137,7 @@ export function ResultRow({
 }: {
   /** A short symbol, or a schematic icon (Glyph). */
   icon: ReactNode;
-  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level. */
+  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level, or a section tile ("parking-tile"). */
   tone?: string;
   title: string;
   details: ReactNode[];
@@ -198,7 +199,7 @@ export function ShowMore({ onClick }: { onClick: () => void }) {
   );
 }
 
-/** Footer naming the publisher, followed by facts such as check dates and licence links. */
+/** An "i" button under the tool that opens the publisher, data dates and licence links. */
 export function SourceAttribution({
   href,
   badge,
@@ -211,19 +212,18 @@ export function SourceAttribution({
   facts: ReactNode[];
 }) {
   return (
-    <div className="tool-attribution">
-      <a href={href} target="_blank" rel="noopener noreferrer">
-        {badge}
-        {name}
-      </a>
-      <span>
-        {facts.map((fact, index) => (
-          <span key={index}>
-            {index > 0 && " · "}
-            {fact}
-          </span>
+    <div className="info-bar tool-attribution">
+      <InfoPopover>
+        <p>
+          <a className="tool-attribution-source" href={href} target="_blank" rel="noopener noreferrer">
+            {badge}
+            {name}
+          </a>
+        </p>
+        {facts.filter(Boolean).map((fact, index) => (
+          <p key={index}>{fact}</p>
         ))}
-      </span>
+      </InfoPopover>
     </div>
   );
 }

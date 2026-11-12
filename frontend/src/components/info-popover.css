@@ -1,0 +1,58 @@
+/* The bar that holds the "i" button at the bottom of a card or tool. */
+.info-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 10px 8px;
+}
+.info-popover {
+  position: relative;
+}
+.info-popover-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.info-popover-button:hover,
+.info-popover-button[aria-expanded="true"] {
+  color: #191c24;
+  background: #f1f3f7;
+}
+.info-popover-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+.info-popover-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 1000;
+  width: min(340px, calc(100vw - 48px));
+  padding: 14px 16px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 6px 24px rgb(25 28 36 / 12%);
+  color: #3d4250;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.info-popover-panel p {
+  margin: 0 0 8px;
+}
+.info-popover-panel a {
+  color: var(--blue);
+}
+.info-popover-panel .source-link {
+  min-height: 32px;
+  font-size: 13px;
+}
+.info-popover-lead {
+  color: #191c24;
+  font-weight: 600;
+}

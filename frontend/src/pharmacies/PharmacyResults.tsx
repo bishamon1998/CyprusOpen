@@ -112,6 +112,7 @@ export function PharmacyResults({
           <ResultRow
             key={pharmacy.id}
             icon={<Glyph name="cross" />}
+            tone="pharmacies-tile"
             title={pharmacy.name}
             lang="el"
             details={[<span lang="el">{pharmacyAddress(pharmacy)}</span>, detail(pharmacy)]}
