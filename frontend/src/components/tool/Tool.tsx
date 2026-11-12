@@ -136,7 +136,7 @@ export function ResultRow({
 }: {
   /** A short symbol, or a schematic icon (Glyph). */
   icon: ReactNode;
-  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level, or a section tile ("parking-tile"). */
+  /** Colours the icon (a CSS class "tone-…"), e.g. an air quality level. */
   tone?: string;
   title: string;
   details: ReactNode[];

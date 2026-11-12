@@ -270,7 +270,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             textGap: 8,
             inRange: { color: calendarColors },
             outOfRange: { color: calendarColors[calendarColors.length - 1] },
-            textStyle: { color: "#727784", fontSize: 11 },
+            textStyle: { color: "#3d4250", fontSize: 11 },
           },
           series: [
             {
@@ -330,7 +330,7 @@ export function StatisticCard({ card }: { card: StatisticCardConfig }) {
             itemHeight: 140,
             calculable: false,
             inRange: { color: calendarColors },
-            textStyle: { color: "#727784", fontSize: 11 },
+            textStyle: { color: "#3d4250", fontSize: 11 },
           },
           series: [
             {

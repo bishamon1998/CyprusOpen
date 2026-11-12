@@ -26,10 +26,10 @@ export function chartState(
 
 /** Axis and tooltip styling shared by the statistics charts. */
 export const axisStyle = {
-  axisLine: { lineStyle: { color: "#e8eaf0" } },
+  axisLine: { lineStyle: { color: "#9aa0ad" } },
   axisTick: { show: false },
-  axisLabel: { color: "#727784", fontSize: 11 },
-  splitLine: { lineStyle: { color: "#f0f1f5" } },
+  axisLabel: { color: "#3d4250", fontSize: 11 },
+  splitLine: { lineStyle: { color: "#e3e5ec" } },
 };
 
 export const tooltipStyle = {

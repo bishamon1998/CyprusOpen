@@ -91,7 +91,6 @@ export function ParkingResults({
           <ResultRow
             key={place.id}
             icon={<Glyph name="parking" />}
-            tone="parking-tile"
             title={name(place)}
             details={[detail(place)]}
             selected={selected?.id === place.id}

@@ -6,13 +6,55 @@
   padding: 16px 24px 0;
 }
 .chart {
-  margin: 12px 16px 0;
+  margin: 12px 16px 16px;
 }
-.chart-summary {
-  margin: 4px 24px 14px;
+.data-info {
+  position: relative;
+  flex-shrink: 0;
+  margin: -8px -10px -8px 0;
+}
+.data-info-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
   color: var(--muted);
+  cursor: pointer;
+}
+.data-info-button:hover,
+.data-info-button[aria-expanded="true"] {
+  color: var(--ink, #191c24);
+  background: #f1f3f7;
+}
+.data-info-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+.data-info-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  width: min(320px, calc(100vw - 48px));
+  padding: 12px 14px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgb(25 28 36 / 10%);
+}
+.data-info-panel p {
+  margin: 0 0 6px;
   font-size: 12px;
   line-height: 1.5;
+}
+.chart-summary {
+  color: var(--ink, #191c24);
+}
+.card-updated {
+  color: var(--muted);
 }
 .chart-select {
   min-height: 36px;
@@ -35,22 +77,12 @@
   font-size: 13px;
   min-height: 40px;
 }
-.card-footer:has(.card-updated) {
-  justify-content: space-between;
-}
-.card-updated {
-  color: var(--muted);
-  font-size: 11px;
-}
 @media (max-width: 700px) {
   .chart-controls {
     padding-inline: 20px;
   }
   .chart {
     margin-inline: 8px;
-  }
-  .chart-summary {
-    margin-inline: 20px;
   }
 }
 .statistics-category + .statistics-category {

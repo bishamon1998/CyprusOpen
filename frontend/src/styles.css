@@ -141,7 +141,7 @@ h1 {
 }
 .dataset-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 22px;
 }
 .dataset-card,
@@ -169,7 +169,7 @@ h2,
 .card-description {
   color: var(--muted);
   font-size: 11px;
-  margin: 9px 24px 0;
+  margin: 2px 24px 0;
   line-height: 1.6;
 }
 .chart-empty {
@@ -184,19 +184,6 @@ h2,
   color: #8a909d;
   font-size: 12px;
   margin: 2px 0 0;
-}
-.card-footer {
-  border-top: 1px solid #f0f1f5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px 12px;
-  padding: 8px 24px;
-}
-.card-footer .source-link {
-  margin-left: auto;
-  white-space: nowrap;
 }
 .source-link {
   display: inline-flex;
@@ -436,9 +423,6 @@ h2,
   }
   .chart-empty {
     min-height: 230px;
-  }
-  .card-footer {
-    padding-inline: 20px;
   }
   .sources-list,
   .about-card {
