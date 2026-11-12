@@ -62,11 +62,11 @@
     animation: mouflon-peek 0.6s 0.1s ease-out both;
     transform-origin: 50% 90%;
   }
-  /* Adding the wiggle keeps the peek in the list, so leaving the mouflon does not replay the peek from hidden. */
-  .page-mouflon:hover {
-    animation:
-      mouflon-peek 0.6s 0.1s ease-out both,
-      mouflon-wiggle 0.5s ease-in-out;
+  .page-mouflon-wrap {
+    transform-origin: 50% 90%;
+  }
+  .page-mouflon-wrap.wiggling {
+    animation: mouflon-wiggle 0.5s ease-in-out;
   }
 
   /* Cards and tools rise in once when the page opens. */
