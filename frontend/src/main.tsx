@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { I18nProvider } from "./i18n";
+import "@fontsource-variable/manrope";
 import "./styles.css";
 
 // After a deploy the previous build's hashed chunks are gone. A tab opened before it fails to load a page chunk;

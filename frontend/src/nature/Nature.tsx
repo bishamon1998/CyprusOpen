@@ -115,7 +115,7 @@ export default function Nature() {
   const detail = (site: NatureSite) =>
     [t(kindLabels[site.kind]), ...facts(site), position ? distanceLabel(distance(position, site)) : null]
       .filter(Boolean)
-      .join(" · ");
+      .join(", ");
 
   return (
     <>
@@ -193,7 +193,7 @@ export default function Nature() {
               <SelectedResult
                 label={t(kindLabels[selected.kind])}
                 title={name(selected)}
-                detail={facts(selected).filter(Boolean).join(" · ") || undefined}
+                detail={facts(selected).filter(Boolean).join(", ") || undefined}
               >
                 <a
                   href={googleDirections(`${selected.latitude},${selected.longitude}`)}

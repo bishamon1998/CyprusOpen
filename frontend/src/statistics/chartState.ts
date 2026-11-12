@@ -28,7 +28,7 @@ export function chartState(
 export const axisStyle = {
   axisLine: { lineStyle: { color: "#9aa0ad" } },
   axisTick: { show: false },
-  axisLabel: { color: "#3d4250", fontSize: 11 },
+  axisLabel: { color: "#3d4250", fontSize: 12 },
   splitLine: { lineStyle: { color: "#e3e5ec" } },
 };
 

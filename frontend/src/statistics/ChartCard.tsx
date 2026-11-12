@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { Info, RefreshCw } from "lucide-react";
+import { lazy, Suspense, type ReactNode } from "react";
+import { RefreshCw } from "lucide-react";
 import { type ChartOption } from "../components/Chart";
 import { Illustration, type IllustrationKind } from "../components/Illustration";
+import { InfoPopover } from "../components/InfoPopover";
 import { SourceLink } from "../components/SourceLink";
 import { useSourceDates } from "../format";
 import { useI18n } from "../i18n";
@@ -17,8 +18,8 @@ export type ChartState =
 
 /**
  * Shared frame for every statistics chart: heading, controls, the chart or its
- * loading/empty/error state. The text summary and the source attribution sit in
- * an info popover next to the title.
+ * loading/empty/error state. The text summary and the source sit in an info
+ * popover at the bottom of the card.
  */
 export function ChartCard({
   title,
@@ -44,19 +45,6 @@ export function ChartCard({
     <article className="dataset-card">
       <div className="card-heading">
         <h3>{title}</h3>
-        {(source || showSummary) && (
-          <DataInfo>
-            {showSummary && <p className="chart-summary">{summary}</p>}
-            {source && (
-              <p className="card-updated">{sourceDates(source.updatedAt, source.checkedAt).join(" · ")}</p>
-            )}
-            {source && (
-              <SourceLink href={source.url}>
-                {t("cystat")} · {source.license}
-              </SourceLink>
-            )}
-          </DataInfo>
-        )}
       </div>
       <p className="card-description">{description}</p>
       {state.status !== "error" && controls && (
@@ -86,50 +74,19 @@ export function ChartCard({
           )}
         </div>
       )}
-    </article>
-  );
-}
-
-/** An "i" button that opens a small panel with the data's summary, dates and source. */
-function DataInfo({ children }: { children: ReactNode }) {
-  const { t } = useI18n();
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
-  const panel = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  return (
-    <div className="data-info" ref={root}>
-      <button
-        type="button"
-        className="data-info-button"
-        aria-label={t("aboutData")}
-        aria-expanded={open}
-        aria-controls={open ? panel : undefined}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <Info size={17} aria-hidden="true" />
-      </button>
-      {open && (
-        <div id={panel} className="data-info-panel" role="dialog" aria-label={t("aboutData")}>
-          {children}
+      {(source || showSummary) && (
+        <div className="info-bar">
+          <InfoPopover>
+            {showSummary && <p className="info-popover-lead">{summary}</p>}
+            {source && sourceDates(source.updatedAt, source.checkedAt).map((line) => <p key={line}>{line}</p>)}
+            {source && (
+              <SourceLink href={source.url}>
+                {t("cystat")}, {source.license}
+              </SourceLink>
+            )}
+          </InfoPopover>
         </div>
       )}
-    </div>
+    </article>
   );
 }
