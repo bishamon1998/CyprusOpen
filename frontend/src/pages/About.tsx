@@ -7,6 +7,8 @@ import {
   airQualityUrl,
   bathingWaterUrl,
   catalogUrl,
+  bankHolidaysUrl,
+  hospitalsSourceUrl,
   natureSourceUrl,
   nicosiaParkingUrl,
   parkingDirectoryUrl,

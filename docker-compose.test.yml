@@ -32,6 +32,10 @@ services:
       BEACHES_DISCODATA_URL: http://places-fixture:9090/sql
       NATURE_SYNC_ENABLED: "true"
       NATURE_FILES_URL: http://places-fixture:9090/nature/
+      SERVICES_SYNC_ENABLED: "true"
+      SERVICES_FILES_URL: http://places-fixture:9090/services/
+      RECYCLING_SYNC_ENABLED: "true"
+      RECYCLING_FILES_URL: http://places-fixture:9090/recycling/
       PHARMACY_SYNC_ENABLED: "true"
       PHARMACY_CATALOG_METADATA_URL: http://pharmacy-fixture:9091/metadata
     depends_on:

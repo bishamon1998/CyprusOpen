@@ -47,6 +47,34 @@ const glyphs = {
       <path d="M12 16.5V21" />
     </>
   ),
+  // A public building with columns.
+  services: (
+    <>
+      <path d="M3.5 9.5L12 4l8.5 5.5z" />
+      <path d="M6 12v6M10 12v6M14 12v6M18 12v6" />
+      <path d="M3.5 20.5h17" />
+    </>
+  ),
+  // Three arrows chasing each other.
+  recycling: (
+    <>
+      <path d="M8.2 8.6l2.3-3.9a1.7 1.7 0 0 1 3 0l1.7 2.9" />
+      <path d="M15.2 4.9v2.7h-2.7" />
+      <path d="M18.4 12.4l1.9 3.3a1.7 1.7 0 0 1-1.5 2.6H15" />
+      <path d="M16.9 20.3L15 18.3l1.9-2" />
+      <path d="M8.5 18.3H5.2a1.7 1.7 0 0 1-1.5-2.6l1.8-3.1" />
+      <path d="M3.5 13.4l2 -.8.8 2.1" />
+    </>
+  ),
+  // A calendar page.
+  tools: (
+    <>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+      <path d="M3.5 10h17" />
+      <path d="M8 3v4M16 3v4" />
+      <path d="M8 14h2M14 14h2M8 17h2" />
+    </>
+  ),
   about: (
     <>
       <circle cx="12" cy="12" r="8.5" />

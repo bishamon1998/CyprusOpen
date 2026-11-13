@@ -48,14 +48,16 @@ class BackendApplicationIT {
         var jdbc = JdbcClient.create(new org.springframework.jdbc.datasource.DriverManagerDataSource(
                 postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()));
         assertThat(changesets(jdbc, "statistics")).containsExactly("1-observations", "2-quarter-periods");
-        assertThat(changesets(jdbc, "parking")).contains("1-parking-directory", "4-air-quality", "5-beaches", "6-nature", "7-air-quality-history")
-                .hasSize(7);
+        assertThat(changesets(jdbc, "parking")).contains("1-parking-directory", "4-air-quality", "5-beaches", "6-nature", "7-air-quality-history",
+                        "8-services", "9-recycling")
+                .hasSize(9);
         assertThat(changesets(jdbc, "pharmacies")).contains("1-duty-schedule", "2-pharmacy-location", "3-schedule-source-date")
                 .hasSize(8);
 
         try (var client = HttpClient.newHttpClient()) {
             for (var path : List.of("/api/v1/statistics/datasets", "/api/v1/parking", "/api/v1/air-quality",
-                    "/api/v1/beaches", "/api/v1/nature", "/api/v1/pharmacies", "/actuator/health/readiness")) {
+                    "/api/v1/beaches", "/api/v1/nature", "/api/v1/services", "/api/v1/recycling", "/api/v1/pharmacies",
+                    "/actuator/health/readiness")) {
                 var response = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).build(),
                         HttpResponse.BodyHandlers.ofString());
                 assertThat(response.statusCode()).as(path).isEqualTo(200);

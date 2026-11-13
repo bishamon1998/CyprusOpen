@@ -5,6 +5,9 @@
 .tone-beaches-tile { --tile: #f59f00; }
 .tone-air-tile { --tile: #1098ad; }
 .tone-nature-tile { --tile: #5c940d; }
+.tone-services-tile { --tile: #e03131; }
+.tone-recycling-tile { --tile: #2b8a3e; }
+.tone-tools-tile { --tile: #f76707; }
 .tone-about-tile { --tile: #e64980; }
 /* Statistics categories */
 .tone-people-tile { --tile: #4263eb; }

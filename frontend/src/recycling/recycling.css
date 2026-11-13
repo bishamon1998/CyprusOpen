@@ -1,0 +1,10 @@
+/* Kinds of recycling points: marker and list icon colours. */
+.tone-island { --tone: #2b8a3e; --tone-text: #fff; }
+.tone-glass { --tone: #1098ad; --tone-text: #fff; }
+.result-row-icon.tone-island,
+.result-row-icon.tone-glass,
+.map-pin.tone-island span,
+.map-pin.tone-glass span {
+  background: var(--tone);
+  color: var(--tone-text);
+}

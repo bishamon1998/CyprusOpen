@@ -40,10 +40,12 @@ for (const [prefix, target] of [
     process.env.STATISTICS_UPSTREAM || "http://localhost:8080",
   ],
   ["/api/v1/parking", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
-  // Beaches, air quality and nature sites are served by places-service with parking: one machine for the map tools.
+  // Beaches, air quality, nature sites, public services and recycling points are served by places-service with parking: one machine for the map tools.
   ["/api/v1/air-quality", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
   ["/api/v1/beaches", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
   ["/api/v1/nature", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
+  ["/api/v1/services", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
+  ["/api/v1/recycling", process.env.PARKING_UPSTREAM || "http://localhost:8080"],
   ["/api/v1/pharmacies", process.env.PHARMACIES_UPSTREAM || "http://localhost:8080"],
 ]) {
   const upstream = new URL(target);

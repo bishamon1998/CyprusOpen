@@ -13,6 +13,9 @@ const Pharmacies = lazy(() => import("./pharmacies/Pharmacies"));
 const AirQuality = lazy(() => import("./air/AirQuality"));
 const Beaches = lazy(() => import("./beaches/Beaches"));
 const Nature = lazy(() => import("./nature/Nature"));
+const Services = lazy(() => import("./services/Services"));
+const Recycling = lazy(() => import("./recycling/Recycling"));
+const Tools = lazy(() => import("./tools/Tools"));
 
 
 export function App() {
@@ -71,6 +74,9 @@ export function App() {
             <Route path="/beaches" element={<Beaches />} />
             <Route path="/air" element={<AirQuality />} />
             <Route path="/nature" element={<Nature />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/recycling" element={<Recycling />} />
+            <Route path="/tools" element={<Tools />} />
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

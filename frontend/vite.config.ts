@@ -11,6 +11,8 @@ export default defineConfig({
       "/api/v1/air-quality": "http://localhost:8080",
       "/api/v1/beaches": "http://localhost:8080",
       "/api/v1/nature": "http://localhost:8080",
+      "/api/v1/services": "http://localhost:8080",
+      "/api/v1/recycling": "http://localhost:8080",
       "/api/v1/pharmacies": "http://localhost:8080",
     },
   },

@@ -48,3 +48,17 @@ databaseChangeLog:
         - sqlFile:
             path: air-quality-history.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 8-services
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: services.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: 9-recycling
+      author: cyprus-open
+      changes:
+        - sqlFile:
+            path: recycling.sql
+            relativeToChangelogFile: true
