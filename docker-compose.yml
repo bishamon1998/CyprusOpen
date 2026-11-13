@@ -1,7 +1,7 @@
 name: cyprus-open
 
 services:
-  # Statistics, places (parking, beaches, air quality, nature) and pharmacies in one process, each with its own database.
+  # Statistics, places (parking, beaches, air quality, nature, services, recycling) and pharmacies in one process, each with its own database.
   backend:
     build:
       context: .
@@ -19,6 +19,8 @@ services:
       AIR_QUALITY_SYNC_ENABLED: ${AIR_QUALITY_SYNC_ENABLED:-false}
       BEACHES_SYNC_ENABLED: ${BEACHES_SYNC_ENABLED:-false}
       NATURE_SYNC_ENABLED: ${NATURE_SYNC_ENABLED:-false}
+      SERVICES_SYNC_ENABLED: ${SERVICES_SYNC_ENABLED:-false}
+      RECYCLING_SYNC_ENABLED: ${RECYCLING_SYNC_ENABLED:-false}
       PHARMACIES_JDBC_URL: jdbc:postgresql://postgres:5432/pharmacies?currentSchema=pharmacies
       PHARMACIES_DB_USER: pharmacies_app
       PHARMACIES_DB_PASSWORD: ${PHARMACIES_DB_PASSWORD:?Set PHARMACIES_DB_PASSWORD in .env}

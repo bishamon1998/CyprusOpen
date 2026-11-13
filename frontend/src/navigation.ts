@@ -20,6 +20,9 @@ export const sections: {
   { path: "/beaches", label: "beaches", icon: "beaches", lead: "beachesLead", mouflon: "beaches" },
   { path: "/air", label: "airQuality", icon: "air", lead: "airLead", mouflon: "air-quality" },
   { path: "/nature", label: "nature", icon: "nature", lead: "natureLead", mouflon: "nature" },
+  { path: "/services", label: "services", icon: "services", lead: "servicesLead", mouflon: "pharmacies" },
+  { path: "/recycling", label: "recycling", icon: "recycling", lead: "recyclingLead", mouflon: "nature" },
+  { path: "/tools", label: "tools", icon: "tools", lead: "toolsLead", mouflon: "sources" },
   { path: "/about", label: "sources", icon: "about", lead: "aboutLead", mouflon: "sources" },
 ];
 

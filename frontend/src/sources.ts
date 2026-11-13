@@ -11,6 +11,15 @@ export const airQualityUrl =
   "https://www.data.gov.cy/el/dataset/i/5dc97c12-735d-4cc7-9030-101c735ce1a3";
 export const airQualityIndexUrl = "https://airindex.eea.europa.eu/AQI/index.html";
 export const natureSourceUrl = "https://www.data.gov.cy/el/dataset/245";
+export const hospitalsSourceUrl =
+  "https://www.data.gov.cy/el/dataset/i/2e27aa7a-75de-485d-8b07-d2dfc734f8ab";
+export const serviceCentresSourceUrl =
+  "https://www.data.gov.cy/el/dataset/i/6b8d7db3-b5ff-4dd0-8df0-d4cb60b0d26a";
+export const recyclingSourceUrl =
+  "https://www.data.gov.cy/el/dataset/i/b9e4d56b-0fee-4453-8f03-84210265731d";
+export const bankHolidaysUrl = "https://www.centralbank.cy/en/the-bank/working-hours-bank-holidays";
+export const taxDepartmentUrl = "https://www.gov.cy/mof-tax/";
+export const socialInsuranceUrl = "https://www.mlsi.gov.cy/mlsi/sid/sidv2.nsf/index_en/index_en";
 export const bathingWaterUrl = "https://www.eea.europa.eu/en/topics/in-depth/bathing-water";
 export const eeaLicenseUrl = "https://www.eea.europa.eu/en/legal-notice";
 export const ccBySaLicenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/";

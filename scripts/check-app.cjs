@@ -81,6 +81,9 @@ async function main() {
         ["/beaches", "Beaches"],
         ["/air", "Air quality"],
         ["/nature", "Nature"],
+        ["/services", "Public services"],
+        ["/recycling", "Recycling"],
+        ["/tools", "Tools"],
         ["/about", "About"],
       ]) {
         const response = await page.goto(`${baseUrl}${route}`);
@@ -146,6 +149,53 @@ async function main() {
     await page.getByRole("link", { name: /Directions to the trail/ }).waitFor();
     await page.getByRole("searchbox", { name: "Search picnic sites, camping, trails" }).fill("Σπηλιές");
     assert.equal(await page.locator(".result-list li").count(), 1);
+    // Eight state hospitals and nine Citizen Service Centres, each source with its own date.
+    await page.goto(`${baseUrl}/services`);
+    await page.locator(".result-list li").nth(16).waitFor();
+    assert.equal(await page.locator(".result-list li").count(), 17);
+    const servicesInfo = await sourceInfo(page);
+    assert.ok(servicesInfo.includes("Hospitals: data as of 23 Oct 2023"), servicesInfo);
+    assert.ok(servicesInfo.includes("Service centres: data as of 20 Jan 2026"), servicesInfo);
+    assert.ok(servicesInfo.includes("Public Administration and Personnel Department"), servicesInfo);
+    await page.getByRole("combobox", { name: "Kind of place" }).selectOption("centre");
+    assert.equal(await page.locator(".result-list li").count(), 9);
+    // The files are Greek only, so a visitor can search by the translated town.
+    await page.getByRole("searchbox", { name: "Search by name, address or town" }).fill("Larnaca");
+    assert.equal(await page.locator(".result-list li").count(), 1);
+    await page.locator(".result-list .result-row").first().getByText("Mon–Fri, 08:00–17:00").waitFor();
+    await page.locator(".result-row").first().click();
+    await page.getByRole("link", { name: /Book an appointment/ }).waitFor();
+    await page.locator(".selected-result").getByRole("link", { name: "22309100" }).waitFor();
+    // Green Dot points from the June 2019 export, filtered by area and kind.
+    await page.goto(`${baseUrl}/recycling`);
+    await page.locator(".result-list li").nth(10).waitFor();
+    assert.equal(await page.locator(".result-list li").count(), 11);
+    const recyclingInfo = await sourceInfo(page);
+    assert.ok(recyclingInfo.includes("Data as of 24 Jun 2019"), recyclingInfo);
+    assert.ok(recyclingInfo.includes("CC BY-SA 4.0"), recyclingInfo);
+    await page.getByRole("combobox", { name: "Kind of point" }).selectOption("glass");
+    assert.equal(await page.locator(".result-list li").count(), 9);
+    await page.getByRole("combobox", { name: "Area" }).selectOption("paphos");
+    assert.equal(await page.locator(".result-list li").count(), 2);
+    await page.locator(".result-row").first().click();
+    await page.getByRole("link", { name: /Directions in Google Maps/ }).waitFor();
+    // Holidays are calculated in the browser: 15 a year, with Orthodox Easter for the dates that follow it.
+    await page.goto(`${baseUrl}/tools`);
+    const thisYear = Number(
+      new Intl.DateTimeFormat("en", { year: "numeric", timeZone: "Asia/Nicosia" }).format(new Date()),
+    );
+    const holidayList = page.getByRole("list", { name: `Holidays in ${thisYear}` });
+    await holidayList.waitFor();
+    assert.equal(await holidayList.locator("li").count(), 15);
+    await page.getByRole("radio", { name: String(thisYear + 1) }).click();
+    await page.getByRole("list", { name: `Holidays in ${thisYear + 1}` }).getByText("Green Monday").waitFor();
+    // €2,500 a month, 12 salaries: €30,000 a year, €2,640 social insurance, €795 GESY, €913 income tax.
+    await page.getByLabel("Gross salary").fill("2500");
+    await page.locator(".salary-result").getByText("€2,138").waitFor();
+    await page.locator(".salary-table").getByText("-€913.00").waitFor();
+    await page.getByRole("radio", { name: "Per year" }).click();
+    await page.getByLabel("Gross salary").fill("30000");
+    await page.locator(".salary-result").getByText("€25,652").waitFor();
     // A mistyped address shows the app's own not-found page with links to every section.
     const mistyped = await page.goto(`${baseUrl}/parkng`);
     assert.equal(mistyped.status(), 404);
@@ -308,7 +358,7 @@ async function main() {
           `${language} overflows at ${width}px`,
         );
       }
-      for (const route of ["/", "/pharmacies", "/beaches", "/air", "/nature", "/about"]) {
+      for (const route of ["/", "/pharmacies", "/beaches", "/air", "/nature", "/services", "/recycling", "/tools", "/about"]) {
         await page.goto(`${baseUrl}${route}`);
         await page.locator("main h1").waitFor();
         assert.equal(
@@ -424,7 +474,7 @@ async function main() {
       }
     }
     console.log(
-      "PASS: responsive layouts in EN/RU/EL, statistics charts, parking search/selection/directions, location/denial, tile and API failure fallbacks, beaches, air quality, nature, pharmacies. No external network or browser errors.",
+      "PASS: responsive layouts in EN/RU/EL, statistics charts, parking search/selection/directions, location/denial, tile and API failure fallbacks, beaches, air quality, nature, public services, recycling, holidays and salary, pharmacies. No external network or browser errors.",
     );
   } finally {
     await browser.close();

@@ -1,0 +1,11 @@
+/* Kinds of public service places: marker and list icon colours. */
+.tone-hospital { --tone: #e03131; --tone-text: #fff; }
+.tone-centre { --tone: #1971c2; --tone-text: #fff; }
+.result-row-icon.tone-hospital,
+.result-row-icon.tone-centre,
+.map-pin.tone-hospital span,
+.map-pin.tone-centre span {
+  background: var(--tone);
+  color: var(--tone-text);
+  font-weight: 700;
+}
