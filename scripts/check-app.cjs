@@ -196,6 +196,13 @@ async function main() {
     await page.getByRole("radio", { name: "Per year" }).click();
     await page.getByLabel("Gross salary").fill("30000");
     await page.locator(".salary-result").getByText("€25,652").waitFor();
+    // New-resident exemption: 20% (at most €8,550) up to €55,000, half of the salary above it.
+    await page.getByRole("checkbox", { name: /new-resident exemption/ }).check();
+    await page.locator(".salary-hint").getByText(/€6,000/).waitFor();
+    await page.locator(".salary-result").getByText("€26,565").waitFor();
+    await page.getByLabel("Gross salary").fill("80000");
+    await page.locator(".salary-hint").getByText(/€40,000/).waitFor();
+    await page.locator(".salary-result").getByText("€69,853").waitFor();
     // A mistyped address shows the app's own not-found page with links to every section.
     const mistyped = await page.goto(`${baseUrl}/parkng`);
     assert.equal(mistyped.status(), 404);
