@@ -116,7 +116,7 @@ The Recycling page maps Green Dot's glass banks and recycling islands (packaging
 
 ## Tools
 
-The Tools page is computed in the browser and needs no backend. Holidays are the fixed dates plus those counted from Orthodox Easter, as in the Central Bank of Cyprus yearly bank holiday list (checked against the 2026 list). The net salary calculator uses the 2026 employee rules in `frontend/src/tools/salaryRules.ts`: Social Insurance 8.8% up to €5,742 a month, GESY 2.65% up to €180,000 a year, both deducted from taxable income up to a fifth of it, and the income tax bands in force from 1 January 2026. Update that file every January.
+The Tools page is computed in the browser and needs no backend. Holidays are the fixed dates plus those counted from Orthodox Easter, as in the Central Bank of Cyprus yearly bank holiday list (checked against the 2026 list). The net salary calculator uses the 2026 employee rules in `frontend/src/tools/salaryRules.ts`: Social Insurance 8.8% up to €5,742 a month, GESY 2.65% up to €180,000 a year, both deducted from taxable income up to a fifth of it, and the income tax bands in force from 1 January 2026. An optional box applies the new-resident exemption (Income Tax Law 8(23A) and 8(21A)): half of the salary above €55,000 a year, otherwise 20% up to €8,550; it lowers income tax only. Update that file every January.
 
 ## Maps and privacy
 
