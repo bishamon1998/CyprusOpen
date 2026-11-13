@@ -95,7 +95,7 @@ app.use(express.static(directory, { index: false }));
 app.get("/favicon.ico", (_request, response) => {
   response.type("png").sendFile(`${directory}mouflon-friendly.png`);
 });
-app.get(["/", "/parking", "/pharmacies", "/beaches", "/air", "/nature", "/about"], (_request, response) => {
+app.get(["/", "/parking", "/pharmacies", "/beaches", "/air", "/nature", "/services", "/recycling", "/tools", "/about"], (_request, response) => {
   response.set("Cache-Control", "no-cache").sendFile(`${directory}index.html`);
 });
 // A mistyped page address gets the app's own "page not found" page; files and other requests get JSON.
