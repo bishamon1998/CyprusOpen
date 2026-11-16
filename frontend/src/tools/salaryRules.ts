@@ -20,12 +20,28 @@ export const salaryRules = {
     { from: 42_000, rate: 0.3 },
     { from: 72_000, rate: 0.35 },
   ],
+  /**
+   * Exemptions for a first job in Cyprus after living abroad (Income Tax Law, article 8(23A) and 8(21A)):
+   * half of the salary for up to 17 years when it is above €55,000 a year, otherwise a fifth of it, at most
+   * €8,550 a year, for up to 7 years. They lower income tax only, not the contributions.
+   */
+  newResidentHalfAbove: 55_000,
+  newResidentHalfShare: 0.5,
+  newResidentFifthShare: 0.2,
+  newResidentFifthCap: 8_550,
 } as const;
+
+/** Which new-resident exemption a yearly gross salary gets. */
+export function newResidentExemption(gross: number): "half" | "fifth" {
+  return gross > salaryRules.newResidentHalfAbove ? "half" : "fifth";
+}
 
 export type SalaryBreakdown = {
   gross: number;
   socialInsurance: number;
   gesy: number;
+  /** Salary left out of income tax by the new-resident exemption, 0 without it. */
+  exemption: number;
   taxableIncome: number;
   incomeTax: number;
   net: number;
@@ -33,14 +49,19 @@ export type SalaryBreakdown = {
 
 const cents = (value: number) => Math.round(value * 100) / 100;
 
-/** Yearly amounts for a yearly gross salary in euros. */
-export function netSalary(grossPerYear: number): SalaryBreakdown {
+/** Yearly amounts for a yearly gross salary in euros, optionally with the new-resident exemption. */
+export function netSalary(grossPerYear: number, newResident = false): SalaryBreakdown {
   const gross = Math.max(0, grossPerYear);
   const rules = salaryRules;
   const socialInsurance = cents(Math.min(gross, rules.socialInsuranceCeiling) * rules.socialInsuranceRate);
   const gesy = cents(Math.min(gross, rules.gesyCeiling) * rules.gesyRate);
+  const exemption = !newResident
+    ? 0
+    : newResidentExemption(gross) === "half"
+      ? cents(gross * rules.newResidentHalfShare)
+      : Math.min(cents(gross * rules.newResidentFifthShare), rules.newResidentFifthCap);
   const deduction = Math.min(socialInsurance + gesy, gross * rules.contributionDeductionShare);
-  const taxableIncome = cents(gross - deduction);
+  const taxableIncome = cents(Math.max(0, gross - exemption - deduction));
   let incomeTax = 0;
   rules.taxBands.forEach((band, index) => {
     const next = rules.taxBands[index + 1]?.from ?? Infinity;
@@ -51,6 +72,7 @@ export function netSalary(grossPerYear: number): SalaryBreakdown {
     gross,
     socialInsurance,
     gesy,
+    exemption,
     taxableIncome,
     incomeTax,
     net: cents(gross - socialInsurance - gesy - incomeTax),

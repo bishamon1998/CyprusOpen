@@ -4,7 +4,7 @@ import { SegmentedControl } from "../components/SegmentedControl";
 import { SourceLink } from "../components/SourceLink";
 import { useI18n } from "../i18n";
 import { socialInsuranceUrl, taxDepartmentUrl } from "../sources";
-import { netSalary, salaryRules } from "./salaryRules";
+import { netSalary, newResidentExemption, salaryRules } from "./salaryRules";
 
 type Period = "month" | "year";
 
@@ -15,10 +15,11 @@ export function Salary() {
   const [amount, setAmount] = useState("2500");
   const [period, setPeriod] = useState<Period>("month");
   const [payments, setPayments] = useState(12);
+  const [newResident, setNewResident] = useState(false);
   const value = Number(amount.replace(",", "."));
   const valid = amount.trim() !== "" && Number.isFinite(value) && value >= 0 && value <= 10_000_000;
   const yearly = valid ? (period === "month" ? value * payments : value) : 0;
-  const result = netSalary(yearly);
+  const result = netSalary(yearly, newResident);
   const money = (euros: number, digits = 0) =>
     new Intl.NumberFormat(language, {
       style: "currency",
@@ -76,6 +77,26 @@ export function Salary() {
             onChange={(next) => setPayments(Number(next))}
           />
         </div>
+        <label className="salary-check">
+          <input
+            type="checkbox"
+            checked={newResident}
+            onChange={(event) => setNewResident(event.target.checked)}
+            aria-describedby={newResident ? `${input}-exemption` : undefined}
+          />
+          <span>{t("newResident")}</span>
+        </label>
+        {newResident && (
+          <p className="salary-hint" id={`${input}-exemption`}>
+            {newResidentExemption(result.gross) === "half"
+              ? t("newResidentHalf", { amount: money(result.exemption), threshold: money(salaryRules.newResidentHalfAbove) })
+              : t("newResidentFifth", {
+                  amount: money(result.exemption),
+                  threshold: money(salaryRules.newResidentHalfAbove),
+                  cap: money(salaryRules.newResidentFifthCap),
+                })}
+          </p>
+        )}
       </div>
       <div className="salary-result" aria-live="polite">
         <p>
@@ -129,6 +150,7 @@ export function Salary() {
               free: money(salaryRules.taxBands[1].from),
             })}
           </p>
+          <p>{t("newResidentConditions")}</p>
           <p>{t("salaryExcludes")}</p>
           <SourceLink href={taxDepartmentUrl}>{t("taxDepartment")}</SourceLink>
           <SourceLink href={socialInsuranceUrl}>{t("socialInsuranceServices")}</SourceLink>

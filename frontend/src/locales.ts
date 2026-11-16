@@ -486,10 +486,14 @@ export const en = {
   salarySummary: "Deductions take {share} of the gross salary.",
   salaryEstimate: "An estimate for an employee taxed in Cyprus, not tax advice.",
   salaryRatesNote: "Social insurance {insurance} up to {ceiling} a year and GESY {gesy}, both deducted from taxable income. Income tax: 0% up to {free}, then 20%, 25% from €32,000, 30% from €42,000 and 35% from €72,000.",
-  salaryExcludes: "Not included: reliefs for children, housing loans and rent, provident funds, union fees and the 50% and 20% exemptions for people who moved to Cyprus.",
+  salaryExcludes: "Not included: reliefs for children, housing loans and rent, provident funds and union fees.",
   salarySource: "Tax Department and Social Insurance Services, 2026 rates; calculated in the browser",
   taxDepartment: "Tax Department",
   socialInsuranceServices: "Social Insurance Services",
+  newResident: "First job in Cyprus after moving here (new-resident exemption)",
+  newResidentHalf: "Half of the salary, {amount} a year, is free of income tax because it is above {threshold}.",
+  newResidentFifth: "With a salary up to {threshold}, 20% of it is free of income tax, at most {cap} a year: {amount}.",
+  newResidentConditions: "New-resident exemption: 50% for up to 17 years if the salary is above €55,000 and you had not lived in Cyprus for at least 10 years before; otherwise 20%, at most €8,550 a year, for up to 7 years for a first job in Cyprus that started after 26 July 2022, after at least 3 years abroad. Check your case with the Tax Department.",
 } as const;
 
 export type MessageKey = keyof typeof en;
@@ -985,10 +989,14 @@ const ru: Messages = {
   salarySummary: "Вычеты забирают {share} зарплаты.",
   salaryEstimate: "Оценка для наёмного сотрудника, который платит налоги на Кипре. Не налоговая консультация.",
   salaryRatesNote: "Соцстрахование {insurance} с дохода до {ceiling} в год и GESY {gesy}; оба взноса уменьшают налогооблагаемый доход. Подоходный налог: 0% до {free}, затем 20%, 25% с 32 000 €, 30% с 42 000 € и 35% с 72 000 €.",
-  salaryExcludes: "Не учтены: льготы на детей, ипотеку и аренду, пенсионные фонды (provident fund), профсоюзные взносы и освобождения 50% и 20% для переехавших на Кипр.",
+  salaryExcludes: "Не учтены: льготы на детей, ипотеку и аренду, пенсионные фонды (provident fund) и профсоюзные взносы.",
   salarySource: "Налоговый департамент и Служба социального страхования, ставки 2026 года; расчёт в браузере",
   taxDepartment: "Налоговый департамент",
   socialInsuranceServices: "Служба социального страхования",
+  newResident: "Первая работа на Кипре после переезда (льгота для приезжих)",
+  newResidentHalf: "Половина зарплаты, {amount} в год, не облагается подоходным налогом, потому что зарплата выше {threshold}.",
+  newResidentFifth: "При зарплате до {threshold} от подоходного налога освобождается 20% от неё, но не больше {cap} в год: {amount}.",
+  newResidentConditions: "Льгота для приезжих: 50% на срок до 17 лет, если зарплата выше 55 000 € и до этого вы не жили на Кипре минимум 10 лет; иначе 20%, но не больше 8 550 € в год, на срок до 7 лет, если первая работа на Кипре началась после 26 июля 2022 года и до неё вы минимум 3 года жили за границей. Свой случай уточните в Налоговом департаменте.",
 };
 
 const el: Messages = {
@@ -1480,10 +1488,14 @@ const el: Messages = {
   salarySummary: "Οι κρατήσεις είναι το {share} του ακαθάριστου μισθού.",
   salaryEstimate: "Εκτίμηση για μισθωτό που φορολογείται στην Κύπρο, όχι φορολογική συμβουλή.",
   salaryRatesNote: "Κοινωνικές Ασφαλίσεις {insurance} έως {ceiling} τον χρόνο και ΓεΣΥ {gesy}, που αφαιρούνται από το φορολογητέο εισόδημα. Φόρος εισοδήματος: 0% έως {free}, μετά 20%, 25% από 32.000 €, 30% από 42.000 € και 35% από 72.000 €.",
-  salaryExcludes: "Δεν περιλαμβάνονται: εκπτώσεις για παιδιά, στεγαστικά δάνεια και ενοίκιο, ταμεία προνοίας, συνδρομές σε συντεχνίες και οι απαλλαγές 50% και 20% για όσους μετακόμισαν στην Κύπρο.",
+  salaryExcludes: "Δεν περιλαμβάνονται: εκπτώσεις για παιδιά, στεγαστικά δάνεια και ενοίκιο, ταμεία προνοίας και συνδρομές σε συντεχνίες.",
   salarySource: "Τμήμα Φορολογίας και Υπηρεσίες Κοινωνικών Ασφαλίσεων, συντελεστές 2026· υπολογισμός στον browser",
   taxDepartment: "Τμήμα Φορολογίας",
   socialInsuranceServices: "Υπηρεσίες Κοινωνικών Ασφαλίσεων",
+  newResident: "Πρώτη εργασία στην Κύπρο μετά από μετεγκατάσταση (απαλλαγή νέων κατοίκων)",
+  newResidentHalf: "Το μισό του μισθού, {amount} τον χρόνο, απαλλάσσεται από φόρο εισοδήματος, επειδή ο μισθός είναι πάνω από {threshold}.",
+  newResidentFifth: "Με μισθό έως {threshold}, το 20% του μισθού απαλλάσσεται από φόρο εισοδήματος, έως {cap} τον χρόνο: {amount}.",
+  newResidentConditions: "Απαλλαγή νέων κατοίκων: 50% για έως 17 χρόνια αν ο μισθός είναι πάνω από 55.000 € και δεν ζούσατε στην Κύπρο για τουλάχιστον 10 χρόνια πριν· αλλιώς 20%, έως 8.550 € τον χρόνο, για έως 7 χρόνια για πρώτη εργασία στην Κύπρο που άρχισε μετά τις 26 Ιουλίου 2022, μετά από τουλάχιστον 3 χρόνια στο εξωτερικό. Επιβεβαιώστε την περίπτωσή σας με το Τμήμα Φορολογίας.",
 };
 
 export const messages = { en, ru, el };
